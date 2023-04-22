@@ -1,0 +1,145 @@
+import Home from "../pages/Home/Home";
+import App from "../App";
+import Invoices from "../pages/Invoices";
+import Login from "../pages/Login/Login";
+import KPIChecin from "../components/KPI/Pages/KPICheckin/KPIChecin";
+import KPISaleIn from "../components/KPI/Pages/KPISaleIn/KPISaleIn";
+import HDMH from "../components/Invoices/Pages/HDMH/HDMH";
+import HDBH from "../components/Invoices/Pages/HDBH/HDBH";
+import Errorpage from "../components/Error/Errorpage";
+import TimeKeepingSchedule from "../components/HR/Pages/TimeKeepingSchedule/TimeKeepingSchedule";
+import TimeKeepingDetail from "../components/HR/Pages/TimeKeepingScheduleDetail/TimeKeepingDetail";
+
+const homeRoutes = [
+  {
+    label: "Login nè",
+    claims: "Produce.login",
+    path: "/login",
+    element: <Login />,
+    index: true,
+  },
+  {
+    label: "Home nè",
+    claims: "Produce.home",
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        label: "Todo nè",
+        claims: "Produce.login.todo",
+        path: "todo",
+        element: <Home />,
+        children: [],
+      },
+      {
+        label: "Mạch Hưng nè",
+        claims: "Produce.login.todo.mach_hung",
+        path: "todo/machhung",
+        parent: "todo",
+        element: <Invoices />,
+      },
+      {
+        label: "Hoá đơn",
+        claims: "Produce.invoice",
+        path: "invoices",
+        children: [],
+      },
+      {
+        label: "Hoá đơn mua hàng",
+        claims: "Produce.invoice.abc",
+        path: "invoices/HDMH",
+        parent: "invoices",
+        element: <HDMH />,
+      },
+      {
+        label: "Hoá đơn bán hàng",
+        claims: "Produce.invoice.abc",
+        path: "invoices/HDBH",
+        parent: "invoices",
+        element: <HDBH />,
+      },
+      {
+        label: "HR",
+        claims: "Produce.HR",
+        path: "HR",
+        children: [],
+      },
+      {
+        label: "Bảng chấm công",
+        claims: "Produce.HR.Schedule",
+        path: "HR/Schedule",
+        parent: "HR",
+        element: <TimeKeepingSchedule />,
+      },
+      {
+        label: "Bảng chấm công chi tiết",
+        claims: "Produce.HR.ScheduleDetail",
+        path: "HR/ScheduleDetail",
+        parent: "HR",
+        element: <TimeKeepingDetail />,
+      },
+
+      {
+        label: "KPI",
+        claims: "Produce.KPI",
+        path: "KPI",
+        children: [],
+      },
+      {
+        label: "KPI Viếng thăm",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+      {
+        label: "KPI Doanh thu",
+        claims: "Produce.KPI.SO",
+        path: "KPI/SO",
+        parent: "KPI",
+        element: <KPISaleIn />,
+      },
+      {
+        label: "KPI Viếng thăm",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin3",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+      {
+        label: "KPI Quần què gì đó",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin4",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+      {
+        label: "KPI Viếng thăm",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin5",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+      {
+        label: "KPI Viếng thăm",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin6",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+      {
+        label: "KPI Viếng thăm",
+        claims: "Produce.KPI.Checkin",
+        path: "KPI/Checkin7",
+        parent: "KPI",
+        element: <KPIChecin />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <Errorpage />,
+  },
+];
+
+export default homeRoutes;

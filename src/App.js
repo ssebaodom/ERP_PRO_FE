@@ -1,24 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+import { Outlet } from "react-router-dom";
+import Navbar from "./components/Navbar/Navbar";
+import "./App.css";
+import { useNavigate,Navigate } from "react-router-dom";
+import jwt from "./utils/jwt";
+import { useState } from "react";
+import router from "./router/routes";
+import Footer from "./components/Footer/Footer";
+
 
 function App() {
+  const navigate = useNavigate();
   return (
+    <>
+    {!jwt.checkExistToken()? <Navigate to="/login" replace={true} />:''}
+    {router.state.location.pathname == '/' &&jwt.checkExistToken()? <Navigate to="todo" replace={true} />:''}
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Navbar />
+      <p style={{ lineHeight: "70px",pointerEvents:'none',userSelect:'none' }}>Nav</p>
+      <Outlet />
     </div>
+    </>
   );
 }
 
