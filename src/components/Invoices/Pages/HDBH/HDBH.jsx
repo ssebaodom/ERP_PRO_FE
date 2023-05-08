@@ -110,7 +110,7 @@ const HDBH = () => {
             columns={columns}
             rowKey={(record) => record.login.uuid}
             dataSource={data}
-            rowClassName={"defaultTableRow"}
+            rowClassName={"default_table_row"}
             className='default_table'
             pagination={{
               ...tableParams.pagination,

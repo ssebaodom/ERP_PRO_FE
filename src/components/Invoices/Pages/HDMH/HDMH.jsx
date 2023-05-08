@@ -119,7 +119,7 @@ const HDMH = () => {
             columns={tableColumn}
             rowKey={(record) => record.key}
             dataSource={data}
-            rowClassName={"defaultTableRow"}
+            rowClassName={"default_table_row"}
             className='default_table'
             pagination={{
               position: ["bottomCenter"],

@@ -131,18 +131,27 @@ body {
   min-height: 88vh;
 }
 
-.defaultTableRow td {
+.default_table_row td {
   padding: 8px 16px !important;
   white-space: nowrap !important;
   word-break: keep-all !important;
   font-size: 15px;
 }
 
+
+.default_table_row:nth-child(odd) {
+  background-color: #f4f5fa !important;
+  border: none !important;
+}
+
+.default_table_row:nth-child(even) {
+  background: #fff !important;
+  border: none !important;
+}
+
 .defaultTable th {
   white-space: nowrap !important;
 }
-
-
 
 .page_2_side_default_left {
   flex: 0.2;
@@ -281,6 +290,7 @@ body {
 .default_table .ant-spin-nested-loading,
 .default_table .ant-table {
   height: 100%;
+  border-radius: 4px;
 }
 
 .default_table .ant-spin-container {
@@ -294,6 +304,20 @@ body {
 
 .default_table .ant-table {
   overflow-x: scroll;
+}
+
+.default_table table tr th {
+  border: none !important;
+  background-color: #fff !important;
+  user-select: none;
+}
+
+.default_table table tr th {
+  border: none !important;
+}
+
+.default_table table tr th::before {
+  content: none !important;
 }
 
 .default_pagination_bar {

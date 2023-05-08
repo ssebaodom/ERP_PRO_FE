@@ -123,7 +123,7 @@ const TimeKeepingSchedule = () => {
             // rowKey={(record) => record.login.uuid}
             dataSource={data}
             className={"default_table"}
-            rowClassName={"defaultTableRow"}
+            rowClassName={"default_table_row"}
             pagination={pagination}
           />
         </div>
