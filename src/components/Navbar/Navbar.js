@@ -17,6 +17,8 @@ import jwt from "../../utils/jwt";
 import { setClaims } from "../../store/reducers/claimsSlice";
 import { NotifiContext } from "../../Context/NotifiProvider";
 import useFireStore from "../../app/hooks/sendNotify";
+import {ReactComponent as SSELogo} from '../../assets/img/sse-logo.svg';
+import {ReactComponent as MenuIcon} from '../../assets/img/Menu-Icon.svg';
 
 const Navbar = () => {
   const [options, setOptions] = useState([]);
@@ -292,9 +294,9 @@ const Navbar = () => {
     <div className="navbar">
       <div className="first_navbar_row_left">
         <div className="navbar_logo_functions">
-          <UilAppleAlt onClick={handleLogo} size="30" color="red"></UilAppleAlt>
+          <SSELogo onClick={handleLogo} size="30" color="red"></SSELogo>
           <div className="navbar_search_function">
-            <UnorderedListOutlined
+            <MenuIcon
               style={{ fontSize: "25px", color: "#657194" }}
               onClick={handleOpenSearchModal}
             />
