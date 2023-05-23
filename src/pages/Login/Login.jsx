@@ -224,7 +224,11 @@ const Login = () => {
             <Space
               direction="horizontal"
               className="default_space"
-              style={{ justifyContent: "space-between",width:'100%', paddingBottom: "10px" }}
+              style={{
+                justifyContent: "space-between",
+                width: "100%",
+                paddingBottom: "10px",
+              }}
             >
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
@@ -242,7 +246,7 @@ const Login = () => {
                   type="primary"
                   htmlType="submit"
                   loading={loginLoading}
-                  style={{ flexShrink: "0" }}
+                  style={{ flexShrink: "0", color: "white", width: "100%" }}
                 >
                   Đăng nhập
                 </Button>

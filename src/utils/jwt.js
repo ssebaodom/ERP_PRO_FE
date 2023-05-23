@@ -51,6 +51,11 @@ const saveClaims = (token) => {
   return claims
 };
 
+const getClaims = ()=>{
+  const claims = jwtDecode(getAccessToken()); 
+  return claims
+}
+
 const jwt = {
   getAccessToken,
   getRefreshToken,
@@ -60,5 +65,6 @@ const jwt = {
   checkExistToken,
   resetAccessToken,
   saveClaims,
+  getClaims,
 };
 export default jwt;

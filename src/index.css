@@ -1,7 +1,9 @@
 :root {
   --default_padding: 0px 30px;
   --deffault_padding_app: 90px 10px 0px 10px;
-
+  --light_gray: #E2E4EE;
+  --dark_gray: #657194;
+  --detail_bg_color: #F4F5FA;
 }
 
 @font-face {
@@ -62,6 +64,14 @@ body {
   line-height: 20px;
 }
 
+.default_bold_label {
+  color: #0C122F;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 14px;
+}
+
 .default_input {
   padding: 7px 8px;
   background: #FFFFFF;
@@ -81,12 +91,14 @@ body {
 }
 
 .default_button {
-  border-radius: 4px;
+  border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #657194;
-  padding: 6px 8px;
+  color: var(--dark_gray);
+  border: none;
+  padding: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .default_primary_button {
@@ -189,7 +201,7 @@ body {
 }
 
 .page_default {
-  padding: 15px 25px;
+  padding: 0 30px;
 }
 
 
@@ -265,7 +277,7 @@ body {
   padding: 8px 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px 0px;
+  gap: 25px 0px;
 }
 
 .default_modal_group_items {
@@ -276,6 +288,12 @@ body {
 
 .default_modal_group_items * {
   flex: 1;
+}
+
+.default_modal_details {
+  background-color: var(--detail_bg_color);
+  border-radius: 4px;
+  padding: 6px 12px 12px;
 }
 
 

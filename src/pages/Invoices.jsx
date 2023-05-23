@@ -25,7 +25,7 @@ const Invoices = () => {
     seriesField: 'type',
     isGroup: true,
     columnStyle: {
-      radius: [10, 10, 0, 0],
+      radius: [20, 20, 0, 0],
     },
   };
   return (

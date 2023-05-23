@@ -13,7 +13,7 @@ function App() {
   return (
     <>
     {!jwt.checkExistToken()? <Navigate to="/login" replace={true} />:''}
-    {router.state.location.pathname == '/' &&jwt.checkExistToken()? <Navigate to="todo" replace={true} />:''}
+    {router.state.location.pathname == '/' &&jwt.checkExistToken()? <Navigate to="Dashboard" replace={true} />:''}
     <div className="App">
       <Navbar />
       <p style={{ lineHeight: "70px",pointerEvents:'none',userSelect:'none' }}>Nav</p>

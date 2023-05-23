@@ -26,13 +26,21 @@ const Navbar = () => {
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
   const [navbarItems, setNavbarItems] = useState(
     navbarObject.map((item) => {
-      if (item.children) {
+      if (item.children.length > 0) {
         item.onTitleClick = () => {
           handleNavbarClick(item.children[0]);
         };
         item.children.map((child) => {
-          child.label = <span className="navbar_child_route dark_grey_text_color">{child.label}</span>;
+          child.label = (
+            <span className="navbar_child_route dark_grey_text_color">
+              {child.label}
+            </span>
+          );
         });
+      } else {
+        item.onTitleClick = () => {
+          handleNavbarClick(item);
+        };
       }
       return item;
     })
@@ -104,7 +112,7 @@ const Navbar = () => {
   };
   const handleLogo = () => {
     setnavbarSelectedKey("");
-    navigate("/");
+    if (!router.state.location.pathname.includes("Dashboard")) navigate("/");
   };
 
   const homeRoutes = [

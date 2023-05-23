@@ -9,6 +9,8 @@ import HDBH from "../components/Invoices/Pages/HDBH/HDBH";
 import Errorpage from "../components/Error/Errorpage";
 import TimeKeepingSchedule from "../components/HR/Pages/TimeKeepingSchedule/TimeKeepingSchedule";
 import TimeKeepingDetail from "../components/HR/Pages/TimeKeepingScheduleDetail/TimeKeepingDetail";
+import Dashboard from "../pages/Dashboard/Pages/Dashboard";
+import taskRoutes from "./task";
 
 const homeRoutes = [
   {
@@ -25,19 +27,13 @@ const homeRoutes = [
     element: <App />,
     children: [
       {
-        label: "Todo nè",
-        claims: "Produce.login.todo",
-        path: "todo",
-        element: <Home />,
+        label: "Dashboard",
+        claims: "Produce.dshboard",
+        path: "Dashboard",
+        element: <Dashboard />,
         children: [],
       },
-      {
-        label: "Mạch Hưng nè",
-        claims: "Produce.login.todo.mach_hung",
-        path: "todo/machhung",
-        parent: "todo",
-        element: <Invoices />,
-      },
+      ...taskRoutes,
       {
         label: "Hoá đơn",
         claims: "Produce.invoice",
