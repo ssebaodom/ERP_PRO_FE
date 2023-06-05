@@ -1,102 +1,65 @@
 import React from "react";
 import "./TaskList.css";
-import { Button } from "antd";
+import { Button, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
 import qs from "qs";
 import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
+import { ApiGetTaskList } from "../../API";
+import renderColumns from "../../../../app/hooks/renderColumns";
 
 const TaskList = () => {
+  // initialize #########################################################################
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
+  const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    pagination: {
-      current: 1,
-      pageSize: 10,
-    },
+    keywords: "",
+    oderby: "id",
   });
+  const [pagination, setPagination] = useState({
+    pageindex: 1,
+    pageSize: 10,
+  });
+  const [totalResults, setTotalResults] = useState(0);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
 
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      sorter: true,
-      render: (name) => `${name.first} ${name.last}`,
-    },
-    {
-      title: "Gender",
-      dataIndex: "gender",
-      filters: [
-        {
-          text: "Male",
-          value: "male",
-        },
-        {
-          text: "Female",
-          value: "female",
-        },
-      ],
-      width: "20%",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-    },
-  ];
-
-  const getRandomuserParams = (params) => ({
-    results: params.pagination?.pageSize,
-    page: params.pagination?.current,
-    ...params,
-  });
+  //functions #########################################################################
 
   const refreshData = () => {
-    setTableParams({
-      pagination: {
-        current: 1,
-        pageSize: 10,
-      },
-    });
+    setPagination({ ...pagination, pageindex: 1, current: 1 });
+    if (pagination.pageindex === 1) {
+      setLoading(true);
+      getdata();
+    }
   };
 
-  const fetchData = () => {
-    setLoading(true);
-    fetch(
-      `https://randomuser.me/api?${qs.stringify(
-        getRandomuserParams(tableParams)
-      )}`
-    )
-      .then((res) => res.json())
-      .then(({ results }) => {
-        setData(results);
-        setLoading(false);
-        setTableParams({
-          ...tableParams,
-          pagination: {
-            ...tableParams.pagination,
-            total: 200,
-            // 200 is mock data, you should read it from server
-            // total: data.totalCount,
-          },
-        });
+  const getdata = () => {
+    ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
+      let layout = renderColumns(res?.data?.reportLayoutModel);
+      setTableColumns(layout);
+      const data = res.data.data;
+      data.map((item, index) => {
+        item.key = item.id;
+        return item;
       });
+      setData(data);
+      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setLoading(false);
+    });
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [JSON.stringify(tableParams)]);
-
-  const handleTableChange = (pagination, filters, sorter) => {
-    setTableParams({
-      pagination,
-      filters,
-      ...sorter,
+  const handleTableChange = (paginationChanges, filters, sorter) => {
+    setPagination({
+      ...pagination,
+      pageindex: paginationChanges.current,
+      current: paginationChanges.current,
     });
+    setTableParams({ ...tableParams, ...filters, ...sorter });
 
     // `dataSource` is useless since `pageSize` changed
-    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+    if (pagination.pageSize !== pagination?.pageSize) {
       setData([]);
     }
   };
@@ -104,6 +67,12 @@ const TaskList = () => {
   const openModalAddTask = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
   };
+
+  // effectively #########################################################################
+  useEffect(() => {
+    setLoading(true);
+    getdata();
+  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
     <div className="task__list page_default">
@@ -128,14 +97,16 @@ const TaskList = () => {
         </div>
       </div>
       <div className="task__list__data_container">
-        <ResizableAntdTable
-          columns={columns}
-          rowKey={(record) => record.login.uuid}
+        <Table
+          columns={tableColumns}
+          rowSelection={true}
+          rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
           pagination={{
-            ...tableParams.pagination,
+            ...pagination,
+            total: totalResults,
             position: ["bottomCenter"],
             showSizeChanger: false,
             className: "default_pagination_bar",

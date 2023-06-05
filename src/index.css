@@ -44,15 +44,15 @@ body {
 
 
 .main_text_color {
-  color: #0C122F;
+  color: #0C122F !important;
 }
 
 .dark_grey_text_color {
-  color: #657194;
+  color: #657194 !important;
 }
 
 .sub_text_color {
-  color: #1A4898;
+  color: #1A4898 !important;
 }
 
 
@@ -105,10 +105,29 @@ body {
   background: #1A4898;
   border-radius: 4px;
   display: flex;
+  gap: 8px;
   justify-content: center;
   align-items: center;
   color: #FFFFFF;
   padding: 6px 8px;
+}
+
+.default_primary_button:hover {
+  color: #FFFFFF !important;
+}
+
+.default_subsidiary_button {
+  background: #E2E4EE;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #0C122F;
+  padding: 6px 8px;
+}
+
+.default_primary_button:hover {
+  color: #FFFFFF !important;
 }
 
 .ant-carousel .slick-dots li.slick-active button {
@@ -150,7 +169,6 @@ body {
   font-size: 15px;
 }
 
-
 .default_table_row:nth-child(odd) {
   background-color: #f4f5fa !important;
   border: none !important;
@@ -158,6 +176,25 @@ body {
 
 .default_table_row:nth-child(even) {
   background: #fff !important;
+  border: none !important;
+}
+
+
+
+.default_detail_table_row td {
+  padding: 8px 16px !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  font-size: 15px;
+}
+
+.default_detail_table_row:nth-child(odd) {
+  background-color: var(--detail_bg_color) !important;
+  border: none !important;
+}
+
+.default_detail_table_row:nth-child(even) {
+  background: var(--detail_bg_color) !important;
   border: none !important;
 }
 
@@ -211,7 +248,7 @@ body {
 }
 
 .default_header_table {
-  background: #E2E4EE;
+  background: #E2E4EE !important;
   border-radius: 4px 4px 0px 0px;
   display: flex;
   flex-direction: row;
@@ -277,7 +314,7 @@ body {
   padding: 8px 15px;
   display: flex;
   flex-direction: column;
-  gap: 25px 0px;
+  gap: 20px 0px;
 }
 
 .default_modal_group_items {
@@ -336,6 +373,36 @@ body {
 
 .default_table table tr th::before {
   content: none !important;
+}
+
+.default_table .ant-table-thead .ant-table-selection-column {
+  background-color: #fff !important;
+  border: none;
+}
+
+.default_detail_table {
+  overflow: hidden;
+}
+
+.default_detail_table table tr th {
+  border: none !important;
+  background-color: var(--detail_bg_color) !important;
+  user-select: none;
+}
+
+.default_detail_table table tr th {
+  border: none !important;
+}
+
+.default_detail_table table tr th::before {
+  content: none !important;
+}
+
+.default_detail_table .ant-table-content {
+  max-height: 200px;
+  min-height: 100px;
+  overflow: scroll;
+  background: var(--detail_bg_color);
 }
 
 .default_pagination_bar {

@@ -48,6 +48,7 @@ const Login = () => {
       .post("Authentication/Login", {
         userName: user_Name,
         password: password,
+        DVCS: unitSelected.value.toString().trim(),
       })
       .then((res) => {
         setLoginLoading(false);

@@ -6,10 +6,9 @@ import { Button, Table } from "antd";
 import { getLoading } from "../../../../store/selectors/Selectors";
 import ResizableAntdTable from "resizable-antd-table";
 
-
 const HDBH = () => {
   const [data, setData] = useState();
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,
@@ -111,12 +110,13 @@ const HDBH = () => {
             rowKey={(record) => record.login.uuid}
             dataSource={data}
             rowClassName={"default_table_row"}
-            className='default_table'
+            className="default_table"
             pagination={{
               ...tableParams.pagination,
               position: ["bottomCenter"],
               className: "default_pagination_bar",
             }}
+            sticky={true}
             loading={loading}
             onChange={handleTableChange}
           />

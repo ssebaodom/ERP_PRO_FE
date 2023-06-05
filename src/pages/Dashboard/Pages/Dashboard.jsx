@@ -12,10 +12,7 @@ import location from "../../../Icons/location.svg";
 import accept__person from "../../../Icons/accept__person.svg";
 
 const Dashboard = () => {
-  console.log(jwt.getClaims());
   const userInfo = useSelector(getUserInfo);
-  console.log(userInfo);
-
   const data = [
     {
       month: "1",

@@ -1,15 +1,9 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./Navbar.css";
 import { useDispatch } from "react-redux";
-import {
-  UilAppleAlt,
-  UilSearch,
-  UilBell,
-  UilApps,
-} from "@iconscout/react-unicons";
+import { UilSearch, UilBell, UilApps } from "@iconscout/react-unicons";
 
 import { UnorderedListOutlined } from "@ant-design/icons";
-
 import { Link, useNavigate, redirect } from "react-router-dom";
 import { AutoComplete, Input, Dropdown, Menu, Modal } from "antd";
 import router, { navbarObject } from "../../router/routes";
@@ -17,6 +11,8 @@ import jwt from "../../utils/jwt";
 import { setClaims } from "../../store/reducers/claimsSlice";
 import { NotifiContext } from "../../Context/NotifiProvider";
 import useFireStore from "../../app/hooks/sendNotify";
+import sse__logo from "../../Icons/sse__logo.svg";
+import options__icon from "../../Icons/options__icon.svg";
 
 const Navbar = () => {
   const [options, setOptions] = useState([]);
@@ -114,6 +110,10 @@ const Navbar = () => {
     setnavbarSelectedKey("");
     if (!router.state.location.pathname.includes("Dashboard")) navigate("/");
   };
+
+  useEffect(() => {
+    dispatch(setClaims(jwt.getClaims()));
+  }, []);
 
   const homeRoutes = [
     {
@@ -300,12 +300,19 @@ const Navbar = () => {
     <div className="navbar">
       <div className="first_navbar_row_left">
         <div className="navbar_logo_functions">
-          <UilAppleAlt onClick={handleLogo} size="30" color="red"></UilAppleAlt>
+          <img
+            src={sse__logo}
+            alt="SSE giải pháp phần mềm doanh nghiệp"
+            onClick={handleLogo}
+            color="red"
+          ></img>
           <div className="navbar_search_function">
-            <UnorderedListOutlined
-              style={{ fontSize: "25px", color: "#657194" }}
+            <img
+              src={options__icon}
+              alt="SSE giải pháp phần mềm doanh nghiệp"
               onClick={handleOpenSearchModal}
-            />
+              color="red"
+            ></img>
             <span className="default_header_label">DMS</span>
           </div>
         </div>

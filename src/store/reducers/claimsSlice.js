@@ -11,11 +11,11 @@ const claims = createSlice({
         setClaims(state,action){
             state.claims = action.payload
             state.userInfo = {
-                userName:'Mạch Hải Hưng',
-                role:'0',
-                roleName:'Admin',
-                unitId:1,
-                unitName:'SSE',
+                userName:action.payload.Name,
+                role:action.payload.RoleId,
+                roleName:action.payload.Role,
+                unitId:action.payload.MA_DVCS,
+                unitName:action.payload.DVCS,
             }
         },
         setText(state,action){

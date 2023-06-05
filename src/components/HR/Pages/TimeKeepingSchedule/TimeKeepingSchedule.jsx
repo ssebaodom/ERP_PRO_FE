@@ -118,6 +118,7 @@ const TimeKeepingSchedule = () => {
         </div>
         <div className="page_2_side_default_right_details">
           <Table
+            rowSelection={true}
             columns={tableColumn}
             onHeaderCell={(columns) => console.log(columns)}
             // rowKey={(record) => record.login.uuid}
