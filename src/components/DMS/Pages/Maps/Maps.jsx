@@ -81,9 +81,9 @@ const Maps = () => {
           rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}
-          className="default_table"
+          className=".default_table_none_pagination"
           pagination={{
-            position: ["bottomCenter"],
+            position: ["none"],
             showSizeChanger: false,
             className: "default_pagination_bar",
           }}

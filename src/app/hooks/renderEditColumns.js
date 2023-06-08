@@ -1,26 +1,34 @@
 import React from "react";
+import { datetimeFormat } from "../Options/DataFomater";
+import dayjs from "dayjs";
 
 const renderEditColumns = (columns, editingKey) => {
-  const isEditing = (record) => {
-    return record?.key === editingKey;
-  };
-
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
+  const isEditing = (record) =>  editingKey.includes(record.key);
+  let mergedColumns = [];
+  mergedColumns = columns.map((item, index) => {
+    if (!item.editable) {
+      return item;
     }
     return {
-      ...col,
+      ...item,
       onCell: (record) => ({
         record,
-        inputtype: col.dataType,
-        dataindex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record) ? isEditing(record) : false,
+        index,
+        inputType: item.type,
+        dataIndex: item.dataIndex,
+        title: item.title,
+        editing: isEditing(record),
+        lookupData:item.lookupData,
+        searchItem:item.searchItem,
+        render: (data) => {
+          if (item.type === "Datetime") {
+            return dayjs(data).format(datetimeFormat);
+          }
+          return data;
+        }
       }),
     };
   });
-
   return mergedColumns;
 };
 

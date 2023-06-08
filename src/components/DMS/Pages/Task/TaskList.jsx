@@ -16,7 +16,7 @@ const TaskList = () => {
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
     keywords: "",
-    oderby: "id",
+    orderby: "id",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,

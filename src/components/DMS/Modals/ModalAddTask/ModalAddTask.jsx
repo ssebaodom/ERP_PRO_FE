@@ -12,22 +12,44 @@ import {
   Form,
   TimePicker,
   Table,
+  Tooltip,
 } from "antd";
 import dayjs from "dayjs";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import send_icon from "../../../../Icons/send_icon.svg";
-import { v4 as uuidv4 } from "uuid";
+import copy__icon from "../../../../Icons/copy__icon.svg";
+import delete__icon from "../../../../Icons/delete__icon.svg";
+import lock__icon from "../../../../Icons/lock__icon.svg";
+import checked__icon from "../../../../Icons/checked__icon.svg";
 import addNewRow from "../../../../app/hooks/addNewRow";
-
+import renderCells from "../../../../app/hooks/renderCells";
+import renderEditColumns from "../../../../app/hooks/renderEditColumns";
+import getEditRowsValue from "../../../../app/hooks/getEditRowsValue";
+import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
+import { ApiGetTaskDetail, ApiGetTaskMaster } from "../../API";
 const ModalAddTask = (props) => {
+  const [detailForm] = Form.useForm();
+  const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({
     taskType: "lucy",
     priority: "low",
     tourName: "abc",
   });
-  const [inputForm] = Form.useForm();
+  const [editingKey, setEditingKey] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  const handleCustomerSelected = (value)=>{
+    console.log(value)
+    ApiGetTaskMaster({id:21,orderby:'id'}).then(res=>{
+      console.log(res)
+    })
+    ApiGetTaskDetail({id:21,orderby:'id'}).then(res=>{
+      console.log(res)
+    })
+  }
+
 
   const [dataSource, setDataSource] = useState([
     {
@@ -61,32 +83,40 @@ const ModalAddTask = (props) => {
       address: "10 Downing Street",
     },
   ]);
-
-  const addRow = () => {
-    const newRow = addNewRow(columns);
-    setDataSource([...dataSource, newRow]);
-  };
-
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
-      dataType: "Text",
+      type: "Text",
+      editable: true,
       key: "name",
     },
     {
       title: "Age",
       dataIndex: "age",
-      dataType: "Numeric",
+      type: "Numeric",
+      editable: true,
       key: "age",
     },
     {
       title: "Address",
       dataIndex: "address",
-      dataType: "Text",
+      type: "Text",
+      editable: true,
       key: "address",
     },
+    {
+      title: "Customer",
+      dataIndex: "Customer",
+      type: "AutoComplete",
+      lookupData: [],
+      searchItem:handleCustomerSelected,
+      editable: true,
+      key: "Customer",
+    },
   ];
+
+ 
 
   const handleChangeTaskName = (value) => {
     console.log(inputForm.getFieldValue());
@@ -97,6 +127,8 @@ const ModalAddTask = (props) => {
     setOpenModal(false);
     props.handleCloseModal();
     inputForm.resetFields();
+    setEditingKey([]);
+    setSelectedRowKeys([]);
   };
 
   const onSubmitForm = () => {
@@ -105,6 +137,110 @@ const ModalAddTask = (props) => {
   };
 
   const onSubmitFormFail = () => {};
+
+  const EditableCell = (cell) => {
+    return renderCells(cell);
+  };
+
+  const edit = (record) => {
+    const inputRecord = getEditRowsValue(record);
+    detailForm.setFieldsValue({
+      ...inputRecord,
+    });
+    setEditingKey([record.key, ...editingKey]);
+  };
+
+  const cancel = (record) => {
+    const newEditingKey = editingKey.filter((key) => key !== record);
+    setEditingKey(newEditingKey);
+  };
+
+  const BtnSave = async () => {
+    const rawData = [...dataSource];
+    const newData = [];
+    const rows = await detailForm.validateFields();
+    await editingKey.map(async (key) => {
+      const changedData = await getChangedTableRow(key, rows, rawData);
+      newData.push(changedData);
+    });
+
+    await newData.map((item) => {
+      const index = rawData.findIndex((record) => item.key === record.key);
+      if (index > -1) {
+        rawData.splice(index, 1, item);
+      }
+    });
+
+    setDataSource(rawData);
+    setEditingKey([]);
+    setSelectedRowKeys([]);
+  };
+
+  const addRow = () => {
+    const newRow = addNewRow(columns);
+    setDataSource([...dataSource, newRow]);
+    edit(newRow);
+    setSelectedRowKeys([...selectedRowKeys, newRow.key]);
+  };
+
+  const deleteRow = async () => {
+    const newData = await dataSource.filter((item) => {
+      return !selectedRowKeys.includes(item.key);
+    });
+    setDataSource([...newData]);
+    setSelectedRowKeys([]);
+    setEditingKey([]);
+  };
+
+  const onSelect = (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    setSelectedRowKeys([...keys]);
+    if (selected) {
+      edit(record);
+    } else cancel(record.key);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        edit(record);
+        return record.key;
+      });
+      setEditingKey([...selectedKeys]);
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setEditingKey([]);
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
+  };
+
+  const handleChangedValues = (changedValues, allValues) => {
+    console.log(1)
+    const keys = Object.keys(allValues);
+    const changedObject = Object.keys(changedValues)[0];
+    const changedKey = changedObject.substring(
+      0,
+      changedObject.indexOf("_") + 1
+    );
+    const changedColumn = changedObject.substring(
+      changedObject.indexOf("_") + 1,
+      changedObject.length
+    );
+    switch (changedColumn) {
+      case "name":
+        detailForm.setFieldValue(`${changedKey}age`, 1);
+        break;
+
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     setOpenModal(props.openModalState);
@@ -290,38 +426,116 @@ const ModalAddTask = (props) => {
           className="default_modal_group_items default_modal_details"
           style={{ flexDirection: "column", gap: "10px" }}
         >
-          <span
-            className="default_bold_label"
-            style={{ borderBottom: "1.5px solid #E2E4EE", padding: "10px 0px" }}
-          >
-            Chi tiết
-          </span>
-
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            rowClassName="default_detail_table_row"
-            className="default_detail_table"
-            pagination={{
-              position: ["none"],
-              defaultPageSize: 1000,
-            }}
-          />
-          <div
-            className="default_modal_group_items"
-            style={{ flexDirection: "column", gap: "10px" }}
-          >
-            <Button
-              className="default_button"
-              style={{ width: "120px", padding: "5px 15px" }}
-              icon={<PlusOutlined className="sub_text_color" />}
-              onClick={() => {
-                addRow();
+          <div className="default_table_header">
+            <span className="default_bold_label">Chi tiết</span>
+            <div
+              className="default_modal_group_items"
+              style={{
+                flexDirection: "roo",
+                gap: "10px",
+                alignItems: "flex-end",
+                flex: "none",
               }}
             >
-              <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-            </Button>
+              {editingKey.length > 0 ? (
+                <Tooltip placement="topLeft" title="Nhận">
+                  <Button
+                    className="default_detail_button"
+                    icon={
+                      <img
+                        style={{ height: "12px", width: "12px" }}
+                        src={checked__icon}
+                        alt=""
+                      />
+                    }
+                    onClick={() => {
+                      BtnSave();
+                    }}
+                  ></Button>
+                </Tooltip>
+              ) : (
+                ""
+              )}
+
+              <Tooltip placement="topLeft" title="Thêm dòng">
+                <Button
+                  className="default_primary_detail_button"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    addRow();
+                  }}
+                ></Button>
+              </Tooltip>
+              <Tooltip placement="topLeft" title="Xoá dòng">
+                <Button
+                  className="default_detail_button"
+                  icon={
+                    <img
+                      style={{ height: "18px", width: "12px" }}
+                      src={delete__icon}
+                      alt=""
+                    />
+                  }
+                  onClick={() => {
+                    deleteRow();
+                  }}
+                ></Button>
+              </Tooltip>
+              <Tooltip placement="topLeft" title="Nhân dòng">
+                <Button
+                  className="default_detail_button"
+                  icon={
+                    <img
+                      style={{ height: "18px", width: "12px" }}
+                      src={copy__icon}
+                      alt=""
+                    />
+                  }
+                  onClick={() => {
+                    addRow();
+                  }}
+                ></Button>
+              </Tooltip>
+              <Tooltip placement="topLeft" title="Khoá dòng">
+                <Button
+                  className="default_detail_button"
+                  icon={
+                    <img
+                      style={{ height: "18px", width: "12px" }}
+                      src={lock__icon}
+                      alt=""
+                    />
+                  }
+                  onClick={() => {
+                    addRow();
+                  }}
+                ></Button>
+              </Tooltip>
+            </div>
           </div>
+
+          <Form
+            form={detailForm}
+            component={false}
+            onValuesChange={handleChangedValues}
+          >
+            <Table
+              rowSelection={rowSelection}
+              components={{
+                body: {
+                  cell: EditableCell,
+                },
+              }}
+              columns={renderEditColumns(columns, editingKey)}
+              dataSource={dataSource}
+              rowClassName="default_detail_table_row"
+              className="default_detail_table"
+              pagination={{
+                position: ["none"],
+                defaultPageSize: 1000,
+              }}
+            />
+          </Form>
         </div>
 
         <Space style={{ justifyContent: "center", alignItems: "center" }}>

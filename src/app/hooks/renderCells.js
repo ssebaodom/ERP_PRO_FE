@@ -1,47 +1,67 @@
-import { Input, InputNumber, DatePicker, Form } from "antd";
+import { Input, InputNumber, DatePicker, Form, Select } from "antd";
 import React from "react";
 import { quantityFormat, datetimeFormat } from "../Options/DataFomater";
 
-
-const renderCells = (columns, editing) => {
+const renderCells = (cell) => {
   let inputNode;
-  switch (columns.inputType) {
-    case "number":
-      inputNode = <InputNumber step={quantityFormat}/>;
+  switch (cell.inputType) {
+    case "Numeric":
+      inputNode = <InputNumber step={quantityFormat} />;
       break;
-    case "text":
-      inputNode = <Input />;
+    case "Text":
+      inputNode = <Input className="default_input_detail" />;
       break;
-    case "datetime":
+    case "Datetime":
       inputNode = <DatePicker format={datetimeFormat} />;
       break;
+    case "AutoComplete":
+      inputNode = (
+        <Select
+          showSearch
+          placeholder={`Vui lòng nhập ${cell.title}`}
+          style={{
+            width: 200,
+          }}
+          defaultActiveFirstOption={false}
+          showArrow={false}
+          filterOption={false}
+          onSearch={cell.searchItem}
+          onChange={cell.handleChange}
+          options={(cell.lookupData|| []).map((d) => ({
+            value: d.value,
+            label: d.text,
+          }))}
+        />
+      );
+
+      break;
+
     default:
-      inputNode = <Input />;
+      inputNode = <Input className="default_input_detail" />;
       break;
   }
   return (
     <td>
-      {editing ? (
+      {cell.editing ? (
         <Form.Item
-          name={columns.dataIndex}
+          name={`${cell.record.key}_${cell.dataIndex}`}
           style={{
             margin: 0,
           }}
           rules={[
             {
               required: true,
-              message: `Please Input ${columns.title}!`,
+              message: `Please Input ${cell.title}!`,
             },
           ]}
         >
           {inputNode}
         </Form.Item>
       ) : (
-        columns.children
+        cell.children
       )}
     </td>
   );
 };
 
 export default renderCells;
-
