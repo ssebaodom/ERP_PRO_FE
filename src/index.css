@@ -202,6 +202,10 @@ body {
   font-size: 15px;
 }
 
+.default_table_row .ant-table-cell-fix-right {
+  background: transparent !important;
+}
+
 .default_table_row:nth-child(odd) {
   background-color: #f4f5fa !important;
   border: none !important;
@@ -210,6 +214,11 @@ body {
 .default_table_row:nth-child(even) {
   background: #fff !important;
   border: none !important;
+}
+
+.default_images_clickable {
+  cursor: pointer;
+  user-select: none;
 }
 
 
@@ -475,6 +484,23 @@ body {
 .default_pagination_bar .ant-select-selector {
   border-radius: 50px;
   border: none !important;
+}
+
+
+.default_select_code {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.default_select_empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.default_select_empty img {
+  width: 100%;
+  object-fit: cover;
 }
 
 

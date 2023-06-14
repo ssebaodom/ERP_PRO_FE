@@ -91,10 +91,10 @@ class HttpService {
         break;
 
       default:
-        // notification.error({
-        //   message: `Có lỗi phát sinh`,
-        //   description: `Lỗi: ${error?.statusText?error?.statusText:'Không xác định'}`,
-        // });
+        notification.error({
+          message: `Có lỗi phát sinh`,
+          description: `Lỗi: ${error?.statusText?error?.statusText:'Không xác định'}`,
+        });
         break;
     }
   }

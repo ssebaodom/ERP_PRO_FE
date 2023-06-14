@@ -27,10 +27,7 @@ const renderCells = (cell) => {
           filterOption={false}
           onSearch={cell.searchItem}
           onChange={cell.handleChange}
-          options={(cell.lookupData|| []).map((d) => ({
-            value: d.value,
-            label: d.text,
-          }))}
+          options={cell.lookupData}
         />
       );
 

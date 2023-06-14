@@ -1,18 +1,19 @@
 import React from "react";
-import "./TaskList.css";
+import "./TaskSchedule.css";
 import { Button, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
 import qs from "qs";
 import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTaskList } from "../../API";
+import { ApiGetTaskList, ApiGetTaskSchedule } from "../../API";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import edit__icon from "../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import ModalAddTaskSchedule from "../../Modals/ModalAddTaskSchedule/ModalAddTaskSchedule";
 
-const TaskList = () => {
+const TaskSchedule = () => {
   // initialize #########################################################################
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ const TaskList = () => {
   const [openModalType, setOpenModalType] = useState("Add");
   const [currentRecord, setCurrentRecord] = useState(null);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
-  const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
+  const [isOpenModalDeleteTask,setIsOpenModalDeleteTask] = useState(false)
   const [currentItemSelected, setCurrentItemSelected] = useState({});
 
   //functions #########################################################################
@@ -49,20 +50,20 @@ const TaskList = () => {
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(true);
-    setCurrentItemSelected(record);
-  };
+    setIsOpenModalDeleteTask(!isOpenModalDeleteTask)
+    setCurrentItemSelected(record)
+  }
 
+  const handleDelete = () => {
+    console.log('Gọi API delete ở đây',currentItemSelected);
+    handleCloseDeleteDialog();
+    refreshData();
+  }
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
   };
 
-  const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
-    handleCloseDeleteDialog();
-    refreshData();
-  };
 
   const getdata = () => {
     ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
@@ -138,7 +139,7 @@ const TaskList = () => {
     <div className="task__list page_default">
       <div className="task__list__header__bar">
         <span className="default_header_label">
-          Danh sách công việc (
+          Danh sách lịch công việc (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="task__list__header__tools">
@@ -176,7 +177,7 @@ const TaskList = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddTask
+      <ModalAddTaskSchedule
         openModalState={openModalAddTaskState}
         openModalType={openModalType}
         currentRecord={currentRecord}
@@ -193,4 +194,4 @@ const TaskList = () => {
   );
 };
 
-export default TaskList;
+export default TaskSchedule;

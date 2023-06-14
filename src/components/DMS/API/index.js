@@ -8,7 +8,7 @@ export const ApiGetTaskList = async (payload) =>{
 
 
 export const ApiGetTaskMaster = async (payload) =>{
-    return await https.post(`User/get-sysevents-detail`,payload).then((res)=>{
+    return await https.post(`User/get-dsysevents-master`,payload).then((res)=>{
         return res.data
     })
 }
@@ -17,5 +17,19 @@ export const ApiGetTaskMaster = async (payload) =>{
 export const ApiGetTaskDetail = async (payload) =>{
     return await https.post(`User/get-dsysevents-detail`,payload).then((res)=>{
         return res.data
+    })
+}
+
+
+export const ApiWebLookup = async (payload) =>{
+    return await https.post(`User/look-up`,payload).then((res)=>{
+        return res.data
+    })
+}
+
+
+export const ApiGetTaskSchedule = async (payload) =>{
+    return await https.post(`User/get-vtaskschedule`,payload).then((res)=>{
+        return res
     })
 }

@@ -27,101 +27,46 @@ import renderCells from "../../../../app/hooks/renderCells";
 import renderEditColumns from "../../../../app/hooks/renderEditColumns";
 import getEditRowsValue from "../../../../app/hooks/getEditRowsValue";
 import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
-import { ApiGetTaskDetail, ApiGetTaskMaster } from "../../API";
+import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
+import { useDebouncedCallback } from "use-debounce";
+import { EdgeFilterLens } from "@antv/g6-pc";
+
+// bắt buộc khai báo bên ngoài
+const EditableCell = (cell) => {
+  return renderCells(cell);
+};
+
 const ModalAddTask = (props) => {
   const [detailForm] = Form.useForm();
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
-  const [initialValues, setInitialValues] = useState({
-    taskType: "lucy",
-    priority: "low",
-    tourName: "abc",
-  });
+  const [initialValues, setInitialValues] = useState({});
+  const [customerSelectData, setCustomerSelectData] = useState([]);
   const [editingKey, setEditingKey] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [dataSource, setDataSource] = useState([]);
+  const [columns, setColumns] = useState([]);
 
-  const handleCustomerSelected = (value)=>{
-    console.log(value)
-    ApiGetTaskMaster({id:21,orderby:'id'}).then(res=>{
-      console.log(res)
-    })
-    ApiGetTaskDetail({id:21,orderby:'id'}).then(res=>{
-      console.log(res)
-    })
-  }
-
-
-  const [dataSource, setDataSource] = useState([
-    {
-      key: "1",
-      name: "Mike",
-      age: 32,
-      address: "10 Downing Street",
-    },
-    {
-      key: "2",
-      name: "John",
-      age: 42,
-      address: "10 Downing Street",
-    },
-    {
-      key: "3",
-      name: "Mike",
-      age: 32,
-      address: "10 Downing Street",
-    },
-    {
-      key: "4",
-      name: "John",
-      age: 42,
-      address: "10 Downing Street",
-    },
-    {
-      key: "5",
-      name: "Mike",
-      age: 32,
-      address: "10 Downing Street",
-    },
-  ]);
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      type: "Text",
-      editable: true,
-      key: "name",
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      type: "Numeric",
-      editable: true,
-      key: "age",
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      type: "Text",
-      editable: true,
-      key: "address",
-    },
-    {
-      title: "Customer",
-      dataIndex: "Customer",
-      type: "AutoComplete",
-      lookupData: [],
-      searchItem:handleCustomerSelected,
-      editable: true,
-      key: "Customer",
-    },
-  ];
-
- 
-
-  const handleChangeTaskName = (value) => {
-    console.log(inputForm.getFieldValue());
-    inputForm.setFieldsValue("");
-  };
+  const handleCustomerSelected = useDebouncedCallback((value) => {
+    if (value) {
+      ApiWebLookup({
+        userId: "1",
+        controller: "dmkh_lookup",
+        pageIndex: 1,
+        FilterValueCode: value.trim(),
+      }).then((res) => {
+        const customerData = res.data.map((item) => {
+          return {
+            value: item.code,
+            label: item.code,
+            ten_kh: item.name,
+          };
+        });
+        setCustomers([...customerData]);
+      });
+    }
+  }, 600);
 
   const handleCancelModal = () => {
     setOpenModal(false);
@@ -129,6 +74,9 @@ const ModalAddTask = (props) => {
     inputForm.resetFields();
     setEditingKey([]);
     setSelectedRowKeys([]);
+    setInitialValues({});
+    setDataSource([]);
+    setColumns([]);
   };
 
   const onSubmitForm = () => {
@@ -137,10 +85,6 @@ const ModalAddTask = (props) => {
   };
 
   const onSubmitFormFail = () => {};
-
-  const EditableCell = (cell) => {
-    return renderCells(cell);
-  };
 
   const edit = (record) => {
     const inputRecord = getEditRowsValue(record);
@@ -221,7 +165,6 @@ const ModalAddTask = (props) => {
   };
 
   const handleChangedValues = (changedValues, allValues) => {
-    console.log(1)
     const keys = Object.keys(allValues);
     const changedObject = Object.keys(changedValues)[0];
     const changedKey = changedObject.substring(
@@ -233,8 +176,15 @@ const ModalAddTask = (props) => {
       changedObject.length
     );
     switch (changedColumn) {
-      case "name":
-        detailForm.setFieldValue(`${changedKey}age`, 1);
+      case "ma_kh":
+        const selectedCustomer = customers.find((item) => {
+          return item.value.trim() === Object.values(changedValues)[0].trim();
+        });
+        detailForm.setFieldValue(
+          `${changedKey}ten_kh`,
+          selectedCustomer.ten_kh.trim()
+        );
+        setCustomers([]);
         break;
 
       default:
@@ -242,9 +192,82 @@ const ModalAddTask = (props) => {
     }
   };
 
+  const getDataEdit = (id) => {
+    console.log(1);
+    ApiGetTaskDetail({ id: id, orderby: "id" }).then((res) => {
+      const layout = res.reportLayoutModel.map((item) => {
+        item.editable = true;
+        if (item.field === "ma_kh") {
+          return {
+            title: item.name,
+            dataIndex: item.field,
+            type: item.type,
+            editable: true,
+            key: item.field,
+            searchItem: handleCustomerSelected,
+            lookupData: customers,
+          };
+        }
+
+        return {
+          title: item.name,
+          dataIndex: item.field,
+          type: item.type,
+          editable: true,
+          key: item.field,
+        };
+      });
+      setColumns(layout);
+
+      const data = res.data.map((item, index) => {
+        item.key = index;
+        return item;
+      });
+
+      setDataSource(data);
+    });
+
+    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
+      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
+      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
+      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
+      inputForm.setFieldValue(`startTime`, dayjs(res.data[0]?.start_date));
+      inputForm.setFieldValue(`startDate`, dayjs(res.data[0]?.start_date));
+      inputForm.setFieldValue(`endTime`, dayjs(res.data[0]?.end_date));
+      inputForm.setFieldValue(`endDate`, dayjs(res.data[0]?.end_date));
+      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
+      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
+      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    });
+  };
+
+  useEffect(() => {
+    if (customers.length > 0) {
+      const layout = [...columns];
+      layout.map((item) => {
+        if (item.dataIndex === "ma_kh") {
+          item.lookupData = customers;
+        }
+      });
+      setColumns(layout);
+    } else {
+      const layout = [...columns];
+      layout.map((item) => {
+        if (item.dataIndex === "ma_kh") {
+          item.lookupData = [];
+        }
+      });
+      setColumns(layout);
+    }
+  }, [JSON.stringify(customers)]);
+
   useEffect(() => {
     setOpenModal(props.openModalState);
-  }, [props]);
+    if (props.openModalState) {
+      setInitialValues({});
+      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+    }
+  }, [JSON.stringify(props)]);
   return (
     <Modal
       className="default_modal"
@@ -261,7 +284,6 @@ const ModalAddTask = (props) => {
       </div>
       <Form
         form={inputForm}
-        initialValues={initialValues}
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
@@ -275,10 +297,7 @@ const ModalAddTask = (props) => {
                 { required: true, message: "Vui lòng điền tên công việc" },
               ]}
             >
-              <Input
-                onChange={handleChangeTaskName}
-                placeholder="Nhập tên công việc"
-              />
+              <Input placeholder="Nhập tên công việc" />
             </Form.Item>
           </Space>
         </div>
@@ -294,6 +313,7 @@ const ModalAddTask = (props) => {
                 ]}
               >
                 <Select
+                  placeholder="Chọn loại công việc"
                   style={{ width: "100%" }}
                   options={[
                     { value: "jack", label: "Jack" },
@@ -310,6 +330,7 @@ const ModalAddTask = (props) => {
                 rules={[{ required: true, message: "Vui lòng mức độ ưu tiên" }]}
               >
                 <Select
+                  placeholder="Chọn mức độ"
                   style={{ width: "100%" }}
                   options={[
                     { value: "low", label: "Thấp" },
@@ -393,10 +414,7 @@ const ModalAddTask = (props) => {
                 { required: true, message: "Vui lòng điền người nhận việc" },
               ]}
             >
-              <Input
-                onChange={handleChangeTaskName}
-                placeholder="Nhập người nhận việc"
-              />
+              <Input placeholder="Nhập người nhận việc" />
             </Form.Item>
           </Space>
           <Space direction="vertical">
@@ -405,10 +423,7 @@ const ModalAddTask = (props) => {
               name="deptName"
               rules={[{ required: true, message: "Vui lòng điền bộ phận" }]}
             >
-              <Input
-                onChange={handleChangeTaskName}
-                placeholder="Nhập bộ phận"
-              />
+              <Input placeholder="Nhập bộ phận" />
             </Form.Item>
           </Space>
           <Space direction="vertical">
@@ -417,7 +432,7 @@ const ModalAddTask = (props) => {
               name="tourName"
               rules={[{ required: true, message: "Vui lòng tên tuyến" }]}
             >
-              <Input onChange={handleChangeTaskName} placeholder="Nhập tuyến" />
+              <Input placeholder="Nhập tuyến" />
             </Form.Item>
           </Space>
         </div>

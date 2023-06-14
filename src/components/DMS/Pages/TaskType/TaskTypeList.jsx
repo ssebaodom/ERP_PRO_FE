@@ -1,5 +1,5 @@
 import React from "react";
-import "./TaskList.css";
+import "./TaskTypeList.css";
 import { Button, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
@@ -10,9 +10,8 @@ import { ApiGetTaskList } from "../../API";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import edit__icon from "../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../Icons/delete__icon.svg";
-import ConfirmDialog from "../../../../Context/ConfirmDialog";
 
-const TaskList = () => {
+const TaskTypeList = () => {
   // initialize #########################################################################
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
@@ -29,8 +28,6 @@ const TaskList = () => {
   const [openModalType, setOpenModalType] = useState("Add");
   const [currentRecord, setCurrentRecord] = useState(null);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
-  const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
-  const [currentItemSelected, setCurrentItemSelected] = useState({});
 
   //functions #########################################################################
 
@@ -46,22 +43,6 @@ const TaskList = () => {
     setCurrentRecord(record.id);
     setOpenModalAddTaskState(true);
     setOpenModalType("Edit");
-  };
-
-  const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(true);
-    setCurrentItemSelected(record);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setIsOpenModalDeleteTask(false);
-    setCurrentItemSelected({});
-  };
-
-  const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
-    handleCloseDeleteDialog();
-    refreshData();
   };
 
   const getdata = () => {
@@ -87,9 +68,6 @@ const TaskList = () => {
               <img
                 className="default_images_clickable"
                 src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
                 alt=""
               ></img>
             </span>
@@ -182,15 +160,8 @@ const TaskList = () => {
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
       />
-      <ConfirmDialog
-        state={isOpenModalDeleteTask}
-        title="Mày có muốn xoá cái này khum"
-        description={`Xoá công việc : ${currentItemSelected.text}`}
-        handleOkModal={handleDelete}
-        handleCloseModal={handleCloseDeleteDialog}
-      />
     </div>
   );
 };
 
-export default TaskList;
+export default TaskTypeList;
