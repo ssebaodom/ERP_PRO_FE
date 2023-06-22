@@ -20,7 +20,7 @@ const SelectItemCode = (options) => {
                 {option.value}
               </span>
 
-              <span style={{ flexShrink: "0" }}>{option.label}</span>
+              <span className="marquee">{option.label}</span>
             </Space>
           </Select.Option>
         );

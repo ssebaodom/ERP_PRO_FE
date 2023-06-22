@@ -33,3 +33,25 @@ export const ApiGetTaskSchedule = async (payload) =>{
         return res
     })
 }
+
+export const ApiGetTourList = async (payload) =>{
+    return await https.post(`User/get_dmtuyen`,payload).then((res)=>{
+        return res
+    })
+}
+
+export const ApiGetTourDetail = async (payload) =>{
+    return await https.post(`User/get_dmtuyen`,payload).then((res)=>{
+        return res
+    })
+}
+
+export const ApiGetTicketList = async (payload) =>{
+    return await https.post(`User/get_vticket`,payload).then((res)=>{
+        return res
+    })
+}
+
+
+
+

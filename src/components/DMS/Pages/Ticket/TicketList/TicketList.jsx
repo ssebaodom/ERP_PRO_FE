@@ -1,26 +1,28 @@
 import React from "react";
-import "./TaskSchedule.css";
+import "./TicketList.css";
 import { Button, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTaskList, ApiGetTaskSchedule } from "../../API";
-import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
-import ConfirmDialog from "../../../../Context/ConfirmDialog";
-import ModalAddTaskSchedule from "../../Modals/ModalAddTaskSchedule/ModalAddTaskSchedule";
+import { ApiGetTicketList, ApiGetTourList } from "../../../API";
+import edit__icon from "../../../../../Icons/edit__icon.svg";
+import delete__icon from "../../../../../Icons/delete__icon.svg";
+import ConfirmDialog from "../../../../../Context/ConfirmDialog";
+import ModalAddCustomerResource from "../../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
+import ModalAddTask from "../../../Modals/ModalAddTask/ModalAddTask";
+import renderColumns from "../../../../../app/hooks/renderColumns";
 
-const TaskSchedule = () => {
+const TicketList = () => {
   // initialize #########################################################################
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    keywords: "",
-    orderby: "id",
+    orderby: "ma_kh",
+    ma_kh: "",
+    ten_kh: "",
+    ten_nvbh: "",
+    ma_nv: "",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
@@ -30,7 +32,7 @@ const TaskSchedule = () => {
   const [openModalType, setOpenModalType] = useState("Add");
   const [currentRecord, setCurrentRecord] = useState(null);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
-  const [isOpenModalDeleteTask,setIsOpenModalDeleteTask] = useState(false)
+  const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
 
   //functions #########################################################################
@@ -50,23 +52,22 @@ const TaskSchedule = () => {
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(!isOpenModalDeleteTask)
-    setCurrentItemSelected(record)
-  }
+    setIsOpenModalDeleteTask(!isOpenModalDeleteTask);
+    setCurrentItemSelected(record);
+  };
 
   const handleDelete = () => {
-    console.log('Gọi API delete ở đây',currentItemSelected);
+    console.log("Gọi API delete ở đây", currentItemSelected);
     handleCloseDeleteDialog();
     refreshData();
-  }
+  };
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
   };
 
-
   const getdata = () => {
-    ApiGetTaskSchedule({ ...tableParams, ...pagination }).then((res) => {
+    ApiGetTicketList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.data?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
@@ -100,7 +101,7 @@ const TaskSchedule = () => {
       setTableColumns(layout);
       const data = res.data.data;
       data.map((item, index) => {
-        item.key = item.id;
+        item.key = item.id_ticket;
         return item;
       });
       setData(data);
@@ -139,7 +140,7 @@ const TaskSchedule = () => {
     <div className="task__list page_default">
       <div className="task__list__header__bar">
         <span className="default_header_label">
-          Danh sách lịch công việc (
+          Danh sách ticket (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="task__list__header__tools">
@@ -177,7 +178,7 @@ const TaskSchedule = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddTaskSchedule
+      <ModalAddCustomerResource
         openModalState={openModalAddTaskState}
         openModalType={openModalType}
         currentRecord={currentRecord}
@@ -186,7 +187,7 @@ const TaskSchedule = () => {
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Mày có muốn xoá cái này khum"
-        description={`Xoá công việc : ${currentItemSelected.text}`}
+        description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
       />
@@ -194,4 +195,4 @@ const TaskSchedule = () => {
   );
 };
 
-export default TaskSchedule;
+export default TicketList;

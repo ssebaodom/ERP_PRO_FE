@@ -22,7 +22,7 @@ const Navbar = () => {
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
   const [navbarItems, setNavbarItems] = useState(
     navbarObject.map((item) => {
-      if (item.children.length > 0) {
+      if (item?.children?.length > 0) {
         item.onTitleClick = () => {
           handleNavbarClick(item.children[0]);
         };
@@ -327,6 +327,8 @@ const Navbar = () => {
             height: "30px",
             lineHeight: "30px",
             border: "none",
+            width: "88%",
+            userSelect: "none",
           }}
           overflowedIndicator={
             <span style={{ color: "#1677ff" }}>Mở rộng ...</span>

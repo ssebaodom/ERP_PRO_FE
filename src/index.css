@@ -71,6 +71,15 @@ body {
   font-weight: bold;
   font-size: 12px;
   line-height: 14px;
+  flex: none !important;
+}
+
+.default_bold_table_label {
+  color: #0C122F;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 14px;
 }
 
 .default_input {
@@ -85,6 +94,11 @@ body {
 
 .default_input_detail {
   width: auto !important;
+}
+
+.default_disable_input {
+  background-color: var(--light_gray) !important;
+  color: var(--dark_gray) !important;
 }
 
 .default_space {
@@ -175,6 +189,16 @@ body {
   margin-bottom: 0;
 }
 
+.ant-select-dropdown {
+  /* min-width: 250px !important; */
+  max-width: fit-content !important;
+  width: fit-content !important;
+}
+
+.ant-select-selection-item-content {
+  flex: none !important;
+}
+
 .page_2_side_right_default {
   display: flex;
   gap: 0px 36px;
@@ -203,15 +227,17 @@ body {
 }
 
 .default_table_row .ant-table-cell-fix-right {
-  background: transparent !important;
+  background: inherit !important;
 }
 
 .default_table_row:nth-child(odd) {
   background-color: #f4f5fa !important;
+  background: #f4f5fa !important;
   border: none !important;
 }
 
 .default_table_row:nth-child(even) {
+  background-color: #fff !important;
   background: #fff !important;
   border: none !important;
 }
@@ -369,6 +395,15 @@ body {
   flex: 1;
 }
 
+.default_modal_1_row_items {
+  flex: none;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
 .default_modal_details {
   background-color: var(--detail_bg_color);
   border-radius: 4px;
@@ -424,6 +459,7 @@ body {
   border: none !important;
   background-color: #fff !important;
   user-select: none;
+  white-space: nowrap;
 }
 
 .default_table table tr th {
@@ -503,6 +539,7 @@ body {
   object-fit: cover;
 }
 
+.default_select_label {}
 
 .tableToolsBar {
   background-color: rgba(204, 204, 204, 0.584);
@@ -525,4 +562,21 @@ body {
 ::-webkit-scrollbar-thumb {
   background-color: #1677ff;
   border-radius: 50px;
+}
+
+
+
+@keyframes marquee {
+  0% {
+    text-indent: -10%;
+  }
+
+  100% {
+    text-indent: 100%
+  }
+}
+
+.marquee {
+  animation: marquee 5s infinite;
+  animation-timing-function: linear;
 }

@@ -1,5 +1,6 @@
 import { Input, InputNumber, DatePicker, Form, Select } from "antd";
 import React from "react";
+import SelectNotFound from "../../Context/SelectNotFound";
 import { quantityFormat, datetimeFormat } from "../Options/DataFomater";
 
 const renderCells = (cell) => {
@@ -24,6 +25,7 @@ const renderCells = (cell) => {
           }}
           defaultActiveFirstOption={false}
           showArrow={false}
+          notFoundContent={SelectNotFound(false, cell.lookupData)}
           filterOption={false}
           onSearch={cell.searchItem}
           onChange={cell.handleChange}
