@@ -1,12 +1,12 @@
 .abnormal__location__container {
+    height: 88vh;
     display: flex;
     flex-direction: column;
     gap: 25px;
-    height: 88vh;
 }
 
 .abnormal__location__customers {
-    height: 200px;
+    
 }
 
 .abnormal__location__maps{
@@ -15,7 +15,7 @@
     gap: 30px;
     justify-content: space-evenly;
     align-items: center;
-    height: 45%;
+    height: 100%;
 }
 
 .gg__map__embed {

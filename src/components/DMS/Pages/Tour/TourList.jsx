@@ -49,13 +49,13 @@ const TourList = () => {
   };
 
   const handleEdit = (record) => {
-    setCurrentRecord(record.id);
+    setCurrentRecord(record.ma_tuyen);
     setOpenModalAddTaskState(true);
     setOpenModalType("Edit");
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(!isOpenModalDeleteTask);
+    setIsOpenModalDeleteTask(true);
     setCurrentItemSelected(record);
   };
 
@@ -71,7 +71,7 @@ const TourList = () => {
 
   const getdata = () => {
     ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.data?.reportLayoutModel);
+      let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
@@ -102,13 +102,13 @@ const TourList = () => {
         },
       });
       setTableColumns(layout);
-      const data = res.data.data;
+      const data = res.data;
       data.map((item, index) => {
         item.key = item.ma_tuyen;
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
       setLoading(false);
     });
   };
@@ -140,13 +140,13 @@ const TourList = () => {
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
-    <div className="task__list page_default">
-      <div className="task__list__header__bar">
+    <div className="default_list_layout page_default">
+      <div className="list__header__bar">
         <span className="default_header_label">
           Danh sách tuyến (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
-        <div className="task__list__header__tools">
+        <div className="list__header__tools">
           <Button
             className="default_button"
             onClick={openModalAddTask}
@@ -189,8 +189,8 @@ const TourList = () => {
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}
-        title="Mày có muốn xoá cái này khum"
-        description={`Xoá công việc : ${currentItemSelected.text}`}
+        title="Xoá"
+        description={`Xoá tuyến : ${currentItemSelected.ma_tuyen} - ${currentItemSelected.ten_tuyen}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
       />

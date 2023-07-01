@@ -113,13 +113,13 @@ const TaskTypeList = () => {
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
-    <div className="task__list page_default">
-      <div className="task__list__header__bar">
+    <div className="default_list_layout page_default">
+      <div className="list__header__bar">
         <span className="default_header_label">
           Danh sách công việc (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
-        <div className="task__list__header__tools">
+        <div className="list__header__tools">
           <Button
             className="default_button"
             onClick={openModalAddTask}

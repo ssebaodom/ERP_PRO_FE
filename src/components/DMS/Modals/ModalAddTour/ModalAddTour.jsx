@@ -30,11 +30,18 @@ import renderCells from "../../../../app/hooks/renderCells";
 import renderEditColumns from "../../../../app/hooks/renderEditColumns";
 import getEditRowsValue from "../../../../app/hooks/getEditRowsValue";
 import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
-import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
+import {
+  ApiGetTaskDetail,
+  ApiGetTaskMaster,
+  ApiGetTourDetail,
+  ApiGetTourList,
+  ApiWebLookup,
+} from "../../API";
 import { useDebouncedCallback } from "use-debounce";
 import { EdgeFilterLens } from "@antv/g6-pc";
 import SelectItemCode from "../../../../Context/SelectItemCode";
 import SelectNotFound from "../../../../Context/SelectNotFound";
+import TableLocale from "../../../../Context/TableLocale";
 
 // bắt buộc khai báo bên ngoài
 const EditableCell = (cell) => {
@@ -53,6 +60,17 @@ const ModalAddTour = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [dataSource, setDataSource] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [tableParams, setTableParams] = useState({
+    keywords: "",
+    orderby: "ma_tuyen",
+    ma_nv: "",
+    mo_ta: "",
+    ten_nv: "",
+    ma_tuyen: "",
+    ten_tuyen: "",
+    pageindex: 1,
+    pagesize: 10,
+  });
 
   const handleCustomerSelected = useDebouncedCallback((value) => {
     if (value) {
@@ -78,6 +96,11 @@ const ModalAddTour = (props) => {
     setOpenModal(false);
     props.handleCloseModal();
     inputForm.resetFields();
+    setEditingKey([]);
+    setSelectedRowKeys([]);
+    setInitialValues({});
+    setDataSource([]);
+    setColumns([]);
   };
 
   const onSubmitForm = () => {
@@ -137,11 +160,25 @@ const ModalAddTour = (props) => {
     setEditingKey([]);
   };
 
-  const onSelect = (record, selected, selectedRows) => {
+  const scrollToField = (field, fieldName) => {
+    const allFields = detailForm.getFieldsValue(true);
+
+    if (!fieldName) {
+      const itemFocusName = Object.keys(allFields)
+        .filter((item) => item.includes(field))
+        .pop();
+      document.getElementById(itemFocusName).focus();
+    } else {
+      document.getElementById(fieldName).focus();
+    }
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
     setSelectedRowKeys([...keys]);
     if (selected) {
-      edit(record);
+      await edit(record);
+      scrollToField("ma_kh", `${selectedRows.pop().key}_ma_kh`);
     } else cancel(record.key);
   };
 
@@ -194,32 +231,33 @@ const ModalAddTour = (props) => {
   };
 
   const getDataEdit = (id) => {
-    ApiGetTaskDetail({ id: id, orderby: "id" }).then((res) => {
-      const layout = res.reportLayoutModel.map((item) => {
+    ApiGetTourDetail({ ma_tuyen: id }).then((res) => {
+      const layout = res.detail.map((item) => {
         item.editable = true;
-        if (item.field === "ma_kh") {
+        if (item.Field === "ma_kh") {
           return {
-            title: item.name,
-            dataIndex: item.field,
-            type: item.type,
+            title: item.Name,
+            dataIndex: item.Field,
+            type: item.Type,
             editable: true,
-            key: item.field,
+            key: item.Field,
             searchItem: handleCustomerSelected,
             lookupData: customers,
           };
         }
 
         return {
-          title: item.name,
-          dataIndex: item.field,
-          type: item.type,
+          title: item.Name,
+          dataIndex: item.Field,
+          type: item.Type,
           editable: true,
-          key: item.field,
+          key: item.Field,
         };
       });
+
       setColumns(layout);
 
-      const data = res.data.map((item, index) => {
+      const data = res.master.map((item, index) => {
         item.key = index;
         return item;
       });
@@ -227,18 +265,17 @@ const ModalAddTour = (props) => {
       setDataSource(data);
     });
 
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`startTime`, dayjs(res.data[0]?.start_date));
-      inputForm.setFieldValue(`startDate`, dayjs(res.data[0]?.start_date));
-      inputForm.setFieldValue(`endTime`, dayjs(res.data[0]?.end_date));
-      inputForm.setFieldValue(`endDate`, dayjs(res.data[0]?.end_date));
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
-    });
+    ApiGetTourList({ ...tableParams, ma_tuyen: id, orderby: "ma_tuyen" }).then(
+      (res) => {
+        inputForm.setFieldValue(`tourCode`, res.data[0]?.ma_tuyen);
+        inputForm.setFieldValue(`tourName`, res.data[0]?.ten_tuyen);
+        inputForm.setFieldValue(`saleEmployeeCode`, res.data[0]?.ma_nv);
+        inputForm.setFieldValue(`saleEmployeeName`, res.data[0]?.ten_nvbh);
+        inputForm.setFieldValue(`description`, res.data[0]?.mo_ta);
+        inputForm.setFieldValue(`unitCode`, res.data[0]?.dvcs);
+        inputForm.setFieldValue(`unitName`, res.data[0]?.ten_dvcs);
+      }
+    );
   };
 
   const lookupData = (item) => {
@@ -298,7 +335,7 @@ const ModalAddTour = (props) => {
     setOpenModal(props.openModalState);
     if (props.openModalState) {
       setInitialValues({});
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      getDataEdit(props.currentRecord ? props.currentRecord : 'null');
     }
   }, [JSON.stringify(props)]);
 
@@ -470,7 +507,11 @@ const ModalAddTour = (props) => {
                     className="default_detail_button"
                     icon={
                       <img
-                        style={{ height: "12px", width: "12px" }}
+                        style={{
+                          height: "12px",
+                          width: "12px",
+                          margin: "0 auto",
+                        }}
                         src={checked__icon}
                         alt=""
                       />
@@ -488,8 +529,9 @@ const ModalAddTour = (props) => {
                 <Button
                   className="default_primary_detail_button"
                   icon={<PlusOutlined />}
-                  onClick={() => {
-                    addRow();
+                  onClick={async () => {
+                    await addRow();
+                    scrollToField("ma_kh");
                   }}
                 ></Button>
               </Tooltip>
@@ -498,7 +540,11 @@ const ModalAddTour = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={delete__icon}
                       alt=""
                     />
@@ -513,7 +559,11 @@ const ModalAddTour = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={copy__icon}
                       alt=""
                     />
@@ -528,7 +578,11 @@ const ModalAddTour = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={lock__icon}
                       alt=""
                     />
@@ -550,9 +604,10 @@ const ModalAddTour = (props) => {
               rowSelection={rowSelection}
               components={{
                 body: {
-                  cell: EditableCell,
+                  cell: dataSource.length > 0 ? EditableCell : "",
                 },
               }}
+              locale={TableLocale()}
               columns={renderEditColumns(columns, editingKey)}
               dataSource={dataSource}
               rowClassName="default_detail_table_row"
@@ -560,6 +615,9 @@ const ModalAddTour = (props) => {
               pagination={{
                 position: ["none"],
                 defaultPageSize: 1000,
+              }}
+              scroll={{
+                y: "20vh",
               }}
             />
           </Form>

@@ -1,17 +1,11 @@
-.task__list {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    height: 88vh;
-}
 
-.task__list__header__bar {
+.list__header__bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.task__list__header__tools {
+.list__header__tools {
     display: flex;
     gap: 0px 8px;
 }

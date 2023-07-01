@@ -13,18 +13,23 @@ import accept__person from "../../../Icons/accept__person.svg";
 
 const Dashboard = () => {
   const userInfo = useSelector(getUserInfo);
+
+  const color = ["#65AEFD", "#4779CF", "#FFA83F"];
   const data = [
     {
       month: "1",
       sales: 38,
+      index: 1,
     },
     {
       month: "2",
-      sales: 52,
+      sales: 48,
+      index: 2,
     },
     {
       month: "3",
-      sales: 61,
+      sales: 58,
+      index: 3,
     },
   ];
 
@@ -32,9 +37,29 @@ const Dashboard = () => {
     data,
     xField: "month",
     yField: "sales",
-    seriesField: "month",
     columnStyle: {
-      radius: [20, 20, 0, 0],
+      radius: [10, 10, 0, 0],
+    },
+    color: ({ month }) => {
+      var curColor = "";
+      data.map((item, index) => {
+        if (item.month === month) {
+          return (curColor = color[index]);
+        }
+      });
+      return curColor;
+    },
+
+    tooltip: {
+      showTitle: false,
+      formatter: (data) => {
+        return { name: `Tháng: ${data.month}`, value: `${data.sales} đơn`};
+      },
+      domStyles: {
+        "g2-tooltip": {
+          width: "max-content",
+        },
+      },
     },
   };
 
@@ -46,7 +71,7 @@ const Dashboard = () => {
           <span>
             Chào mừng
             <span style={{ fontWeight: "Bold" }}>
-              {userInfo.userName ? ' ' +userInfo.userName + ' ' : " Unknown "}
+              {userInfo.userName ? " " + userInfo.userName + " " : " Unknown "}
             </span>
             đã quay trở lại hệ thống!
           </span>
@@ -169,7 +194,7 @@ const Dashboard = () => {
                   strokeLinecap="round"
                   type="circle"
                   size={100}
-                  strokeWidth={10}
+                  strokeWidth={13}
                   showInfo={false}
                   percent={75}
                 />

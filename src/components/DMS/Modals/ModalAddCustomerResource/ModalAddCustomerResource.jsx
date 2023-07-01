@@ -3,7 +3,11 @@ import "./ModalAddCustomerResource.css";
 import { Input, Modal, Space, Button, Select, Form } from "antd";
 
 import send_icon from "../../../../Icons/send_icon.svg";
-import { ApiGetTaskDetail, ApiGetTaskMaster } from "../../API";
+import {
+  ApiGetTaskDetail,
+  ApiGetTaskMaster,
+  SoFuckingUltimateApi,
+} from "../../API";
 
 // bắt buộc khai báo bên ngoài
 
@@ -20,7 +24,22 @@ const ModalAddCustomerResource = (props) => {
 
   const onSubmitForm = () => {
     const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
+
+    SoFuckingUltimateApi({
+      store: "Api_Create_Customer_Resouce",
+      data: {
+        ma_nguon: a.resourceCode,
+        ten_nguon: a.resourceName,
+        status: a.status,
+        user_id: 0,
+      },
+    })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const onSubmitFormFail = () => {};
@@ -38,7 +57,7 @@ const ModalAddCustomerResource = (props) => {
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState) {
+    if (props.openModalState && props.openModalType === "Edit") {
       setInitialValues({});
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
@@ -71,9 +90,9 @@ const ModalAddCustomerResource = (props) => {
             </span>
             <Form.Item
               name="resourceCode"
-              rules={[{ required: true, message: "Điền mã tuyến" }]}
+              rules={[{ required: true, message: "Điền mã nguồn" }]}
             >
-              <Input placeholder="Nhập mã tuyến" />
+              <Input placeholder="Nhập mã nguồn" />
             </Form.Item>
           </div>
         </div>
@@ -84,9 +103,9 @@ const ModalAddCustomerResource = (props) => {
             </span>
             <Form.Item
               name="resourceName"
-              rules={[{ required: true, message: "Điền tên tuyến" }]}
+              rules={[{ required: true, message: "Điền tên nguồn" }]}
             >
-              <Input placeholder="Nhập tên tuyến" />
+              <Input placeholder="Nhập tên nguồn" />
             </Form.Item>
           </div>
         </div>
@@ -97,10 +116,10 @@ const ModalAddCustomerResource = (props) => {
             </span>
             <Form.Item
               name="status"
-              rules={[{ required: true, message: "Điền tên tuyến" }]}
+              rules={[{ required: true, message: "Chọn trạng thái" }]}
+              initialValue={"1"}
             >
               <Select
-                defaultValue="1"
                 options={[
                   { value: "1", label: "Hoạt động" },
                   { value: "0", label: "Huỷ" },

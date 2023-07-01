@@ -136,7 +136,7 @@ const TimeKeepingDetail = () => {
 
                     <Button
                       className="default_primary_button"
-                      icon={<SearchOutlined />}
+                      icon={<SearchOutlined style={{fontSize:'16px'}} />}
                     >
                       Tìm kiếm
                     </Button>

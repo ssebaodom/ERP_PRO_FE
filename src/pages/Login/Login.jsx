@@ -124,19 +124,19 @@ const Login = () => {
 
   const images = [
     {
-      url: "https://genshin.global/wp-content/uploads/2022/11/nahida-dendro-3-2-official-desktop-genshin-wallpaper.jpg",
+      url: "https://static.businessworld.in/article/article_extra_large_image/1641064057_htx5x8_30495_min.jpg",
       alt: "",
     },
     {
-      url: "https://www.pokemonmillennium.net/wp-content/uploads/2022/10/IMG_20221028_103459_565.jpg",
+      url: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
       alt: "",
     },
     {
-      url: "https://upload-os-bbs.hoyolab.com/upload/2022/10/15/101786682/f5f90162f931575e03e6ee795039f078_4632641941575569742.png?x-oss-process=image/resize,s_1000/quality,q_80/auto-orient,0/interlace,1/format,png",
+      url: "https://blog.vault-erp.com/image.axd?picture=/Invoice%20management/Vault_InvoiceMS_Blog_930x620px_01.png",
       alt: "",
     },
     {
-      url: "https://i.ex-cdn.com/mgn.vn/files/news/2022/12/22/genshin-impact-hay-can-than-voi-nhung-nguoi-choi-co-nahida-172220.jpg",
+      url: "https://mlitqrsemjqz.i.optimole.com/w:auto/h:auto/q:mauto/https://www.technosip.com/wp-content/uploads/2022/05/7054182.jpg",
       alt: "",
     },
   ];
@@ -164,9 +164,9 @@ const Login = () => {
           </div>
           <div className="login_desciption">
             <h1 className="login_desciption_header">Hí, Chào mừng trở lại</h1>
-            <span className="login_desciption_context">
+            {/* <span className="login_desciption_context">
               Mình đợi hơi bị lâu rồi đấy
-            </span>
+            </span> */}
           </div>
           <Space className="default_space login_detail" direction="vertical">
             <Space

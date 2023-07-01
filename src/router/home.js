@@ -14,6 +14,7 @@ import taskRoutes from "./task";
 import TourList from "../components/DMS/Pages/Tour/TourList";
 import documentsRoutes from "./document";
 import ticketRoutes from "./ticket";
+import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomerList";
 
 const homeRoutes = [
   {
@@ -141,6 +142,12 @@ const homeRoutes = [
       // },
       ...documentsRoutes,
       ...ticketRoutes,
+      {
+        label: "Khách hàng DMS",
+        claims: "Produce.DMSCustomer",
+        path: "DMSCustomer",
+        element: <DMSCustomerList />,
+      },
     ],
   },
   {

@@ -1,31 +1,29 @@
 import React from "react";
-import "./CustomerResource.css";
+import "./TicketType.css";
 import { Button, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTourList } from "../../API";
-import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
-import ConfirmDialog from "../../../../Context/ConfirmDialog";
-import ModalAddCustomerResource from "../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
+import { ApiGetTicketList, ApiGetTourList } from "../../../API";
+import edit__icon from "../../../../../Icons/edit__icon.svg";
+import delete__icon from "../../../../../Icons/delete__icon.svg";
+import ConfirmDialog from "../../../../../Context/ConfirmDialog";
+import ModalAddCustomerResource from "../../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
+import renderColumns from "../../../../../app/hooks/renderColumns";
+import ModalAddTicket from "../../../Modals/ModalAddTicket/ModalAddTicket";
+import ModalAddTicketType from "../../../Modals/ModalAddTicketType/ModalAddTicketType";
 
-const CustomerResource = () => {
+const TicketType = () => {
   // initialize #########################################################################
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    keywords: "",
-    orderby: "ma_tuyen",
+    orderby: "ma_kh",
+    ma_kh: "",
+    ten_kh: "",
+    ten_nvbh: "",
     ma_nv: "",
-    mo_ta: "",
-    ten_nv: "",
-    ma_tuyen: "",
-    ten_tuyen: "",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
@@ -55,6 +53,7 @@ const CustomerResource = () => {
   };
 
   const handleOpenDeleteDialog = (record) => {
+    console.log(record)
     setIsOpenModalDeleteTask(true);
     setCurrentItemSelected(record);
   };
@@ -70,8 +69,8 @@ const CustomerResource = () => {
   };
 
   const getdata = () => {
-    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.reportLayoutModel);
+    ApiGetTicketList({ ...tableParams, ...pagination }).then((res) => {
+      let layout = renderColumns(res?.data?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
@@ -102,13 +101,13 @@ const CustomerResource = () => {
         },
       });
       setTableColumns(layout);
-      const data = res.data;
+      const data = res.data.data;
       data.map((item, index) => {
-        item.key = item.ma_tuyen;
+        item.key = item.id_ticket;
         return item;
       });
       setData(data);
-      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
       setLoading(false);
     });
   };
@@ -143,7 +142,7 @@ const CustomerResource = () => {
     <div className="default_list_layout page_default">
       <div className="list__header__bar">
         <span className="default_header_label">
-          Danh sách tuyến (
+          Danh sách loại ticket (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="list__header__tools">
@@ -181,7 +180,7 @@ const CustomerResource = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddCustomerResource
+      <ModalAddTicketType
         openModalState={openModalAddTaskState}
         openModalType={openModalType}
         currentRecord={currentRecord}
@@ -190,7 +189,7 @@ const CustomerResource = () => {
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
+        description={`Xoá ticket : ${currentItemSelected.id_ticket}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
       />
@@ -198,4 +197,4 @@ const CustomerResource = () => {
   );
 };
 
-export default CustomerResource;
+export default TicketType;

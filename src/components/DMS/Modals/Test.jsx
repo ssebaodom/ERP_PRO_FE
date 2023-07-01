@@ -1,7 +1,12 @@
-import { Button, Input, QRCode, Space } from "antd";
+import { Button, Input, QRCode, Result, Space, Table } from "antd";
 import React from "react";
 import { useState } from "react";
+import renderCells from "../../../app/hooks/renderCells";
 import sse__logo from "../../../Icons/sse__logo.svg";
+
+const EditableCell = (cell) => {
+  return renderCells(cell);
+};
 
 const Test = () => {
   const [text, setText] = useState("");
@@ -42,6 +47,39 @@ const Test = () => {
     }
   };
 
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Age",
+      dataIndex: "age",
+      key: "age",
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "Tags",
+      key: "tags",
+    },
+  ];
+
+  const data = [];
+
+  let locale = {
+    emptyText: (
+      <Result
+        title="Không có dữ liệu"
+        subTitle="Không có dữ liệu nào được tạo, vui lòng thêm hoặc sửa"
+      />
+    ),
+  };
+
   return (
     <Space direction="vertical" align="center" id="myqrcode">
       <QRCode errorLevel="H" value={text || "-"} icon={sse__logo} />
@@ -56,6 +94,17 @@ const Test = () => {
       </Button>
 
       <img src={image} alt="" />
+
+      <Table
+        components={{
+          body: {
+            cell:data.length>0 ? EditableCell:'',
+          },
+        }}
+        locale={locale}
+        columns={columns}
+        dataSource={data}
+      />
     </Space>
   );
 };

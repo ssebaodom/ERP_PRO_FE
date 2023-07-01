@@ -307,7 +307,7 @@ const ReplyTicket = () => {
                     minRows: 1,
                     maxRows: 6,
                   }}
-                  value={selectedItem.phan_hoi}
+                  defaultValue={selectedItem.phan_hoi}
                   placeholder="Nội dung..."
                 ></Input.TextArea>
               ) : (

@@ -1,21 +1,32 @@
 import React, { useEffect, useState } from "react";
-import "./ModalAddCustomerArea.css";
-import { Input, Modal, Space, Button, Select, Form } from "antd";
+import "./ModalAddTicketType.css";
+import { Input, Modal, Space, Button, Select, Form, ColorPicker } from "antd";
 
 import send_icon from "../../../../Icons/send_icon.svg";
 import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
 import SelectNotFound from "../../../../Context/SelectNotFound";
-import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../../../Context/SelectItemCode";
+import { useDebouncedCallback } from "use-debounce";
 
-// bắt buộc khai báo bên ngoài
-
-const ModalAddCustomerArea = (props) => {
+const ModalAddTicketType = (props) => {
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
-  const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
+  const [selectLoading, setSelectLoading] = useState(false);
+
+  const handleCancelModal = () => {
+    setOpenModal(false);
+    props.handleCloseModal();
+    inputForm.resetFields();
+  };
+
+  const onSubmitForm = () => {
+    const a = { ...inputForm.getFieldsValue() };
+    console.log(a);
+  };
+
+  const onSubmitFormFail = () => {};
 
   const lookupData = (item) => {
     setSelectLoading(true);
@@ -36,18 +47,24 @@ const ModalAddCustomerArea = (props) => {
     });
   };
 
-  const handleCancelModal = () => {
-    setOpenModal(false);
-    props.handleCloseModal();
-    inputForm.resetFields();
-  };
-
-  const onSubmitForm = () => {
-    const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
-  };
-
-  const onSubmitFormFail = () => {};
+  const handleSelectionChange = useDebouncedCallback((actions, value) => {
+    switch (actions) {
+      case "sale_employee":
+        lookupData({ controller: "dmnvbh_lookup", value: value });
+        break;
+      case "customer":
+        lookupData({ controller: "dmkh_lookup", value: value });
+        break;
+      case "unit":
+        lookupData({ controller: "dmdvcs_lookup", value: value });
+        break;
+      case "ticket_type":
+        lookupData({ controller: "dmloaitk_lookup", value: value });
+        break;
+      default:
+        break;
+    }
+  }, 600);
 
   const getDataEdit = (id) => {
     ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
@@ -59,20 +76,6 @@ const ModalAddCustomerArea = (props) => {
       inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
     });
   };
-
-  const handleSelectionChange = useDebouncedCallback((actions, value) => {
-    switch (actions) {
-      case "province":
-        lookupData({ controller: "dmtinh_lookup", value: value });
-        break;
-      case "district":
-        lookupData({ controller: "dmquan_lookup", value: value });
-        break;
-
-      default:
-        break;
-    }
-  }, 600);
 
   useEffect(() => {
     setOpenModal(props.openModalState);
@@ -94,38 +97,24 @@ const ModalAddCustomerArea = (props) => {
       width={600}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới danh mục khu vực</span>
+        <span className="default_header_label">Thêm mới loại ticket</span>
       </div>
       <Form
         form={inputForm}
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
-        initialValues={{ status: 1 }}
       >
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
-              Mã khu vực
+              Tên loại ticket
             </span>
             <Form.Item
-              name="formCode"
-              rules={[{ required: true, message: "Điền mã hình thức" }]}
+              name="ticketTypeName"
+              rules={[{ required: true, message: "Điền tên loại" }]}
             >
-              <Input placeholder="Nhập mã hình thức" />
-            </Form.Item>
-          </div>
-        </div>
-        <div className="default_modal_group_items">
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Tên khu vực
-            </span>
-            <Form.Item
-              name="formName"
-              rules={[{ required: true, message: "Điền tên hình thức" }]}
-            >
-              <Input placeholder="Nhập tên hình thức" />
+              <Input placeholder="Nhập tên loại" />
             </Form.Item>
           </div>
         </div>
@@ -133,33 +122,16 @@ const ModalAddCustomerArea = (props) => {
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
-              Tỉnh thành
+              Mô tả
             </span>
-            <Form.Item
-              name="provinceCode"
-              rules={[{ required: true, message: "Điền tỉnh thành" }]}
-            >
-              <Select
-                mode="multiple"
-                showSearch
-                placeholder={`Tỉnh thành`}
-                style={{
-                  width: "100%",
-                  flex: "none",
+            <Form.Item name="description">
+              <Input.TextArea
+                autoSize={{
+                  minRows: 1,
+                  maxRows: 4,
                 }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("province", e);
-                }}
-                onSelect={(key, item) => {
-                  // setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
+                placeholder="Nhập mô tả"
+              />
             </Form.Item>
           </div>
         </div>
@@ -167,33 +139,40 @@ const ModalAddCustomerArea = (props) => {
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
-              Quận huyện
+              Loại ticket
             </span>
             <Form.Item
-              name="districtCode"
-              rules={[{ required: true, message: "Điền quận huyện" }]}
+              style={{ width: "150px", flex: "none" }}
+              name="ticketTypeParent"
+              rules={[{ required: true, message: "Điền loại ticket" }]}
             >
               <Select
-                mode="multiple"
                 showSearch
-                placeholder={`Quận huyện`}
+                placeholder={`Loại ticket`}
                 style={{
                   width: "100%",
-                  flex: "none",
                 }}
                 defaultActiveFirstOption={false}
                 showArrow={false}
                 filterOption={false}
                 notFoundContent={SelectNotFound(selectLoading, selectOptions)}
                 onSearch={(e) => {
-                  handleSelectionChange("district", e);
+                  handleSelectionChange("ticket_type", e);
                 }}
                 onSelect={(key, item) => {
-                  // setSelectOptions([]);
+                  inputForm.setFieldValue("ticketTypeParentName", item.label);
+                  setSelectOptions([]);
                 }}
               >
                 {SelectItemCode(selectOptions)}
               </Select>
+            </Form.Item>
+            <Form.Item name="ticketTypeParentName">
+              <Input
+                disabled={true}
+                className="default_disable_input"
+                placeholder="Tên loại ticket"
+              />
             </Form.Item>
           </div>
         </div>
@@ -208,7 +187,7 @@ const ModalAddCustomerArea = (props) => {
               rules={[{ required: true, message: "Điền tên trạng thái" }]}
             >
               <Select
-                defaultValue="1"
+                defaultValue={1}
                 options={[
                   { value: 1, label: "Hoạt động" },
                   { value: 0, label: "Huỷ" },
@@ -242,4 +221,4 @@ const ModalAddCustomerArea = (props) => {
   );
 };
 
-export default ModalAddCustomerArea;
+export default ModalAddTicketType;

@@ -38,7 +38,7 @@ const ModalAddCustomerForm = (props) => {
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState) {
+    if (props.openModalState && props.openModalType === "Edit") {
       setInitialValues({});
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }

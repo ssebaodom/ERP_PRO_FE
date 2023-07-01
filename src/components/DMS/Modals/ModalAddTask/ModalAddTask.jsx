@@ -13,6 +13,7 @@ import {
   TimePicker,
   Table,
   Tooltip,
+  Result,
 } from "antd";
 import dayjs from "dayjs";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
@@ -30,6 +31,7 @@ import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
 import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
 import { useDebouncedCallback } from "use-debounce";
 import { EdgeFilterLens } from "@antv/g6-pc";
+import TableLocale from "../../../../Context/TableLocale";
 
 // bắt buộc khai báo bên ngoài
 const EditableCell = (cell) => {
@@ -136,11 +138,25 @@ const ModalAddTask = (props) => {
     setEditingKey([]);
   };
 
-  const onSelect = (record, selected, selectedRows) => {
+  const scrollToField = (field, fieldName) => {
+    const allFields = detailForm.getFieldsValue(true);
+
+    if (!fieldName) {
+      const itemFocusName = Object.keys(allFields)
+        .filter((item) => item.includes(field))
+        .pop();
+      document.getElementById(itemFocusName).focus();
+    } else {
+      document.getElementById(fieldName).focus();
+    }
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
     setSelectedRowKeys([...keys]);
     if (selected) {
-      edit(record);
+      await edit(record);
+      scrollToField("ma_kh", `${selectedRows.pop().key}_ma_kh`);
     } else cancel(record.key);
   };
 
@@ -262,7 +278,7 @@ const ModalAddTask = (props) => {
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState) {
+    if (props.openModalState && props.openModalType === "Edit") {
       setInitialValues({});
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
@@ -457,7 +473,11 @@ const ModalAddTask = (props) => {
                     className="default_detail_button"
                     icon={
                       <img
-                        style={{ height: "12px", width: "12px" }}
+                        style={{
+                          height: "12px",
+                          width: "12px",
+                          margin: "0 auto",
+                        }}
                         src={checked__icon}
                         alt=""
                       />
@@ -475,8 +495,9 @@ const ModalAddTask = (props) => {
                 <Button
                   className="default_primary_detail_button"
                   icon={<PlusOutlined />}
-                  onClick={() => {
-                    addRow();
+                  onClick={async () => {
+                    await addRow();
+                    scrollToField("ma_kh");
                   }}
                 ></Button>
               </Tooltip>
@@ -485,7 +506,11 @@ const ModalAddTask = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={delete__icon}
                       alt=""
                     />
@@ -500,7 +525,11 @@ const ModalAddTask = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={copy__icon}
                       alt=""
                     />
@@ -515,7 +544,11 @@ const ModalAddTask = (props) => {
                   className="default_detail_button"
                   icon={
                     <img
-                      style={{ height: "18px", width: "12px" }}
+                      style={{
+                        height: "12px",
+                        width: "12px",
+                        margin: "0 auto",
+                      }}
                       src={lock__icon}
                       alt=""
                     />
@@ -535,9 +568,10 @@ const ModalAddTask = (props) => {
           >
             <Table
               rowSelection={rowSelection}
+              locale={TableLocale()}
               components={{
                 body: {
-                  cell: EditableCell,
+                  cell: dataSource.length > 0 ? EditableCell : "",
                 },
               }}
               columns={renderEditColumns(columns, editingKey)}
@@ -547,6 +581,9 @@ const ModalAddTask = (props) => {
               pagination={{
                 position: ["none"],
                 defaultPageSize: 1000,
+              }}
+              scroll={{
+                y: "20vh",
               }}
             />
           </Form>

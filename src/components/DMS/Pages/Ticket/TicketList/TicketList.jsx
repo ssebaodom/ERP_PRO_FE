@@ -9,8 +9,8 @@ import edit__icon from "../../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../../Context/ConfirmDialog";
 import ModalAddCustomerResource from "../../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
-import ModalAddTask from "../../../Modals/ModalAddTask/ModalAddTask";
 import renderColumns from "../../../../../app/hooks/renderColumns";
+import ModalAddTicket from "../../../Modals/ModalAddTicket/ModalAddTicket";
 
 const TicketList = () => {
   // initialize #########################################################################
@@ -52,7 +52,7 @@ const TicketList = () => {
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(!isOpenModalDeleteTask);
+    setIsOpenModalDeleteTask(true);
     setCurrentItemSelected(record);
   };
 
@@ -137,13 +137,13 @@ const TicketList = () => {
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
-    <div className="task__list page_default">
-      <div className="task__list__header__bar">
+    <div className="default_list_layout page_default">
+      <div className="list__header__bar">
         <span className="default_header_label">
           Danh sách ticket (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
-        <div className="task__list__header__tools">
+        <div className="list__header__tools">
           <Button
             className="default_button"
             onClick={openModalAddTask}
@@ -178,7 +178,7 @@ const TicketList = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddCustomerResource
+      <ModalAddTicket
         openModalState={openModalAddTaskState}
         openModalType={openModalType}
         currentRecord={currentRecord}
@@ -186,7 +186,7 @@ const TicketList = () => {
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}
-        title="Mày có muốn xoá cái này khum"
+        title="Xoá"
         description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}

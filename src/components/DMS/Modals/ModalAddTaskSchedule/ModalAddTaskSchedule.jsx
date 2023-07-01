@@ -30,7 +30,12 @@ import renderCells from "../../../../app/hooks/renderCells";
 import renderEditColumns from "../../../../app/hooks/renderEditColumns";
 import getEditRowsValue from "../../../../app/hooks/getEditRowsValue";
 import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
-import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
+import {
+  ApiCreateTaskSchedule,
+  ApiGetTaskDetail,
+  ApiGetTaskMaster,
+  ApiWebLookup,
+} from "../../API";
 import { useDebouncedCallback } from "use-debounce";
 import { EdgeFilterLens } from "@antv/g6-pc";
 import SelectItemCode from "../../../../Context/SelectItemCode";
@@ -51,8 +56,39 @@ const ModalAddTaskSchedule = (props) => {
   };
 
   const onSubmitForm = () => {
-    const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
+    const inputValues = { ...inputForm.getFieldsValue() };
+    console.log(inputValues);
+    ApiCreateTaskSchedule({
+      id: "<string>",
+      type: "<string>",
+      ngay: 23,
+      ngay_th: inputValues.startDate,
+      gio_th: "<string>",
+      ngay_cuoi_thang: "<string>",
+      t1: 1,
+      t2: 1,
+      t3: 0,
+      t4: 1,
+      t5: 0,
+      t6: 0,
+      t7: 0,
+      ghi_chu: "<string>",
+      status: "<string>",
+      ten_cv: "<string>",
+      user_id: "<string>",
+      event_yn: "String",
+      muc_do: 1,
+      full_day: 1,
+      end_date: inputValues.endDate,
+      ma_dvcs: "<string>",
+      ma_tuyen: "<string>",
+    })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const onSubmitFormFail = () => {};
@@ -69,6 +105,13 @@ const ModalAddTaskSchedule = (props) => {
       inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
       inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
       inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+      inputForm.setFieldValue(`t1`, res.data[0]?.t1);
+      inputForm.setFieldValue(`t2`, res.data[0]?.t2);
+      inputForm.setFieldValue(`t3`, res.data[0]?.t3);
+      inputForm.setFieldValue(`t4`, res.data[0]?.t4);
+      inputForm.setFieldValue(`t5`, res.data[0]?.t5);
+      inputForm.setFieldValue(`t6`, res.data[0]?.t6);
+      inputForm.setFieldValue(`t7`, res.data[0]?.t7);
     });
   };
 
@@ -136,7 +179,9 @@ const ModalAddTaskSchedule = (props) => {
       width={900}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới lịch công việc</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm"
+        } mới lịch công việc`}</span>
       </div>
       <Form
         form={inputForm}
@@ -297,9 +342,7 @@ const ModalAddTaskSchedule = (props) => {
           </Space>
           <Space direction="vertical">
             <span className="default_bold_label">Bộ phận</span>
-            <Form.Item
-              name="deptName"
-            >
+            <Form.Item name="deptName">
               <Select
                 showSearch
                 placeholder={`Nhập bộ phận`}
@@ -381,7 +424,11 @@ const ModalAddTaskSchedule = (props) => {
             </Space>
             <Space direction="vertical">
               <span className="default_bold_label">Ngày cuối tháng</span>
-              <Form.Item name="lastDayInMonth">
+              <Form.Item
+                initialValue={false}
+                valuePropName="checked"
+                name="lastDayInMonth"
+              >
                 <Checkbox></Checkbox>
               </Form.Item>
             </Space>
@@ -421,25 +468,25 @@ const ModalAddTaskSchedule = (props) => {
             className="default_modal_group_items"
             style={{ textAlign: "center", padding: "0px 7px" }}
           >
-            <Form.Item name="t2" valuePropName="checked">
+            <Form.Item name="t2" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t3" valuePropName="checked">
+            <Form.Item name="t3" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t4" valuePropName="checked">
+            <Form.Item name="t4" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t5" valuePropName="checked">
+            <Form.Item name="t5" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t6" valuePropName="checked">
+            <Form.Item name="t6" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t7" valuePropName="checked">
+            <Form.Item name="t7" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
-            <Form.Item name="t1" valuePropName="checked">
+            <Form.Item name="t1" initialValue={false} valuePropName="checked">
               <Checkbox></Checkbox>
             </Form.Item>
           </div>

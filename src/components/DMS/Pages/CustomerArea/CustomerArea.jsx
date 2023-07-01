@@ -55,7 +55,7 @@ const CustomerArea = () => {
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(!isOpenModalDeleteTask);
+    setIsOpenModalDeleteTask(true);
     setCurrentItemSelected(record);
   };
 
@@ -140,13 +140,13 @@ const CustomerArea = () => {
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
-    <div className="task__list page_default">
-      <div className="task__list__header__bar">
+    <div className="default_list_layout page_default">
+      <div className="list__header__bar">
         <span className="default_header_label">
           Danh sách khu vực (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
-        <div className="task__list__header__tools">
+        <div className="list__header__tools">
           <Button
             className="default_button"
             onClick={openModalAddTask}
@@ -189,7 +189,7 @@ const CustomerArea = () => {
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}
-        title="Mày có muốn xoá cái này khum"
+        title="Xoá"
         description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
