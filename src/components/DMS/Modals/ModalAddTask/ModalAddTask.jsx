@@ -278,7 +278,7 @@ const ModalAddTask = (props) => {
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
+    if (props.openModalState ) {
       setInitialValues({});
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
@@ -295,7 +295,9 @@ const ModalAddTask = (props) => {
       width={1000}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới công việc</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } công việc`}</span>
       </div>
       <Form
         form={inputForm}

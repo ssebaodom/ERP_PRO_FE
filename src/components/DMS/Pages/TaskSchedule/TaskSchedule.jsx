@@ -73,10 +73,11 @@ const TaskSchedule = () => {
         dataIndex: "",
         editable: false,
         dataType: "Operation",
+        align: "center",
         fixed: "right",
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span style={{ display: "flex", gap: "15px", height: "20px", justifyContent: "center",  }}>
               <img
                 className="default_images_clickable"
                 onClick={(e) => {

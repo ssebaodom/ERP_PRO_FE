@@ -107,9 +107,11 @@ const ModalAddTicketType = (props) => {
       >
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Tên loại ticket
-            </span>
+            <div className="default_modal_header">
+              <span className="default_header_label">{`${
+                props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+              } loại ticket`}</span>
+            </div>
             <Form.Item
               name="ticketTypeName"
               rules={[{ required: true, message: "Điền tên loại" }]}

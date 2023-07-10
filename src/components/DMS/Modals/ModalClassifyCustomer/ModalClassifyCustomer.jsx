@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from "react";
 import "./ModalClassifyCustomer.css";
-import { Input, Modal, Space, Button, Select, Form,ColorPicker  } from "antd";
+import {
+  Input,
+  Modal,
+  Space,
+  Button,
+  Select,
+  Form,
+  ColorPicker,
+  notification,
+} from "antd";
 
 import send_icon from "../../../../Icons/send_icon.svg";
-import { ApiGetTaskDetail, ApiGetTaskMaster } from "../../API";
+import {
+  ApiGetTaskDetail,
+  ApiGetTaskMaster,
+  SoFuckingUltimateApi,
+} from "../../API";
 
 // bắt buộc khai báo bên ngoài
 
@@ -20,7 +33,32 @@ const ModalClassifyCustomer = (props) => {
 
   const onSubmitForm = () => {
     const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
+    SoFuckingUltimateApi({
+      store: "Api_Create_Customer_Classify",
+      data: {
+        ma_loai: a.classifyCode,
+        ten_loai: a.classifyName,
+        color: a.colorCode.toHexString(),
+        status: a.status,
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          props.refreshData();
+          handleCancelModal();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const onSubmitFormFail = () => {};
@@ -56,7 +94,9 @@ const ModalClassifyCustomer = (props) => {
       width={600}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới phân loại</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } phân loại khách hàng`}</span>
       </div>
       <Form
         form={inputForm}
@@ -98,9 +138,10 @@ const ModalClassifyCustomer = (props) => {
             </span>
             <Form.Item
               name="colorCode"
+              initialValue={"#fff"}
               rules={[{ required: true, message: "Điền tên tuyến" }]}
             >
-              <ColorPicker format='hex' style={{width:'80px'}} />
+              <ColorPicker format={"hex"} style={{ width: "80px" }} />
             </Form.Item>
           </div>
         </div>
@@ -113,9 +154,9 @@ const ModalClassifyCustomer = (props) => {
             <Form.Item
               name="status"
               rules={[{ required: true, message: "Điền tên tuyến" }]}
+              initialValue={"1"}
             >
               <Select
-                defaultValue="1"
                 options={[
                   { value: "1", label: "Hoạt động" },
                   { value: "0", label: "Huỷ" },

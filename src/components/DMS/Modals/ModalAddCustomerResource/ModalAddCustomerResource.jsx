@@ -9,6 +9,8 @@ import {
   SoFuckingUltimateApi,
 } from "../../API";
 
+import { notification } from "antd";
+
 // bắt buộc khai báo bên ngoài
 
 const ModalAddCustomerResource = (props) => {
@@ -31,11 +33,21 @@ const ModalAddCustomerResource = (props) => {
         ma_nguon: a.resourceCode,
         ten_nguon: a.resourceName,
         status: a.status,
-        user_id: 0,
+        userid: 0,
       },
     })
       .then((res) => {
-        console.log(res);
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          props.refreshData();
+          handleCancelModal();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -75,7 +87,9 @@ const ModalAddCustomerResource = (props) => {
       width={600}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới nguồn khách hàng</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } danh mục nguồn khách hàng`}</span>
       </div>
       <Form
         form={inputForm}

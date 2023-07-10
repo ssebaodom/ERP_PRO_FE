@@ -1,10 +1,14 @@
 import React from "react";
 import "./TicketList.css";
-import { Button, Space, Table } from "antd";
+import { Button, notification, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
-import { ApiGetTicketList, ApiGetTourList } from "../../../API";
+import {
+  ApiGetTicketList,
+  ApiGetTourList,
+  SoFuckingUltimateApi,
+} from "../../../API";
 import edit__icon from "../../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../../Context/ConfirmDialog";
@@ -34,6 +38,7 @@ const TicketList = () => {
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   //functions #########################################################################
 
@@ -57,7 +62,27 @@ const TicketList = () => {
   };
 
   const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
+    SoFuckingUltimateApi({
+      store: "api_delete_ticket",
+      data: {
+        id_ticket: currentItemSelected.id_ticket,
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {});
+
     handleCloseDeleteDialog();
     refreshData();
   };
@@ -74,10 +99,19 @@ const TicketList = () => {
         dataIndex: "",
         editable: false,
         dataType: "Operation",
+        align: "center",
         fixed: "right",
+
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span
+              style={{
+                display: "flex",
+                gap: "15px",
+                height: "20px",
+                justifyContent: "center",
+              }}
+            >
               <img
                 className="default_images_clickable"
                 onClick={(e) => {
@@ -117,6 +151,7 @@ const TicketList = () => {
       current: paginationChanges.current,
     });
     setTableParams({ ...tableParams, ...filters, ...sorter });
+    setSelectedRowKeys([]);
 
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== pagination?.pageSize) {
@@ -128,6 +163,30 @@ const TicketList = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
     setOpenModalType("Add");
     setCurrentRecord(0);
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    console.log(selectedRows);
+    setSelectedRowKeys([...keys]);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    console.log(selectedRows);
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        return record.key;
+      });
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
   };
 
   // effectively #########################################################################
@@ -162,7 +221,7 @@ const TicketList = () => {
       <div className="task__list__data_container">
         <Table
           columns={tableColumns}
-          rowSelection={true}
+          rowSelection={rowSelection}
           rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}
@@ -183,11 +242,12 @@ const TicketList = () => {
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
+        description={`Xoá ticket : ${currentItemSelected.id_ticket}, khách hàng: ${currentItemSelected.ten_kh}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
       />

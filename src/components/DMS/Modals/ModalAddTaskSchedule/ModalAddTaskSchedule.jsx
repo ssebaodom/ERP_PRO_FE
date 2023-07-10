@@ -35,6 +35,7 @@ import {
   ApiGetTaskDetail,
   ApiGetTaskMaster,
   ApiWebLookup,
+  SoFuckingUltimateApi,
 } from "../../API";
 import { useDebouncedCallback } from "use-debounce";
 import { EdgeFilterLens } from "@antv/g6-pc";
@@ -57,31 +58,32 @@ const ModalAddTaskSchedule = (props) => {
 
   const onSubmitForm = () => {
     const inputValues = { ...inputForm.getFieldsValue() };
-    console.log(inputValues);
-    ApiCreateTaskSchedule({
-      id: "<string>",
-      type: "<string>",
-      ngay: 23,
-      ngay_th: inputValues.startDate,
-      gio_th: "<string>",
-      ngay_cuoi_thang: "<string>",
-      t1: 1,
-      t2: 1,
-      t3: 0,
-      t4: 1,
-      t5: 0,
-      t6: 0,
-      t7: 0,
-      ghi_chu: "<string>",
-      status: "<string>",
-      ten_cv: "<string>",
-      user_id: "<string>",
-      event_yn: "String",
-      muc_do: 1,
-      full_day: 1,
-      end_date: inputValues.endDate,
-      ma_dvcs: "<string>",
-      ma_tuyen: "<string>",
+    SoFuckingUltimateApi({
+      store: "Api_Create_Task_Type",
+      data: {
+        type: inputValues.scheduleType,
+        ngay: inputValues.DayInMonth,
+        ngay_th: inputValues.startDate,
+        gio_th: inputValues.timeActive,
+        ngay_cuoi_thang: inputValues.lastDayInMonth,
+        t1: inputValues.t1,
+        t2: inputValues.t2,
+        t3: inputValues.t3,  
+        t4: inputValues.t4,
+        t5: inputValues.t5,
+        t6: inputValues.t6,
+        t7: inputValues.t7,
+        ghi_chu: "",
+        status: 1,
+        ten_cv: inputValues.taskName,
+        user_id: 1,
+        event_yn: inputValues.taskType,
+        muc_do: inputValues.priority,
+        full_day: 0,
+        end_date: inputValues.endDate,
+        ma_dvcs: inputValues.unitCode,
+        ma_tuyen: inputValues.tourName,
+      },
     })
       .then((res) => {
         console.log(res);
@@ -151,7 +153,9 @@ const ModalAddTaskSchedule = (props) => {
       case "tour":
         lookupData({ controller: "dmtuyen_lookup", value: value });
         break;
-
+      case "unit":
+        lookupData({ controller: "dmdvcs_lookup", value: value });
+        break;
       default:
         break;
     }
@@ -180,8 +184,8 @@ const ModalAddTaskSchedule = (props) => {
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm"
-        } mới lịch công việc`}</span>
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } lịch công việc`}</span>
       </div>
       <Form
         form={inputForm}
@@ -235,14 +239,15 @@ const ModalAddTaskSchedule = (props) => {
               <Form.Item
                 name="priority"
                 rules={[{ required: true, message: " mức độ ưu tiên" }]}
+                initialValue={"1"}
               >
                 <Select
                   placeholder="Chọn mức độ"
                   style={{ width: "100%" }}
                   options={[
-                    { value: "low", label: "Thấp" },
-                    { value: "medium", label: "Trung bình" },
-                    { value: "high", label: "Cao" },
+                    { value: "1", label: "Thấp" },
+                    { value: "2", label: "Trung bình" },
+                    { value: "3", label: "Cao" },
                   ]}
                 />
               </Form.Item>
@@ -389,6 +394,51 @@ const ModalAddTaskSchedule = (props) => {
               >
                 {SelectItemCode(selectOptions)}
               </Select>
+            </Form.Item>
+          </Space>
+        </div>
+
+        <div className="default_modal_group_items group__item__justify__start">
+          <Space direction="vertical" style={{ flex: "none" }}>
+            <span className="default_bold_label">Đơn vị</span>
+            <Form.Item name="unitCode">
+              <Select
+                showSearch
+                placeholder={`Chọn đơn vị`}
+                style={{ width: "210px" }}
+                defaultActiveFirstOption={false}
+                showArrow={false}
+                filterOption={false}
+                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
+                onSearch={(e) => {
+                  handleSelectionChange("unit", e);
+                }}
+                onSelect={(e) => {
+                  setSelectOptions([]);
+                }}
+              >
+                {SelectItemCode(selectOptions)}
+              </Select>
+            </Form.Item>
+          </Space>
+          <Space direction="vertical"  style={{ flex: "none" }}>
+            <span className="default_bold_label">Loại lịch</span>
+            <Form.Item
+              style={{ flex: "none" }}
+              name="scheduleType"
+              rules={[{ required: true, message: "Chọn loại" }]}
+              initialValue={"0"}
+            >
+              <Select
+                placeholder="Chọn loại"
+                style={{ width: "210px" }}
+                options={[
+                  { value: "0", label: "Một lần" },
+                  { value: "1", label: "Hàng ngày" },
+                  { value: "2", label: "Hàng tuần" },
+                  { value: "2", label: "Hàng tháng" },
+                ]}
+              />
             </Form.Item>
           </Space>
         </div>

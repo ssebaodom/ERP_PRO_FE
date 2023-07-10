@@ -31,6 +31,7 @@ const TaskList = () => {
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   //functions #########################################################################
 
@@ -72,10 +73,18 @@ const TaskList = () => {
         dataIndex: "",
         editable: false,
         dataType: "Operation",
+        align: "center",
         fixed: "right",
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span
+              style={{
+                display: "flex",
+                gap: "15px",
+                height: "20px",
+                justifyContent: "center",
+              }}
+            >
               <img
                 className="default_images_clickable"
                 onClick={(e) => {
@@ -115,6 +124,7 @@ const TaskList = () => {
       current: paginationChanges.current,
     });
     setTableParams({ ...tableParams, ...filters, ...sorter });
+    setSelectedRowKeys([]);
 
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== pagination?.pageSize) {
@@ -126,6 +136,30 @@ const TaskList = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
     setOpenModalType("Add");
     setCurrentRecord(0);
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    console.log(selectedRows);
+    setSelectedRowKeys([...keys]);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    console.log(selectedRows);
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        return record.key;
+      });
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
   };
 
   // effectively #########################################################################
@@ -160,7 +194,7 @@ const TaskList = () => {
       <div className="task__list__data_container">
         <Table
           columns={tableColumns}
-          rowSelection={true}
+          rowSelection={rowSelection}
           rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}

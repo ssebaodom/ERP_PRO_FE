@@ -1,8 +1,10 @@
 import { Button, Input, QRCode, Result, Space, Table } from "antd";
-import React from "react";
+import React, { useRef } from "react";
 import { useState } from "react";
 import renderCells from "../../../app/hooks/renderCells";
 import sse__logo from "../../../Icons/sse__logo.svg";
+import { select, geoPath, geoMercator, min, max, scaleLinear } from "d3";
+import { useEffect } from "react";
 
 const EditableCell = (cell) => {
   return renderCells(cell);
@@ -12,6 +14,7 @@ const Test = () => {
   const [text, setText] = useState("");
 
   const [image, setImage] = useState("");
+
 
   const printImage = (src) => {
     // var win = window.open("", "");
@@ -47,64 +50,22 @@ const Test = () => {
     }
   };
 
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: "Tags",
-      key: "tags",
-    },
-  ];
-
-  const data = [];
-
-  let locale = {
-    emptyText: (
-      <Result
-        title="Không có dữ liệu"
-        subTitle="Không có dữ liệu nào được tạo, vui lòng thêm hoặc sửa"
-      />
-    ),
-  };
-
   return (
-    <Space direction="vertical" align="center" id="myqrcode">
-      <QRCode errorLevel="H" value={text || "-"} icon={sse__logo} />
-      <Input
-        placeholder="-"
-        maxLength={60}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <Button type="primary" onClick={downloadQRCode}>
-        Download
-      </Button>
+    <Space direction="horizontal" align="center" id="myqrcode">
+      <div>
+        <QRCode errorLevel="H" value={text || "-"} icon={sse__logo} />
+        <Input
+          placeholder="-"
+          maxLength={60}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <Button type="primary" onClick={downloadQRCode}>
+          Download
+        </Button>
 
-      <img src={image} alt="" />
-
-      <Table
-        components={{
-          body: {
-            cell:data.length>0 ? EditableCell:'',
-          },
-        }}
-        locale={locale}
-        columns={columns}
-        dataSource={data}
-      />
+        <img src={image} alt="" />
+      </div>
     </Space>
   );
 };

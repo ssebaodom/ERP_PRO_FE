@@ -5,7 +5,7 @@ import { UilSearch, UilBell, UilApps } from "@iconscout/react-unicons";
 
 import { UnorderedListOutlined } from "@ant-design/icons";
 import { Link, useNavigate, redirect } from "react-router-dom";
-import { AutoComplete, Input, Dropdown, Menu, Modal } from "antd";
+import { AutoComplete, Input, Dropdown, Menu, Modal, Space } from "antd";
 import router, { navbarObject } from "../../router/routes";
 import jwt from "../../utils/jwt";
 import { setClaims } from "../../store/reducers/claimsSlice";
@@ -23,9 +23,9 @@ const Navbar = () => {
   const [navbarItems, setNavbarItems] = useState(
     navbarObject.map((item) => {
       if (item?.children?.length > 0) {
-        item.onTitleClick = () => {
-          handleNavbarClick(item.children[0]);
-        };
+        // item.onTitleClick = () => {
+        //   handleNavbarClick(item.children[0]);
+        // };
         item.children.map((child) => {
           child.label = (
             <span className="navbar_child_route dark_grey_text_color">
@@ -42,41 +42,42 @@ const Navbar = () => {
     })
   );
 
-  const serviceNotifyParams = useMemo(() => {
-    if (navbarItems) return { colection: "Notify", type: "all" };
-  }, [navbarItems]);
+  // firebase to send notifications
+  // const serviceNotifyParams = useMemo(() => {
+  //   if (navbarItems) return { colection: "Notify", type: "all" };
+  // }, [navbarItems]);
 
-  const servicePushNotifyParams = useMemo(() => {
-    if (navbarItems) return { colection: "Notify", type: "changes" };
-  }, [navbarItems]);
+  // const servicePushNotifyParams = useMemo(() => {
+  //   if (navbarItems) return { colection: "Notify", type: "changes" };
+  // }, [navbarItems]);
 
-  const getNotify = useFireStore(
-    serviceNotifyParams.colection,
-    serviceNotifyParams.type
-  );
-  const pushNotify = useFireStore(
-    serviceNotifyParams.colection,
-    serviceNotifyParams.type
-  );
+  // const getNotify = useFireStore(
+  //   serviceNotifyParams.colection,
+  //   serviceNotifyParams.type
+  // );
+  // const pushNotify = useFireStore(
+  //   serviceNotifyParams.colection,
+  //   serviceNotifyParams.type
+  // );
 
-  function usePrevious(value) {
-    const ref = useRef();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  }
-  const prevAmount = usePrevious(getNotify);
+  // function usePrevious(value) {
+  //   const ref = useRef();
+  //   useEffect(() => {
+  //     ref.current = value;
+  //   });
+  //   return ref.current;
+  // }
+  // const prevAmount = usePrevious(getNotify);
 
-  useEffect(() => {
-    if (getNotify && getNotify.length > 0 && prevAmount.length > 0) {
-      console.log(getNotify);
-    }
+  // useEffect(() => {
+  //   if (getNotify && getNotify.length > 0 && prevAmount.length > 0) {
+  //     console.log(getNotify);
+  //   }
 
-    if (pushNotify.length > 0) {
-      console.log(pushNotify);
-    }
-  }, [getNotify, pushNotify]);
+  //   if (pushNotify.length > 0) {
+  //     console.log(pushNotify);
+  //   }
+  // }, [getNotify, pushNotify]);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -327,7 +328,7 @@ const Navbar = () => {
             height: "30px",
             lineHeight: "30px",
             border: "none",
-            width: "88%",
+            width: "86%",
             userSelect: "none",
           }}
           overflowedIndicator={

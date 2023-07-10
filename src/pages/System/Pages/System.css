@@ -1,0 +1,32 @@
+.system__left__side {
+    flex: 0.25;
+    padding: 0;
+    overflow: scroll;
+    background: #ccc;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    border-radius: 6px;
+}
+
+.system__left__side::-webkit-scrollbar {
+    display: none;
+}
+
+.system__left__navigation {
+    border: none !important;
+    min-height: 100%;
+    max-height: auto;
+}
+
+.system__left__navigation>* {
+    cursor: pointer;
+}
+
+.system__right__side {
+    flex: 0.75;
+    padding: 16px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}

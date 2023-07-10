@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerArea.css";
-import { Input, Modal, Space, Button, Select, Form } from "antd";
+import { Input, Modal, Space, Button, Select, Form, notification } from "antd";
 
 import send_icon from "../../../../Icons/send_icon.svg";
-import { ApiGetTaskDetail, ApiGetTaskMaster, ApiWebLookup } from "../../API";
+import {
+  ApiGetTaskDetail,
+  ApiGetTaskMaster,
+  ApiWebLookup,
+  SoFuckingUltimateApi,
+} from "../../API";
 import SelectNotFound from "../../../../Context/SelectNotFound";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../../../Context/SelectItemCode";
+import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
 
 // bắt buộc khai báo bên ngoài
 
@@ -44,7 +50,33 @@ const ModalAddCustomerArea = (props) => {
 
   const onSubmitForm = () => {
     const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
+    SoFuckingUltimateApi({
+      store: "Api_Create_area",
+      data: {
+        ma_khu_vuc: a.areaCode,
+        ten_khu_vuc: a.areaName,
+        ds_tinh: a.provinceCode.join(","),
+        ds_quan: a.districtCode.join(","),
+        status: a.status,
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          props.refreshData();
+          handleCancelModal();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const onSubmitFormFail = () => {};
@@ -94,14 +126,15 @@ const ModalAddCustomerArea = (props) => {
       width={600}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới danh mục khu vực</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } danh mục khu vực`}</span>
       </div>
       <Form
         form={inputForm}
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
-        initialValues={{ status: 1 }}
       >
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
@@ -109,10 +142,13 @@ const ModalAddCustomerArea = (props) => {
               Mã khu vực
             </span>
             <Form.Item
-              name="formCode"
+              name="areaCode"
               rules={[{ required: true, message: "Điền mã hình thức" }]}
             >
-              <Input placeholder="Nhập mã hình thức" />
+              <Input
+                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                placeholder="Nhập mã hình thức"
+              />
             </Form.Item>
           </div>
         </div>
@@ -122,7 +158,7 @@ const ModalAddCustomerArea = (props) => {
               Tên khu vực
             </span>
             <Form.Item
-              name="formName"
+              name="areaName"
               rules={[{ required: true, message: "Điền tên hình thức" }]}
             >
               <Input placeholder="Nhập tên hình thức" />
@@ -154,9 +190,7 @@ const ModalAddCustomerArea = (props) => {
                 onSearch={(e) => {
                   handleSelectionChange("province", e);
                 }}
-                onSelect={(key, item) => {
-                  // setSelectOptions([]);
-                }}
+                onSelect={(key, item) => {}}
               >
                 {SelectItemCode(selectOptions)}
               </Select>
@@ -206,9 +240,9 @@ const ModalAddCustomerArea = (props) => {
             <Form.Item
               name="status"
               rules={[{ required: true, message: "Điền tên trạng thái" }]}
+              initialValue={"1"}
             >
               <Select
-                defaultValue="1"
                 options={[
                   { value: 1, label: "Hoạt động" },
                   { value: 0, label: "Huỷ" },

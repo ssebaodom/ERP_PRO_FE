@@ -335,7 +335,7 @@ const ModalAddTour = (props) => {
     setOpenModal(props.openModalState);
     if (props.openModalState) {
       setInitialValues({});
-      getDataEdit(props.currentRecord ? props.currentRecord : 'null');
+      getDataEdit(props.currentRecord ? props.currentRecord : "null");
     }
   }, [JSON.stringify(props)]);
 
@@ -351,7 +351,9 @@ const ModalAddTour = (props) => {
       width={600}
     >
       <div className="default_modal_header">
-        <span className="default_header_label">Thêm mới tuyến</span>
+        <span className="default_header_label">{`${
+          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+        } tuyến khách hàng`}</span>
       </div>
       <Form
         form={inputForm}

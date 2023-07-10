@@ -20,7 +20,7 @@ const SelectItemCode = (options) => {
                 {option.value}
               </span>
 
-              <span className="marquee">{option.label}</span>
+              <span>{option.label}</span>
             </Space>
           </Select.Option>
         );

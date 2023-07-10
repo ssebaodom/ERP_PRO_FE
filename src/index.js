@@ -6,12 +6,19 @@ import store from "./store";
 import { Provider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
 import router from "./router/routes";
+import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 
+//primereact
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import 'primeicons/primeicons.css';
+import 'primeflex/primeflex.css';
+        
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <RouterProvider router={router}/>
+    <RouterProvider router={router} />
   </Provider>
 );
 

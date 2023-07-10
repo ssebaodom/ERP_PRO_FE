@@ -15,6 +15,9 @@ import TourList from "../components/DMS/Pages/Tour/TourList";
 import documentsRoutes from "./document";
 import ticketRoutes from "./ticket";
 import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomerList";
+import imageRoutes from "./images";
+import System from "../pages/System/Pages/System";
+import systemRoutes from "./system";
 
 const homeRoutes = [
   {
@@ -148,6 +151,8 @@ const homeRoutes = [
         path: "DMSCustomer",
         element: <DMSCustomerList />,
       },
+      ...imageRoutes,
+      ...systemRoutes,
     ],
   },
   {

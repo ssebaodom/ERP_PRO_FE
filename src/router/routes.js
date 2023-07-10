@@ -10,25 +10,23 @@ homeRoute.map((item, index) => {
   if (item.parent) {
     homeRoute.map((item2) => {
       if (item2.path === item.parent) {
-        item.style = {width:'auto'}
         item2.children.push(item);
-        homeRoute = homeRoute.filter(
-          (item3) => item3.path !== item.path
-        );
+        homeRoute = homeRoute.filter((item3) => item3.path !== item.path);
       }
       return item;
     });
+  } else {
+    item.children = [];
   }
-//   if (item.children) {
-//     item.onTitleClick = () => {
-//        handleNavbarClick(item);
-//     };
-//   }
+  //   if (item.children) {
+  //     item.onTitleClick = () => {
+  //        handleNavbarClick(item);
+  //     };
+  //   }
   return item;
 });
 
 const navbarObject = homeRoute;
-
 
 export { routes, navbarObject };
 export default router;

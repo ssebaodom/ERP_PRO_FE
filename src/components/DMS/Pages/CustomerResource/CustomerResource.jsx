@@ -73,14 +73,22 @@ const CustomerResource = () => {
     ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
-        title: "Chức năng",
+        title: " ",
         dataIndex: "",
         editable: false,
         dataType: "Operation",
         fixed: "right",
+        align:'Center',
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span
+              style={{
+                display: "flex",
+                gap: "15px",
+                height: "20px",
+                justifyContent: "center",
+              }}
+            >
               <img
                 className="default_images_clickable"
                 onClick={(e) => {
@@ -143,7 +151,7 @@ const CustomerResource = () => {
     <div className="default_list_layout page_default">
       <div className="list__header__bar">
         <span className="default_header_label">
-          Danh sách tuyến (
+          Danh sách nguồn khách hàng (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="list__header__tools">
@@ -186,6 +194,7 @@ const CustomerResource = () => {
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}

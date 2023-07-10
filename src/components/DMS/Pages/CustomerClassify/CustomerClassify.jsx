@@ -72,16 +72,24 @@ const CustomerClassify = () => {
 
   const getdata = () => {
     ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.data?.reportLayoutModel);
+      let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
         editable: false,
         dataType: "Operation",
+        align: "center",
         fixed: "right",
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span
+              style={{
+                display: "flex",
+                gap: "15px",
+                height: "20px",
+                justifyContent: "center",
+              }}
+            >
               <img
                 className="default_images_clickable"
                 onClick={(e) => {
@@ -103,13 +111,13 @@ const CustomerClassify = () => {
         },
       });
       setTableColumns(layout);
-      const data = res.data.data;
+      const data = res.data;
       data.map((item, index) => {
         item.key = item.ma_tuyen;
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
       setLoading(false);
     });
   };
@@ -144,7 +152,7 @@ const CustomerClassify = () => {
     <div className="default_list_layout page_default">
       <div className="list__header__bar">
         <span className="default_header_label">
-          Danh sách tuyến (
+          Danh sách phân loại khách hàng(
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="list__header__tools">
@@ -187,6 +195,7 @@ const CustomerClassify = () => {
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}

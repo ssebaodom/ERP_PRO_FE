@@ -5,11 +5,13 @@ import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import ResizableAntdTable from "resizable-antd-table";
 import { useEffect, useState } from "react";
 import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTaskList } from "../../API";
+import ModalAddTaskType from "../../Modals/ModalAddTaskType/ModalAddTaskType";
+import { ApiGetTourList } from "../../API";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import edit__icon from "../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../Icons/delete__icon.svg";
+import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import ModalAddTicketType from "../../Modals/ModalAddTicketType/ModalAddTicketType";
 
 const TaskTypeList = () => {
   // initialize #########################################################################
@@ -18,7 +20,12 @@ const TaskTypeList = () => {
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
     keywords: "",
-    orderby: "id",
+    orderby: "ma_tuyen",
+    ma_nv: "",
+    mo_ta: "",
+    ten_nv: "",
+    ma_tuyen: "",
+    ten_tuyen: "",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
@@ -28,6 +35,8 @@ const TaskTypeList = () => {
   const [openModalType, setOpenModalType] = useState("Add");
   const [currentRecord, setCurrentRecord] = useState(null);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
+  const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
+  const [currentItemSelected, setCurrentItemSelected] = useState({});
 
   //functions #########################################################################
 
@@ -45,18 +54,41 @@ const TaskTypeList = () => {
     setOpenModalType("Edit");
   };
 
+  const handleOpenDeleteDialog = (record) => {
+    setIsOpenModalDeleteTask(true);
+    setCurrentItemSelected(record);
+  };
+
+  const handleDelete = () => {
+    console.log("Gọi API delete ở đây", currentItemSelected);
+    handleCloseDeleteDialog();
+    refreshData();
+  };
+  const handleCloseDeleteDialog = () => {
+    setIsOpenModalDeleteTask(false);
+    setCurrentItemSelected({});
+  };
+
   const getdata = () => {
-    ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.data?.reportLayoutModel);
+    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
+      let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
         editable: false,
         dataType: "Operation",
+        align: "center",
         fixed: "right",
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
+            <span
+              style={{
+                display: "flex",
+                gap: "15px",
+                height: "20px",
+                justifyContent: "center",
+              }}
+            >
               <img
                 className="default_images_clickable"
                 onClick={(e) => {
@@ -68,6 +100,9 @@ const TaskTypeList = () => {
               <img
                 className="default_images_clickable"
                 src={delete__icon}
+                onClick={(e) => {
+                  handleOpenDeleteDialog(record);
+                }}
                 alt=""
               ></img>
             </span>
@@ -75,13 +110,13 @@ const TaskTypeList = () => {
         },
       });
       setTableColumns(layout);
-      const data = res.data.data;
+      const data = res.data;
       data.map((item, index) => {
-        item.key = item.id;
+        item.key = item.ma_tuyen;
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
       setLoading(false);
     });
   };
@@ -116,7 +151,7 @@ const TaskTypeList = () => {
     <div className="default_list_layout page_default">
       <div className="list__header__bar">
         <span className="default_header_label">
-          Danh sách công việc (
+          Danh sách loại công việc (
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="list__header__tools">
@@ -154,11 +189,19 @@ const TaskTypeList = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddTask
+      <ModalAddTaskType
         openModalState={openModalAddTaskState}
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
+      />
+      <ConfirmDialog
+        state={isOpenModalDeleteTask}
+        title="Xoá"
+        description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
+        handleOkModal={handleDelete}
+        handleCloseModal={handleCloseDeleteDialog}
       />
     </div>
   );

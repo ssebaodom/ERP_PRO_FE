@@ -3,6 +3,8 @@ import "./DMSCustomerList.css";
 import {
   Button,
   DatePicker,
+  Drawer,
+  Form,
   Input,
   Pagination,
   Select,
@@ -14,13 +16,16 @@ import {
 import { PlusOutlined, SyncOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTourList } from "../../API";
-import renderColumns from "../../../../app/hooks/renderColumns";
+import { ApiGetTourList, ApiWebLookup } from "../../API";
 import edit__icon from "../../../../Icons/edit__icon.svg";
 import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import ModalAddCustomerResource from "../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
 import TabPane from "antd/es/tabs/TabPane";
+import send_icon from "../../../../Icons/send_icon.svg";
+import SelectNotFound from "../../../../Context/SelectNotFound";
+import SelectItemCode from "../../../../Context/SelectItemCode";
+import { useDebouncedCallback } from "use-debounce";
 
 const DMSCustomerList = () => {
   // initialize #########################################################################
@@ -46,6 +51,10 @@ const DMSCustomerList = () => {
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [isOpenAdvanceFilter, setIsOpenAdvanceFilter] = useState(false);
+  const [filterForm] = Form.useForm();
+  const [selectOptions, setSelectOptions] = useState([]);
+  const [selectLoading, setSelectLoading] = useState(false);
 
   //functions #########################################################################
 
@@ -73,53 +82,14 @@ const DMSCustomerList = () => {
     handleCloseDeleteDialog();
     refreshData();
   };
+
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
   };
 
   const getdata = () => {
-    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.data?.reportLayoutModel);
-      layout.push({
-        title: "Chức năng",
-        dataIndex: "",
-        editable: false,
-        dataType: "Operation",
-        fixed: "right",
-        render: (_, record) => {
-          return (
-            <span style={{ display: "flex", gap: "15px", height: "20px" }}>
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
-          );
-        },
-      });
-      setTableColumns(layout);
-      const data = res.data.data;
-      data.map((item, index) => {
-        item.key = item.ma_tuyen;
-        return item;
-      });
-      setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
-      setLoading(false);
-    });
+    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {});
   };
 
   const handleTableChange = (paginationChanges, filters, sorter) => {
@@ -145,6 +115,66 @@ const DMSCustomerList = () => {
   const handleChangePagintion = (currentPage, pageSize) => {
     console.log(currentPage);
   };
+
+  const openAdvanceFilter = () => {
+    setIsOpenAdvanceFilter(true);
+  };
+
+  const closeAdvanceFilter = () => {
+    setIsOpenAdvanceFilter(false);
+    filterForm.resetFields();
+  };
+
+  const onSubmitFormFail = () => {};
+
+  const onSubmitForm = () => {
+    const a = { ...filterForm.getFieldsValue() };
+    console.log(a);
+  };
+
+  const lookupData = (item) => {
+    setSelectLoading(true);
+    ApiWebLookup({
+      userId: "1",
+      controller: item.controller,
+      pageIndex: 1,
+      FilterValueCode: item.value.trim(),
+    }).then((res) => {
+      const resOptions = res.data.map((item) => {
+        return {
+          value: item.code.trim(),
+          label: item.name.trim(),
+        };
+      });
+      setSelectLoading(false);
+      setSelectOptions([...resOptions]);
+    });
+  };
+
+  const handleSelectionChange = useDebouncedCallback((actions, value) => {
+    switch (actions) {
+      case "sale_employee":
+        lookupData({ controller: "dmnvbh_lookup", value: value });
+        break;
+      case "customer":
+        lookupData({ controller: "dmkh_lookup", value: value });
+        break;
+      case "unit":
+        lookupData({ controller: "dmdvcs_lookup", value: value });
+        break;
+      case "ticket_type":
+        lookupData({ controller: "dmloaitk_lookup", value: value });
+        break;
+      case "dmhinhthuc_lookup":
+        lookupData({ controller: "dmhinhthuc_lookup", value: value });
+        break;
+      case "dmphanloai_lookup":
+        lookupData({ controller: "dmphanloai_lookup", value: value });
+        break;
+      default:
+        break;
+    }
+  }, 600);
 
   // effectively #########################################################################
   useEffect(() => {
@@ -205,7 +235,7 @@ const DMSCustomerList = () => {
             <Button
               style={{ borderRadius: "4px", height: "30px" }}
               className="default_button"
-              onClick={openModalAddTask}
+              onClick={openAdvanceFilter}
             >
               <span style={{ fontWeight: "bold" }}>Nâng cao</span>
             </Button>
@@ -505,6 +535,7 @@ const DMSCustomerList = () => {
                 </Button>
               </Space>
             </div>
+
             <div className="split__view__detail__substation">
               <span className="default_header_label">Chăm sóc khách hàng</span>
               <Space>
@@ -597,7 +628,10 @@ const DMSCustomerList = () => {
               </div>
 
               <div className="customer__history">
-                <div className="default_rectangle" style={{ gap: "10px",boxShadow:'none' }}>
+                <div
+                  className="default_rectangle"
+                  style={{ gap: "10px", boxShadow: "none" }}
+                >
                   <span
                     className="default_header_rectangle"
                     style={{ borderRadius: "4px" }}
@@ -627,7 +661,10 @@ const DMSCustomerList = () => {
                     </div>
                   </Space>
                 </div>
-                <div className="default_rectangle" style={{ gap: "10px",boxShadow:'none' }}>
+                <div
+                  className="default_rectangle"
+                  style={{ gap: "10px", boxShadow: "none" }}
+                >
                   <span
                     className="default_header_rectangle"
                     style={{ borderRadius: "4px" }}
@@ -654,6 +691,204 @@ const DMSCustomerList = () => {
           </div>
         </div>
       </div>
+
+      <Drawer
+        title={`Tìm kiếm`}
+        placement="right"
+        size={250}
+        open={isOpenAdvanceFilter}
+        onClose={closeAdvanceFilter}
+      >
+        <Form
+          form={filterForm}
+          onFinishFailed={onSubmitFormFail}
+          scrollToFirstError={true}
+          onFinish={onSubmitForm}
+          className="default_filter_form"
+        >
+          <div className="default_modal_container" style={{ padding: "0" }}>
+            <div className="default_modal_group_items">
+              <Space direction="vertical">
+                <span className="default_bold_label">Mã khách hàng</span>
+                <div className="default_modal_group_items">
+                  <Form.Item
+                    style={{
+                      width: "100px",
+                      flex: "none",
+                    }}
+                    name="customerCode"
+                    initialValue={""}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={`Khách hàng`}
+                      defaultActiveFirstOption={false}
+                      showArrow={false}
+                      filterOption={false}
+                      dropdownStyle={{ minWidth: "20%" }}
+                      notFoundContent={SelectNotFound(
+                        selectLoading,
+                        selectOptions
+                      )}
+                      onSearch={(e) => {
+                        handleSelectionChange("customer", e);
+                      }}
+                      onSelect={(key, item) => {
+                        filterForm.setFieldValue("customerName", item.label);
+                        setSelectOptions([]);
+                      }}
+                    >
+                      {SelectItemCode(selectOptions)}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="customerName" initialValue={""}>
+                    <Input placeholder="Tên khách hàng" />
+                  </Form.Item>
+                </div>
+              </Space>
+            </div>
+
+            <div className="default_modal_group_items">
+              <Space direction="vertical">
+                <span className="default_bold_label">Địa chỉ</span>
+                <div className="default_modal_group_items">
+                  <Form.Item name="address" initialValue={""}>
+                    <Input placeholder="Địa chỉ" />
+                  </Form.Item>
+                </div>
+              </Space>
+            </div>
+
+            <div className="default_modal_group_items">
+              <Space direction="vertical">
+                <span className="default_bold_label">Điện thoại</span>
+                <div className="default_modal_group_items">
+                  <Form.Item name="phoneNumber" initialValue={""}>
+                    <Input placeholder="Điện thoại" />
+                  </Form.Item>
+                </div>
+              </Space>
+            </div>
+
+            <div className="default_modal_group_items">
+              <Space direction="vertical">
+                <span className="default_bold_label">Phân loại</span>
+                <div className="default_modal_group_items">
+                  <Form.Item
+                    style={{
+                      width: "100px",
+                      flex: "none",
+                    }}
+                    name="customerType"
+                    initialValue={""}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={`Phân loại`}
+                      defaultActiveFirstOption={false}
+                      showArrow={false}
+                      filterOption={false}
+                      notFoundContent={SelectNotFound(
+                        selectLoading,
+                        selectOptions
+                      )}
+                      onSearch={(e) => {
+                        handleSelectionChange("dmphanloai_lookup", e);
+                      }}
+                      onSelect={(key, item) => {
+                        filterForm.setFieldValue(
+                          "customerTypeName",
+                          item.label
+                        );
+                        setSelectOptions([]);
+                      }}
+                    >
+                      {SelectItemCode(selectOptions)}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="customerTypeName" initialValue={""}>
+                    <Input
+                      disabled={true}
+                      className="default_disable_input"
+                      placeholder="Tên loại"
+                    />
+                  </Form.Item>
+                </div>
+              </Space>
+            </div>
+
+            <div className="default_modal_group_items">
+              <Space direction="vertical">
+                <span className="default_bold_label">Hình thức</span>
+                <div className="default_modal_group_items">
+                  <Form.Item
+                    style={{
+                      width: "100px",
+                      flex: "none",
+                    }}
+                    name="customerForm"
+                    initialValue={""}
+                  >
+                    <Select
+                      showSearch
+                      placeholder={`Hình thức`}
+                      defaultActiveFirstOption={false}
+                      showArrow={false}
+                      filterOption={false}
+                      notFoundContent={SelectNotFound(
+                        selectLoading,
+                        selectOptions
+                      )}
+                      onSearch={(e) => {
+                        handleSelectionChange("dmhinhthuc_lookup", e);
+                      }}
+                      onSelect={(key, item) => {
+                        filterForm.setFieldValue(
+                          "customerFormName",
+                          item.label
+                        );
+                        setSelectOptions([]);
+                      }}
+                    >
+                      {SelectItemCode(selectOptions)}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="customerFormName" initialValue={""}>
+                    <Input
+                      disabled={true}
+                      className="default_disable_input"
+                      placeholder="Tên hình thức"
+                    />
+                  </Form.Item>
+                </div>
+              </Space>
+            </div>
+          </div>
+
+          <Space
+            align="center"
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            <Button
+              className="default_subsidiary_button"
+              onClick={closeAdvanceFilter}
+            >
+              Huỷ
+            </Button>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="default_primary_button"
+                icon={<img src={send_icon} alt="" />}
+              >
+                Tìm kiếm
+              </Button>
+            </Form.Item>
+          </Space>
+        </Form>
+      </Drawer>
     </div>
   );
 };
