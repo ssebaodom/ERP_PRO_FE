@@ -1,9 +1,8 @@
-import React from "react";
-import { datetimeFormat } from "../Options/DataFomater";
 import dayjs from "dayjs";
+import { datetimeFormat } from "../Options/DataFomater";
 
 const renderEditColumns = (columns, editingKey) => {
-  const isEditing = (record) =>  editingKey.includes(record.key);
+  const isEditing = (record) => editingKey.includes(record.key);
   let mergedColumns = [];
   mergedColumns = columns.map((item, index) => {
     if (!item.editable) {
@@ -18,14 +17,14 @@ const renderEditColumns = (columns, editingKey) => {
         dataIndex: item.dataIndex,
         title: item.title,
         editing: isEditing(record),
-        lookupData:item.lookupData,
-        searchItem:item.searchItem,
+        controller: item?.controller,
+        reference: item?.reference,
         render: (data) => {
           if (item.type === "Datetime") {
             return dayjs(data).format(datetimeFormat);
           }
           return data;
-        }
+        },
       }),
     };
   });

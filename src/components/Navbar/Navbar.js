@@ -111,9 +111,8 @@ const Navbar = () => {
     setnavbarSelectedKey("");
     if (!router.state.location.pathname.includes("Dashboard")) navigate("/");
   };
-
   useEffect(() => {
-    dispatch(setClaims(jwt.getClaims()));
+    dispatch(setClaims(jwt.getClaims() ? jwt.getClaims() : {}));
   }, []);
 
   const homeRoutes = [

@@ -9,7 +9,10 @@ import {
   Tree,
 } from "antd";
 import React from "react";
+import { useEffect } from "react";
 import { useState } from "react";
+import { ApiCreateTaskSchedule } from "../../../DMS/API";
+import { SoFuckingUltimateGetApi } from "../../API";
 import "./UserPermissions.css";
 
 const treeData = [
@@ -180,8 +183,30 @@ const UserPermissions = () => {
     setSelectedKeys(selectedKeysValue);
   };
 
+  const getdata = () => {
+    SoFuckingUltimateGetApi({
+      store: "Get_Customer_Source",
+      data: {
+        SearchKey: "",
+        page_index: 1,
+        page_count: 10,
+        status: 1,
+      },
+    })
+      .then((res) => {
+        console.log("getData", res);
+        setLoading(false);
+      })
+      .catch((err) => console(err));
+  };
 
   //Effect
+
+  useEffect(() => {
+    setLoading(true);
+    getdata();
+  }, []);
+
   return (
     <div
       className="w-full flex gap-2 flex-column min-h-0 h-full relative"

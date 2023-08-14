@@ -1,20 +1,16 @@
-import { Button, Input, QRCode, Result, Space, Table } from "antd";
-import React, { useRef } from "react";
-import { useState } from "react";
-import renderCells from "../../../app/hooks/renderCells";
+import { Button, Input, QRCode, Space } from "antd";
+import React, { useState } from "react";
+import RenderCells from "../../../app/hooks/renderCells";
 import sse__logo from "../../../Icons/sse__logo.svg";
-import { select, geoPath, geoMercator, min, max, scaleLinear } from "d3";
-import { useEffect } from "react";
 
 const EditableCell = (cell) => {
-  return renderCells(cell);
+  return RenderCells(cell);
 };
 
 const Test = () => {
   const [text, setText] = useState("");
 
   const [image, setImage] = useState("");
-
 
   const printImage = (src) => {
     // var win = window.open("", "");

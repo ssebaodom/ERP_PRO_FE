@@ -1,5 +1,5 @@
-import homeRoutes from "./home";
 import { createBrowserRouter } from "react-router-dom";
+import homeRoutes from "./home";
 
 const routes = [...homeRoutes];
 const router = createBrowserRouter(routes);

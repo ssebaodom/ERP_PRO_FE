@@ -1,22 +1,28 @@
+import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddTaskType.css";
-import { Input, Modal, Space, Button, Select, Form, notification } from "antd";
 
-import send_icon from "../../../../Icons/send_icon.svg";
-import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  ApiWebLookup,
-  SoFuckingUltimateApi,
-} from "../../API";
-import SelectNotFound from "../../../../Context/SelectNotFound";
+import { memo } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../../../Context/SelectItemCode";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import SelectNotFound from "../../../../Context/SelectNotFound";
+import send_icon from "../../../../Icons/send_icon.svg";
+import { formStatus } from "../../../../utils/constants";
+import {
+  ApiWebLookup,
+  SoFuckingUltimateApi,
+  SoFuckingUltimateGetApi,
+} from "../../API";
 
 // bắt buộc khai báo bên ngoài
 
-const ModalAddTaskType = (props) => {
+const ModalAddTaskType = ({
+  handleCloseModal,
+  openModalState,
+  currentRecord,
+  openModalType,
+  refreshData,
+}) => {
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
@@ -44,20 +50,22 @@ const ModalAddTaskType = (props) => {
 
   const handleCancelModal = () => {
     setOpenModal(false);
-    props.handleCloseModal();
+    handleCloseModal();
     inputForm.resetFields();
   };
 
   const onSubmitForm = () => {
-    const a = { ...inputForm.getFieldsValue() };
-    console.log(a);
+    const master = { ...inputForm.getFieldsValue() };
     SoFuckingUltimateApi({
       store: "Api_Create_Task_Type",
       data: {
-        ten_loai: a.taskTypeName,
-        albums: a.albums.join(","),
-        description: a.description,
-        status: a.status,
+        action:
+          openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
+        id: String(currentRecord).trim(),
+        ten_loai: master.taskTypeName,
+        albums: master.albums.join(","),
+        description: master.description,
+        status: master.status,
         userid: 0,
       },
     })
@@ -66,7 +74,7 @@ const ModalAddTaskType = (props) => {
           notification.success({
             message: `Thành công`,
           });
-          props.refreshData();
+          refreshData();
           handleCancelModal();
         } else {
           notification.warning({
@@ -82,13 +90,21 @@ const ModalAddTaskType = (props) => {
   const onSubmitFormFail = () => {};
 
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    SoFuckingUltimateGetApi({
+      store: "Get_Task_type",
+      data: {
+        id: id.trim(),
+        pageIndex: 1,
+        pageSize: 10,
+      },
+    }).then((res) => {
+      inputForm.setFieldValue(`taskTypeName`, res.data[0]?.ten_cv?.trim());
+      inputForm.setFieldValue(
+        `albums`,
+        res.data[0]?.obligatory_album?.split(",")
+      );
+      inputForm.setFieldValue(`description`, res.data[0]?.mo_ta?.trim());
+      inputForm.setFieldValue(`status`, res.data[0]?.status?.trim());
     });
   };
 
@@ -110,12 +126,12 @@ const ModalAddTaskType = (props) => {
   }, 600);
 
   useEffect(() => {
-    setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
+    setOpenModal(openModalState);
+    if (openModalState && openModalType === formStatus.EDIT) {
       setInitialValues({});
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      getDataEdit(currentRecord ? currentRecord : 0);
     }
-  }, [JSON.stringify(props)]);
+  }, [JSON.stringify(openModalState)]);
 
   return (
     <Modal
@@ -130,7 +146,7 @@ const ModalAddTaskType = (props) => {
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          openModalType == formStatus.EDIT ? "Sửa" : "Thêm mới"
         } loại công việc`}</span>
       </div>
       <Form
@@ -167,6 +183,7 @@ const ModalAddTaskType = (props) => {
                   width: "100%",
                   flex: "none",
                 }}
+                optionLabelProp="value"
                 defaultActiveFirstOption={false}
                 showArrow={false}
                 filterOption={false}
@@ -243,4 +260,4 @@ const ModalAddTaskType = (props) => {
   );
 };
 
-export default ModalAddTaskType;
+export default memo(ModalAddTaskType);

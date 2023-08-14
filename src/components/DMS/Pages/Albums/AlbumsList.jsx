@@ -1,16 +1,14 @@
-import React from "react";
-import "./AlbumsList.css";
-import { Button, Space, Table } from "antd";
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
-import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTaskList } from "../../API";
+import { notification, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import TableLocale from "../../../../Context/TableLocale";
+import { formStatus } from "../../../../utils/constants";
+import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
+import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
+import ModalAddAlbums from "../../Modals/ModalAddAlbums/ModalAddAlbums";
+import "./AlbumsList.css";
 
 const AlbumsList = () => {
   // initialize #########################################################################
@@ -18,18 +16,17 @@ const AlbumsList = () => {
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    keywords: "",
-    orderby: "id",
+    SearchKey: "",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
     pageSize: 10,
   });
   const [totalResults, setTotalResults] = useState(0);
-  const [openModalType, setOpenModalType] = useState("Add");
+  const [openModalType, setOpenModalType] = useState(formStatus.ADD);
   const [currentRecord, setCurrentRecord] = useState(null);
-  const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
-  const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
+  const [openModalAddState, setOpenModalAddState] = useState(false);
+  const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
@@ -38,36 +35,60 @@ const AlbumsList = () => {
   const refreshData = () => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
-      setLoading(true);
-      getdata();
+      setLoading(false);
     }
   };
 
   const handleEdit = (record) => {
-    setCurrentRecord(record.id);
-    setOpenModalAddTaskState(true);
-    setOpenModalType("Edit");
+    setCurrentRecord(record.ma_album);
+    setOpenModalAddState(true);
+    setOpenModalType(formStatus.EDIT);
   };
 
   const handleOpenDeleteDialog = (record) => {
-    setIsOpenModalDeleteTask(true);
+    setIsOpenModalDelete(true);
     setCurrentItemSelected(record);
   };
 
   const handleCloseDeleteDialog = () => {
-    setIsOpenModalDeleteTask(false);
+    setIsOpenModalDelete(false);
     setCurrentItemSelected({});
+    setSelectedRowKeys([]);
   };
 
-  const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
+  const handleDelete = (keys) => {
+    SoFuckingUltimateApi({
+      store: "api_delete_albums",
+      data: {
+        id: keys.replaceAll(" ", ""),
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {});
+
     handleCloseDeleteDialog();
     refreshData();
   };
 
   const getdata = () => {
-    ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
-      let layout = renderColumns(res?.data?.reportLayoutModel);
+    delete pagination?.current;
+    SoFuckingUltimateGetApi({
+      store: "api_get_dmalbum",
+      data: { ...tableParams, ...pagination },
+    }).then((res) => {
+      let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
@@ -77,42 +98,22 @@ const AlbumsList = () => {
         fixed: "right",
         render: (_, record) => {
           return (
-            <span
-              style={{
-                display: "flex",
-                gap: "15px",
-                height: "20px",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
+            <OperationColumn
+              record={record}
+              editFunction={handleEdit}
+              deleteFunction={handleOpenDeleteDialog}
+            />
           );
         },
       });
       setTableColumns(layout);
-      const data = res.data.data;
+      const data = res.data;
       data.map((item, index) => {
-        item.key = item.id;
+        item.key = item.ma_album;
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res?.pagegination?.totalRecord);
       setLoading(false);
     });
   };
@@ -132,20 +133,18 @@ const AlbumsList = () => {
     }
   };
 
-  const openModalAddTask = () => {
-    setOpenModalAddTaskState(!openModalAddTaskState);
-    setOpenModalType("Add");
+  const openModalAdd = () => {
+    setOpenModalAddState(!openModalAddState);
+    setOpenModalType(formStatus.ADD);
     setCurrentRecord(0);
   };
 
   const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
-    console.log(selectedRows);
     setSelectedRowKeys([...keys]);
   };
 
   const onSelectAll = (selected, selectedRows) => {
-    console.log(selectedRows);
     if (selected) {
       const selectedKeys = selectedRows.map((record) => {
         return record.key;
@@ -162,36 +161,31 @@ const AlbumsList = () => {
     onSelect: onSelect,
   };
 
+  const changePaginations = (item) => {
+    setPagination({ ...pagination, pageSize: item });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="default_list_layout page_default">
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách công việc (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          <Button
-            className="default_button"
-            onClick={openModalAddTask}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
-      <div className="task__list__data_container">
+      <HeaderTableBar
+        name={"Albums"}
+        title={"Danh sách albums"}
+        changePaginations={changePaginations}
+        totalResults={totalResults}
+        addEvent={openModalAdd}
+        refreshEvent={refreshData}
+        deleteItems={{
+          delete: handleOpenDeleteDialog,
+          count: selectedRowKeys.length,
+        }}
+      />
+      <div className="h-full min-h-0">
         <Table
           columns={tableColumns}
           rowSelection={rowSelection}
@@ -199,6 +193,7 @@ const AlbumsList = () => {
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
+          locale={TableLocale()}
           pagination={{
             ...pagination,
             total: totalResults,
@@ -210,18 +205,31 @@ const AlbumsList = () => {
           onChange={handleTableChange}
         />
       </div>
-      <ModalAddTask
-        openModalState={openModalAddTaskState}
+      <ModalAddAlbums
+        openModalState={openModalAddState}
         openModalType={openModalType}
         currentRecord={currentRecord}
-        handleCloseModal={setOpenModalAddTaskState}
+        handleCloseModal={setOpenModalAddState}
+        refreshData={refreshData}
       />
       <ConfirmDialog
-        state={isOpenModalDeleteTask}
+        state={isOpenModalDelete}
         title="Xoá"
-        description={`Xoá công việc : ${currentItemSelected.text}`}
+        description={`Xoá  ${
+          currentItemSelected.ma_album
+            ? "album : " +
+              currentItemSelected.ma_album +
+              " - " +
+              currentItemSelected.ten_album
+            : `${selectedRowKeys.length} albums`
+        }`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
+        keys={
+          currentItemSelected.ma_album
+            ? currentItemSelected.ma_album
+            : selectedRowKeys.join(",").trim()
+        }
       />
     </div>
   );

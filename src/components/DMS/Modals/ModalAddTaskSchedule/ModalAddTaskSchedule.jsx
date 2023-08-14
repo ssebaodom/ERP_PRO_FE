@@ -1,74 +1,60 @@
-import React, { useEffect, useState } from "react";
-import "./ModalAddTaskSchedule.css";
 import {
-  Input,
-  Dropdown,
-  Menu,
-  Modal,
-  Space,
   Button,
-  DatePicker,
-  Select,
-  Form,
-  TimePicker,
-  Table,
-  Tooltip,
   Checkbox,
-  Spin,
+  DatePicker,
+  Form,
+  Input,
   InputNumber,
+  Modal,
+  notification,
+  Select,
+  Space,
+  TimePicker,
 } from "antd";
 import dayjs from "dayjs";
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
+import React, { memo, useEffect, useState } from "react";
 import send_icon from "../../../../Icons/send_icon.svg";
-import copy__icon from "../../../../Icons/copy__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
-import lock__icon from "../../../../Icons/lock__icon.svg";
-import checked__icon from "../../../../Icons/checked__icon.svg";
-import addNewRow from "../../../../app/hooks/addNewRow";
-import renderCells from "../../../../app/hooks/renderCells";
-import renderEditColumns from "../../../../app/hooks/renderEditColumns";
-import getEditRowsValue from "../../../../app/hooks/getEditRowsValue";
-import getChangedTableRow from "../../../../app/hooks/getChangedTableRow";
-import {
-  ApiCreateTaskSchedule,
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  ApiWebLookup,
-  SoFuckingUltimateApi,
-} from "../../API";
-import { useDebouncedCallback } from "use-debounce";
-import { EdgeFilterLens } from "@antv/g6-pc";
-import SelectItemCode from "../../../../Context/SelectItemCode";
-import SelectNotFound from "../../../../Context/SelectNotFound";
+import { formStatus } from "../../../../utils/constants";
+import FormSelect from "../../../ReuseComponents/FormSelect";
+import { ApiGetTaskSchedule, SoFuckingUltimateApi } from "../../API";
+import "./ModalAddTaskSchedule.css";
 
-const ModalAddTaskSchedule = (props) => {
+const ModalAddTaskSchedule = ({
+  openModalState,
+  openModalType,
+  currentRecord,
+  handleCloseModal,
+  refreshData,
+}) => {
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
-  const [customers, setCustomers] = useState([]);
   const [selectOptions, setSelectOptions] = useState([]);
   const [selectLoading, setSelectLoading] = useState(false);
+  const [currentItem, setCurrentItem] = useState("");
 
   const handleCancelModal = () => {
     setOpenModal(false);
-    props.handleCloseModal();
+    handleCloseModal();
     inputForm.resetFields();
   };
 
   const onSubmitForm = () => {
     const inputValues = { ...inputForm.getFieldsValue() };
     SoFuckingUltimateApi({
-      store: "Api_Create_Task_Type",
+      store: "Api_create_tasksSchedule",
       data: {
+        action:
+          openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
+        id: currentItem ? currentItem : null,
         type: inputValues.scheduleType,
         ngay: inputValues.DayInMonth,
         ngay_th: inputValues.startDate,
-        gio_th: inputValues.timeActive,
+        gio_th: dayjs(inputValues.timeActive).format("hh:mm"),
         ngay_cuoi_thang: inputValues.lastDayInMonth,
         t1: inputValues.t1,
         t2: inputValues.t2,
-        t3: inputValues.t3,  
+        t3: inputValues.t3,
         t4: inputValues.t4,
         t5: inputValues.t5,
         t6: inputValues.t6,
@@ -76,17 +62,29 @@ const ModalAddTaskSchedule = (props) => {
         ghi_chu: "",
         status: 1,
         ten_cv: inputValues.taskName,
-        user_id: 1,
+        assigned_name: inputValues.assignedName,
+        userid: 1,
         event_yn: inputValues.taskType,
         muc_do: inputValues.priority,
         full_day: 0,
         end_date: inputValues.endDate,
+        start_date: inputValues.startDate,
         ma_dvcs: inputValues.unitCode,
         ma_tuyen: inputValues.tourName,
       },
     })
       .then((res) => {
-        console.log(res);
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          handleCancelModal();
+          refreshData();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -96,80 +94,76 @@ const ModalAddTaskSchedule = (props) => {
   const onSubmitFormFail = () => {};
 
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`startTime`, dayjs(res.data[0]?.start_date));
-      inputForm.setFieldValue(`startDate`, dayjs(res.data[0]?.start_date));
-      inputForm.setFieldValue(`endTime`, dayjs(res.data[0]?.end_date));
-      inputForm.setFieldValue(`endDate`, dayjs(res.data[0]?.end_date));
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
-      inputForm.setFieldValue(`t1`, res.data[0]?.t1);
-      inputForm.setFieldValue(`t2`, res.data[0]?.t2);
-      inputForm.setFieldValue(`t3`, res.data[0]?.t3);
-      inputForm.setFieldValue(`t4`, res.data[0]?.t4);
-      inputForm.setFieldValue(`t5`, res.data[0]?.t5);
-      inputForm.setFieldValue(`t6`, res.data[0]?.t6);
-      inputForm.setFieldValue(`t7`, res.data[0]?.t7);
-    });
-  };
-
-  const lookupData = (item) => {
-    setSelectLoading(true);
-    ApiWebLookup({
-      userId: "1",
-      controller: item.controller,
-      pageIndex: 1,
-      FilterValueCode: item.value.trim(),
+    ApiGetTaskSchedule({
+      keywords: "",
+      id: id,
+      orderby: "id",
+      pageindex: 1,
+      pageSize: 10,
     }).then((res) => {
-      const resOptions = res.data.map((item) => {
-        return {
-          value: item.code.trim(),
-          label: item.name.trim(),
-        };
-      });
-      setSelectLoading(false);
-      setSelectOptions([...resOptions]);
+      inputForm.setFieldValue(`taskName`, res.data.data[0]?.ten_cv);
+      inputForm.setFieldValue(`taskType`, res.data.data[0]?.event_yn);
+      inputForm.setFieldValue(`priority`, String(res.data.data[0]?.muc_do));
+      inputForm.setFieldValue(
+        `startTime`,
+        dayjs(res.data.data[0]?.start_date).isValid()
+          ? dayjs(res.data.data[0]?.start_date)
+          : undefined
+      );
+
+      inputForm.setFieldValue(
+        `startDate`,
+        dayjs(res.data.data[0]?.start_date).isValid()
+          ? dayjs(res.data.data[0]?.start_date)
+          : undefined
+      );
+      inputForm.setFieldValue(
+        `endTime`,
+        dayjs(res.data.data[0]?.end_date).isValid()
+          ? dayjs(res.data.data[0]?.end_date)
+          : null
+      );
+
+      inputForm.setFieldValue(
+        `endDate`,
+        dayjs(res.data.data[0]?.end_date).isValid()
+          ? dayjs(res.data.data[0]?.end_date)
+          : null
+      );
+      inputForm.setFieldValue(`assignedName`, res.data.data[0]?.assigned_name);
+      inputForm.setFieldValue(`deptName`, res.data.data[0]?.ma_bp);
+      inputForm.setFieldValue(`tourName`, res.data.data[0]?.ma_tuyen);
+      inputForm.setFieldValue(`unitCode`, res.data.data[0]?.ma_dvcs);
+      inputForm.setFieldValue(`scheduleType`, String(res.data.data[0]?.type));
+      inputForm.setFieldValue(
+        `periodicalDay`,
+        dayjs(res.data.data[0]?.ngay_th).isValid()
+          ? dayjs(res.data.data[0]?.ngay_th)
+          : null
+      );
+      inputForm.setFieldValue(`DayInMonth`, res.data.data[0]?.ngay);
+      inputForm.setFieldValue(
+        `lastDayInMonth`,
+        res.data.data[0]?.ngay_cuoi_thang
+      );
+      inputForm.setFieldValue(`t1`, res.data.data[0]?.t1);
+      inputForm.setFieldValue(`t2`, res.data.data[0]?.t2);
+      inputForm.setFieldValue(`t3`, res.data.data[0]?.t3);
+      inputForm.setFieldValue(`t4`, res.data.data[0]?.t4);
+      inputForm.setFieldValue(`t5`, res.data.data[0]?.t5);
+      inputForm.setFieldValue(`t6`, res.data.data[0]?.t6);
+      inputForm.setFieldValue(`t7`, res.data.data[0]?.t7);
+      setCurrentItem(res.data.data[0]?.id);
     });
   };
-
-  const handleSelectionChange = useDebouncedCallback((actions, value) => {
-    switch (actions) {
-      case "loai_cv":
-        lookupData({ controller: "dmloaicv_lookup", value: value });
-        break;
-
-      case "assigned_name":
-        lookupData({ controller: "user_lookup", value: value });
-        break;
-
-      case "dept":
-        lookupData({ controller: "dmbp_lookup", value: value });
-        break;
-
-      case "tour":
-        lookupData({ controller: "dmtuyen_lookup", value: value });
-        break;
-      case "unit":
-        lookupData({ controller: "dmdvcs_lookup", value: value });
-        break;
-      default:
-        break;
-    }
-  }, 600);
-
-  useEffect(() => {}, [JSON.stringify(customers)]);
 
   useEffect(() => {
-    setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
+    setOpenModal(openModalState);
+    if (openModalState && openModalType === formStatus.EDIT) {
       setInitialValues({});
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      getDataEdit(currentRecord ? currentRecord : 0);
     }
-  }, [JSON.stringify(props)]);
+  }, [JSON.stringify(openModalState)]);
 
   return (
     <Modal
@@ -180,11 +174,11 @@ const ModalAddTaskSchedule = (props) => {
       centered
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
-      width={900}
+      width={1000}
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          openModalType == formStatus.EDIT ? "Sửa" : "Thêm mới"
         } lịch công việc`}</span>
       </div>
       <Form
@@ -207,47 +201,30 @@ const ModalAddTaskSchedule = (props) => {
 
         <div className="default_modal_group_items">
           <Space direction="horizontal">
-            <Space direction="vertical" style={{ width: "100%" }}>
-              <span className="default_bold_label">Loại công việc</span>
-              <Form.Item
-                name="taskType"
-                rules={[{ required: true, message: " chọn loại công việc" }]}
-              >
-                <Select
-                  showSearch
-                  placeholder={` nhập loại công việc`}
-                  style={{
-                    width: "100%",
-                  }}
-                  defaultActiveFirstOption={false}
-                  showArrow={false}
-                  filterOption={false}
-                  notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                  onSearch={(e) => {
-                    handleSelectionChange("loai_cv", e);
-                  }}
-                  onSelect={(e) => {
-                    setSelectOptions([]);
-                  }}
-                >
-                  {SelectItemCode(selectOptions)}
-                </Select>
-              </Form.Item>
-            </Space>
+            <FormSelect
+              disable={openModalState == formStatus.VIEW ? true : false}
+              controller={"dmloaicv_lookup"}
+              form={inputForm}
+              keyCode="taskType"
+              label="Loại công việc"
+              placeHolderCode={`Nhập loại công việc`}
+              required={true}
+            />
+
             <Space direction="vertical" style={{ width: "100%" }}>
               <span className="default_bold_label">Mức độ ưu tiên</span>
               <Form.Item
                 name="priority"
                 rules={[{ required: true, message: " mức độ ưu tiên" }]}
-                initialValue={"1"}
+                initialValue={"0"}
               >
                 <Select
                   placeholder="Chọn mức độ"
                   style={{ width: "100%" }}
                   options={[
-                    { value: "1", label: "Thấp" },
-                    { value: "2", label: "Trung bình" },
-                    { value: "3", label: "Cao" },
+                    { value: "0", label: "Thấp" },
+                    { value: "1", label: "Trung bình" },
+                    { value: "2", label: "Cao" },
                   ]}
                 />
               </Form.Item>
@@ -318,110 +295,50 @@ const ModalAddTaskSchedule = (props) => {
         </div>
 
         <div className="default_modal_group_items">
-          <Space direction="vertical">
-            <span className="default_bold_label">Người nhận việc</span>
-            <Form.Item
-              name="assignedName"
-              rules={[{ required: true, message: " điền người nhận việc" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Nhập người nhận việc`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("assigned_name", e);
-                }}
-                onSelect={(e) => {
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-          </Space>
-          <Space direction="vertical">
-            <span className="default_bold_label">Bộ phận</span>
-            <Form.Item name="deptName">
-              <Select
-                showSearch
-                placeholder={`Nhập bộ phận`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("dept", e);
-                }}
-                onSelect={(e) => {
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-          </Space>
-          <Space direction="vertical">
-            <span className="default_bold_label">Tuyến</span>
-            <Form.Item
-              name="tourName"
-              rules={[{ required: true, message: " nhập tên tuyến" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Nhập tuyến`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("tour", e);
-                }}
-                onSelect={(e) => {
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-          </Space>
+          <FormSelect
+            disable={openModalState == formStatus.VIEW ? true : false}
+            controller={"user_lookup"}
+            form={inputForm}
+            keyCode="assignedName"
+            label="Người nhận việc"
+            placeHolderCode={`Nhập người nhận việc`}
+            required={true}
+          />
+
+          <FormSelect
+            disable={openModalState == formStatus.VIEW ? true : false}
+            controller={"dmbp_lookup"}
+            form={inputForm}
+            keyCode="deptName"
+            label="Bộ phận"
+            placeHolderCode={`Nhập bộ phận`}
+            required={true}
+          />
+
+          <FormSelect
+            disable={openModalState == formStatus.VIEW ? true : false}
+            controller={"dmtuyen_lookup"}
+            form={inputForm}
+            keyCode="tourName"
+            label="Tuyến"
+            placeHolderCode={`Nhập tuyến`}
+            required={true}
+          />
         </div>
 
         <div className="default_modal_group_items group__item__justify__start">
+          <FormSelect
+            disable={openModalState == formStatus.VIEW ? true : false}
+            width={210}
+            controller={"dmdvcs_lookup"}
+            form={inputForm}
+            keyCode="unitCode"
+            label="Đơn vị"
+            placeHolderCode={`Chọn đơn vị`}
+            required={true}
+          />
+
           <Space direction="vertical" style={{ flex: "none" }}>
-            <span className="default_bold_label">Đơn vị</span>
-            <Form.Item name="unitCode">
-              <Select
-                showSearch
-                placeholder={`Chọn đơn vị`}
-                style={{ width: "210px" }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("unit", e);
-                }}
-                onSelect={(e) => {
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-          </Space>
-          <Space direction="vertical"  style={{ flex: "none" }}>
             <span className="default_bold_label">Loại lịch</span>
             <Form.Item
               style={{ flex: "none" }}
@@ -436,7 +353,7 @@ const ModalAddTaskSchedule = (props) => {
                   { value: "0", label: "Một lần" },
                   { value: "1", label: "Hàng ngày" },
                   { value: "2", label: "Hàng tuần" },
-                  { value: "2", label: "Hàng tháng" },
+                  { value: "3", label: "Hàng tháng" },
                 ]}
               />
             </Form.Item>
@@ -566,4 +483,4 @@ const ModalAddTaskSchedule = (props) => {
   );
 };
 
-export default ModalAddTaskSchedule;
+export default memo(ModalAddTaskSchedule);

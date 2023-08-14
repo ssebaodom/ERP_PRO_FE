@@ -1,18 +1,17 @@
+import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerArea.css";
-import { Input, Modal, Space, Button, Select, Form, notification } from "antd";
 
+import { useDebouncedCallback } from "use-debounce";
+import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import SelectItemCode from "../../../../Context/SelectItemCode";
+import SelectNotFound from "../../../../Context/SelectNotFound";
 import send_icon from "../../../../Icons/send_icon.svg";
 import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
   ApiWebLookup,
   SoFuckingUltimateApi,
+  SoFuckingUltimateGetApi,
 } from "../../API";
-import SelectNotFound from "../../../../Context/SelectNotFound";
-import { useDebouncedCallback } from "use-debounce";
-import SelectItemCode from "../../../../Context/SelectItemCode";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
 
 // bắt buộc khai báo bên ngoài
 
@@ -22,6 +21,7 @@ const ModalAddCustomerArea = (props) => {
   const [initialValues, setInitialValues] = useState({});
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
+  const [disableFields, setDisableFields] = useState(false);
 
   const lookupData = (item) => {
     setSelectLoading(true);
@@ -46,6 +46,7 @@ const ModalAddCustomerArea = (props) => {
     setOpenModal(false);
     props.handleCloseModal();
     inputForm.resetFields();
+    setDisableFields(false);
   };
 
   const onSubmitForm = () => {
@@ -53,6 +54,7 @@ const ModalAddCustomerArea = (props) => {
     SoFuckingUltimateApi({
       store: "Api_Create_area",
       data: {
+        action: props.openModalType === "EDIT" ? props.openModalType : "ADD",
         ma_khu_vuc: a.areaCode,
         ten_khu_vuc: a.areaName,
         ds_tinh: a.provinceCode.join(","),
@@ -82,13 +84,30 @@ const ModalAddCustomerArea = (props) => {
   const onSubmitFormFail = () => {};
 
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    SoFuckingUltimateGetApi({
+      store: "Get_Area",
+      data: {
+        id: id.trim(),
+        pageIndex: 1,
+        pageSize: 10,
+        SearchKey: "",
+        status: "",
+      },
+    }).then((res) => {
+      const provinceCode =
+        res.data[0]?.ds_tinh.trim().split(",")[0] !== ""
+          ? res.data[0]?.ds_quan.split(",")
+          : [];
+      const districtCode =
+        res.data[0]?.ds_quan.split(",")[0] !== ""
+          ? res.data[0]?.ds_quan.split(",")
+          : [];
+      inputForm.setFieldValue(`areaCode`, res.data[0]?.ma_khu_vuc);
+      inputForm.setFieldValue(`areaName`, res.data[0]?.ten_khu_vuc);
+      inputForm.setFieldValue(`provinceCode`, provinceCode);
+      inputForm.setFieldValue(`districtCode`, districtCode);
+      inputForm.setFieldValue(`status`, res.data[0]?.status);
+      setDisableFields(true);
     });
   };
 
@@ -108,8 +127,7 @@ const ModalAddCustomerArea = (props) => {
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
-      setInitialValues({});
+    if (props.openModalState && props.openModalType === "EDIT") {
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
   }, [JSON.stringify(props)]);
@@ -127,7 +145,7 @@ const ModalAddCustomerArea = (props) => {
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          props.openModalType == "EDIT" ? "Sửa" : "Thêm mới"
         } danh mục khu vực`}</span>
       </div>
       <Form
@@ -146,6 +164,7 @@ const ModalAddCustomerArea = (props) => {
               rules={[{ required: true, message: "Điền mã hình thức" }]}
             >
               <Input
+                disabled={disableFields}
                 onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
                 placeholder="Nhập mã hình thức"
               />
@@ -244,8 +263,8 @@ const ModalAddCustomerArea = (props) => {
             >
               <Select
                 options={[
-                  { value: 1, label: "Hoạt động" },
-                  { value: 0, label: "Huỷ" },
+                  { value: "1", label: "Hoạt động" },
+                  { value: "0", label: "Huỷ" },
                 ]}
               />
             </Form.Item>

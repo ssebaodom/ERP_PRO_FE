@@ -29,6 +29,7 @@
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "^9.6.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.0",
     "react-cookie": "^4.1.1",
@@ -43,7 +44,8 @@
     "universal-cookie": "^4.0.4",
     "use-debounce": "^9.0.3",
     "uuid": "^9.0.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -73,5 +75,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint-plugin-simple-import-sort": "^10.0.0"
   }
 }

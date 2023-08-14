@@ -1,8 +1,5 @@
-import axios from "./axiosInstance";
-import { APP_CONFIG } from "./constants";
-import jwt from "./jwt";
 import { notification } from "antd";
-
+import axios from "./axiosInstance";
 
 class HttpService {
   querySearch(params) {
@@ -20,9 +17,8 @@ class HttpService {
         return res;
       },
       (err) => {
-         console.log(err)
-         this.handleErorr(err.response, err.response.status);
-         return  err.response
+        this.handleErorr(err?.response, err?.response?.status);
+        return err.response;
       }
     );
   }
@@ -36,9 +32,8 @@ class HttpService {
         return res;
       },
       (err) => {
-        console.log()
-        this.handleErorr(err.response,err.response.status);
-        return  err.response
+        this.handleErorr(err?.response, err?.response?.status);
+        return err.response;
       }
     );
   }
@@ -52,8 +47,8 @@ class HttpService {
         return res;
       },
       (err) => {
-         this.handleErorr(err.response, err.response.status);
-         return  err.response
+        this.handleErorr(err?.response, err?.response?.status);
+        return err.response;
       }
     );
   }
@@ -67,14 +62,13 @@ class HttpService {
         return res;
       },
       (err) => {
-        this.handleErorr(err.response, err.response.status);
-        return  err.response
+        this.handleErorr(err?.response, err?.response?.status);
+        return err.response;
       }
     );
   }
 
   handleErorr(error, code = null) {
-    console.log(code)
     switch (code) {
       case 500:
         notification.warning({
@@ -93,7 +87,9 @@ class HttpService {
       default:
         notification.error({
           message: `Có lỗi phát sinh`,
-          description: `Lỗi: ${error?.statusText?error?.statusText:'Không xác định'}`,
+          description: `Lỗi: ${
+            error?.statusText ? error?.statusText : "Không xác định"
+          }`,
         });
         break;
     }

@@ -1,7 +1,7 @@
+import { lazy } from "react";
 import Home from "../pages/Home/Home";
 import App from "../App";
 import Invoices from "../pages/Invoices";
-import Login from "../pages/Login/Login";
 import KPIChecin from "../components/KPI/Pages/KPICheckin/KPIChecin";
 import KPISaleIn from "../components/KPI/Pages/KPISaleIn/KPISaleIn";
 import HDMH from "../components/Invoices/Pages/HDMH/HDMH";
@@ -18,6 +18,10 @@ import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomer
 import imageRoutes from "./images";
 import System from "../pages/System/Pages/System";
 import systemRoutes from "./system";
+
+const Login = lazy(() =>
+  import("../pages/Login/Login")
+);
 
 const homeRoutes = [
   {

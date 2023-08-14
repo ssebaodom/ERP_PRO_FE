@@ -1,35 +1,37 @@
+import { Button, Form, Input, Modal, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerResource.css";
-import { Input, Modal, Space, Button, Select, Form } from "antd";
 
 import send_icon from "../../../../Icons/send_icon.svg";
-import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  SoFuckingUltimateApi,
-} from "../../API";
+import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 import { notification } from "antd";
+import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
 
 // bắt buộc khai báo bên ngoài
 
 const ModalAddCustomerResource = (props) => {
+  ////////////////////////////////////////-Init-//////////////////////////////////////////
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
+  const [disableFields, setDisableFields] = useState(false);
+
+  ////////////////////////////////////////-Functions-//////////////////////////////////////////
 
   const handleCancelModal = () => {
     setOpenModal(false);
     props.handleCloseModal();
     inputForm.resetFields();
+    setDisableFields(false);
   };
 
   const onSubmitForm = () => {
     const a = { ...inputForm.getFieldsValue() };
-
     SoFuckingUltimateApi({
       store: "Api_Create_Customer_Resouce",
       data: {
+        action: props.openModalType === "EDIT" ? props.openModalType : "ADD",
         ma_nguon: a.resourceCode,
         ten_nguon: a.resourceName,
         status: a.status,
@@ -57,20 +59,29 @@ const ModalAddCustomerResource = (props) => {
   const onSubmitFormFail = () => {};
 
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    SoFuckingUltimateGetApi({
+      store: "Get_Customer_Source",
+      data: {
+        id: id.trim(),
+        pageIndex: 1,
+        pageSize: 10,
+        SearchKey: "",
+        status: "",
+      },
+    }).then((res) => {
+      inputForm.setFieldValue(`resourceCode`, res.data[0]?.ma_nguon.trim());
+      inputForm.setFieldValue(`resourceName`, res.data[0]?.ten_nguon.trim());
+      inputForm.setFieldValue(`status`, res.data[0]?.status);
+
+      setDisableFields(true);
     });
   };
 
+  ////////////////////////////////////////-Effect-//////////////////////////////////////////
+
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
-      setInitialValues({});
+    if (props.openModalState && props.openModalType === "EDIT") {
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
   }, [JSON.stringify(props)]);
@@ -88,7 +99,7 @@ const ModalAddCustomerResource = (props) => {
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          props.openModalType == "EDIT" ? "Sửa" : "Thêm mới"
         } danh mục nguồn khách hàng`}</span>
       </div>
       <Form
@@ -106,7 +117,11 @@ const ModalAddCustomerResource = (props) => {
               name="resourceCode"
               rules={[{ required: true, message: "Điền mã nguồn" }]}
             >
-              <Input placeholder="Nhập mã nguồn" />
+              <Input
+                disabled={disableFields}
+                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                placeholder="Nhập mã nguồn"
+              />
             </Form.Item>
           </div>
         </div>

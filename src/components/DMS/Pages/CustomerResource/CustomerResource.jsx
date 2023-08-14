@@ -1,17 +1,13 @@
-import React from "react";
-import "./CustomerResource.css";
-import { Button, Space, Table } from "antd";
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
-import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTourList } from "../../API";
+import { Button, notification, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import TableLocale from "../../../../Context/TableLocale";
+import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 import ModalAddCustomerResource from "../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
+import "./CustomerResource.css";
 
 const CustomerResource = () => {
   // initialize #########################################################################
@@ -19,16 +15,11 @@ const CustomerResource = () => {
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    keywords: "",
-    orderby: "ma_tuyen",
-    ma_nv: "",
-    mo_ta: "",
-    ten_nv: "",
-    ma_tuyen: "",
-    ten_tuyen: "",
+    SearchKey: "",
+    status: "",
   });
   const [pagination, setPagination] = useState({
-    pageindex: 1,
+    pageIndex: 1,
     pageSize: 10,
   });
   const [totalResults, setTotalResults] = useState(0);
@@ -37,21 +28,22 @@ const CustomerResource = () => {
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   //functions #########################################################################
 
   const refreshData = () => {
-    setPagination({ ...pagination, pageindex: 1, current: 1 });
-    if (pagination.pageindex === 1) {
+    setPagination({ ...pagination, pageIndex: 1, current: 1 });
+    if (pagination.pageIndex === 1) {
       setLoading(true);
       getdata();
     }
   };
 
   const handleEdit = (record) => {
-    setCurrentRecord(record.id);
+    setCurrentRecord(record.ma_nguon);
     setOpenModalAddTaskState(true);
-    setOpenModalType("Edit");
+    setOpenModalType("EDIT");
   };
 
   const handleOpenDeleteDialog = (record) => {
@@ -59,10 +51,29 @@ const CustomerResource = () => {
     setCurrentItemSelected(record);
   };
 
-  const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
-    handleCloseDeleteDialog();
-    refreshData();
+  const handleDelete = (keys) => {
+    SoFuckingUltimateApi({
+      store: "api_delete_customer_resource",
+      data: {
+        id: keys.replaceAll(" ", ""),
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+          setSelectedRowKeys([]);
+          handleCloseDeleteDialog();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {});
   };
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
@@ -70,7 +81,11 @@ const CustomerResource = () => {
   };
 
   const getdata = () => {
-    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
+    delete pagination?.current;
+    SoFuckingUltimateGetApi({
+      store: "Get_Customer_Source",
+      data: { ...tableParams, ...pagination },
+    }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: " ",
@@ -78,45 +93,25 @@ const CustomerResource = () => {
         editable: false,
         dataType: "Operation",
         fixed: "right",
-        align:'Center',
+        align: "Center",
         render: (_, record) => {
           return (
-            <span
-              style={{
-                display: "flex",
-                gap: "15px",
-                height: "20px",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
+            <OperationColumn
+              record={record}
+              editFunction={handleEdit}
+              deleteFunction={handleOpenDeleteDialog}
+            />
           );
         },
       });
       setTableColumns(layout);
       const data = res.data;
       data.map((item, index) => {
-        item.key = item.ma_tuyen;
+        item.key = item.ma_nguon;
         return item;
       });
       setData(data);
-      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res?.pagegination?.totalRecord);
       setLoading(false);
     });
   };
@@ -124,11 +119,11 @@ const CustomerResource = () => {
   const handleTableChange = (paginationChanges, filters, sorter) => {
     setPagination({
       ...pagination,
-      pageindex: paginationChanges.current,
+      pageIndex: paginationChanges.current,
       current: paginationChanges.current,
     });
     setTableParams({ ...tableParams, ...filters, ...sorter });
-
+    setSelectedRowKeys([]);
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== pagination?.pageSize) {
       setData([]);
@@ -137,8 +132,30 @@ const CustomerResource = () => {
 
   const openModalAddTask = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
-    setOpenModalType("Add");
+    setOpenModalType("ADD");
     setCurrentRecord(0);
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    setSelectedRowKeys([...keys]);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        return record.key;
+      });
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
   };
 
   // effectively #########################################################################
@@ -155,6 +172,20 @@ const CustomerResource = () => {
           <span className="sub_text_color">{totalResults}</span>)
         </span>
         <div className="list__header__tools">
+          {selectedRowKeys.length > 0 && (
+            <>
+              <Button
+                className="default_button"
+                danger
+                onClick={handleOpenDeleteDialog}
+                icon={<i className="pi pi-trash"></i>}
+              >
+                <span
+                  style={{ fontWeight: "bold" }}
+                >{`Xoá ${selectedRowKeys.length} nguồn`}</span>
+              </Button>
+            </>
+          )}
           <Button
             className="default_button"
             onClick={openModalAddTask}
@@ -170,14 +201,15 @@ const CustomerResource = () => {
           </Button>
         </div>
       </div>
-      <div className="task__list__data_container">
+      <div className="h-full min-h-0">
         <Table
           columns={tableColumns}
-          rowSelection={true}
+          rowSelection={rowSelection}
           rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
+          locale={TableLocale()}
           pagination={{
             ...pagination,
             total: totalResults,
@@ -199,9 +231,14 @@ const CustomerResource = () => {
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá công việc : ${currentItemSelected.ten_tuyen}`}
+        description={`Xoá mã : ${currentItemSelected.ma_nguon}, tên nguồn: ${currentItemSelected.ten_nguon}`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
+        keys={
+          currentItemSelected.ma_nguon
+            ? currentItemSelected.ma_nguon
+            : selectedRowKeys.join(",").trim()
+        }
       />
     </div>
   );

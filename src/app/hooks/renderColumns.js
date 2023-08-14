@@ -1,7 +1,7 @@
-import React from "react";
+import { Checkbox, Image } from "antd";
 import dayjs from "dayjs";
+import React from "react";
 import { datetimeFormat } from "../Options/DataFomater";
-import { Checkbox } from "antd";
 
 const renderColumns = (columns) => {
   let layout = [];
@@ -16,7 +16,6 @@ const renderColumns = (columns) => {
       return "Center";
     }
     if (item.type === "Operation") {
-      console.log(1)
       return "Center";
     }
     return "Left";
@@ -31,10 +30,16 @@ const renderColumns = (columns) => {
       align: getAlignment(item),
       render: (data) => {
         if (item.type === "Datetime") {
-          return dayjs(data).format(datetimeFormat);
+          if (dayjs(data).isValid()) {
+            return dayjs(data).format(datetimeFormat);
+          }
+          return "Không có dữ liệu";
         }
         if (item.type === "Boolean") {
           return <Checkbox checked={data}></Checkbox>;
+        }
+        if (item.type === "Image") {
+          return <Image src={data} alt={"SSE"} />;
         }
         return data;
       },

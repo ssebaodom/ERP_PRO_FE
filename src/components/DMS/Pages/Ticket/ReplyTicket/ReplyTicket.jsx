@@ -1,18 +1,20 @@
-import React from "react";
-import "./ReplyTicket.css";
-import { useEffect, useState } from "react";
-import { ApiGetTicketList } from "../../../API";
-import { Avatar, Button, Card, Input, Segmented, Space } from "antd";
-import dayjs from "dayjs";
 import {
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  SendOutlined,
-  EditOutlined,
-  SaveOutlined,
   CloseOutlined,
   DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  SaveOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
+import { Avatar, Button, Input, Segmented, Space } from "antd";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import { filterKeyHelper } from "../../../../../app/Functions/filterHelper";
+import LoadingComponents from "../../../../Loading/LoadingComponents";
+import { SoFuckingUltimateGetApi } from "../../../API";
+import "./ReplyTicket.css";
 
 const ReplyTicket = () => {
   // initialize #########################################################################
@@ -34,6 +36,7 @@ const ReplyTicket = () => {
   const [ticketData, setTicketData] = useState([]);
   const [selectedItem, setSelectedItem] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [replyContain, setReplyContain] = useState("");
 
   //functions #########################################################################
 
@@ -41,14 +44,23 @@ const ReplyTicket = () => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
       setLoading(true);
-      getdata();
     }
   };
 
   const getdata = () => {
-    ApiGetTicketList({ ...tableParams, ...pagination }).then((res) => {
-      setTicketData(res.data.data);
-      setSelectedItem(res.data.data[0]);
+    const params = { ...tableParams, oderby: tableParams.orderby };
+    delete params.orderby;
+
+    SoFuckingUltimateGetApi({
+      store: "get_vticket",
+      data: {
+        ...{ ...params, oderby: tableParams.orderby },
+        ...pagination,
+      },
+    }).then((res) => {
+      setTicketData(res.data);
+      setSelectedItem(res.data[0]);
+      setLoading(false);
     });
   };
 
@@ -66,6 +78,7 @@ const ReplyTicket = () => {
   };
 
   const handleEditReplySave = () => {
+    setSelectedItem({ ...selectedItem, phan_hoi: replyContain });
     setIsEditing(false);
   };
 
@@ -75,9 +88,18 @@ const ReplyTicket = () => {
     setIsEditing(false);
   };
 
+  const handleSearch = useDebouncedCallback((e) => {
+    const searchValue = filterKeyHelper(e.target.value);
+    setTableParams({ ...tableParams, keywords: searchValue });
+  }, 600);
+
+  const handleChangeReply = useDebouncedCallback((e) => {
+    setReplyContain(e.target.value);
+  }, 600);
+
   // effectively #########################################################################
   useEffect(() => {
-    console.log('Changed')
+    console.log("Changed");
     setLoading(true);
     getdata();
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
@@ -85,8 +107,8 @@ const ReplyTicket = () => {
   return (
     <div className="page_2_side_default">
       <div
-        className="page_2_side_default_left ticket__container"
-        style={{ flex: "0.4" }}
+        className="page_2_side_default_left ticket__container relative"
+        style={{ flex: "0.3" }}
       >
         <div className="ticket__tools_bar">
           <Input
@@ -95,6 +117,7 @@ const ReplyTicket = () => {
               height: "30px",
             }}
             size="middle"
+            onChange={handleSearch}
             className="default_input"
             placeholder="Tìm kiếm..."
           />
@@ -115,23 +138,25 @@ const ReplyTicket = () => {
           />
         </div>
 
-        <div className="ticket__container__detail">
-          {ticketData.map((item, index) => (
-            <div
-              key={index}
-              className={`ticket__card ${
-                item.id_ticket === selectedItem.id_ticket
-                  ? "ticket__selected"
-                  : ""
-              }`}
-              onClick={(e) => {
-                handleClickItem(item);
-              }}
-            >
-              <div className="ticket__info__container">
-                <div className="ticket__customer__info">
+        {loading ? (
+          <LoadingComponents loading={loading} text="Đang tải" size={50} />
+        ) : (
+          <div className="ticket__container__detail">
+            {ticketData.map((item, index) => (
+              <div
+                key={index}
+                className={`ticket__card ${
+                  item.id_ticket === selectedItem.id_ticket
+                    ? "ticket__selected"
+                    : ""
+                }`}
+                onClick={(e) => {
+                  handleClickItem(item);
+                }}
+              >
+                <div className="ticket__info__container">
                   <Avatar
-                    size={"large"}
+                    size={50}
                     style={{
                       backgroundColor: "#fde3cf",
                       color: "#f56a00",
@@ -139,43 +164,35 @@ const ReplyTicket = () => {
                       flexShrink: 0,
                     }}
                   >
-                    {item?.ma_kh.substr(0, 1)}
+                    {item?.ma_kh?.substr(0, 1)}
                   </Avatar>
-                  <span>
-                    Khách hàng:{" "}
-                    <span
-                      className="main_text_color"
-                      style={{ fontWeight: "bold" }}
-                    >
-                      {item.ten_kh ? item.ten_kh.trim() : ""}
-                    </span>
-                  </span>
-                </div>
-                <div className="ticket__info">
-                  <p>Loại: {item.ten_loai ? item.ten_loai.trim() : ""}</p>
-                  <p>Ngày: {dayjs(item.time).format("DD/MM/YYYY")}</p>
+                  <div className="ticket__detail__container">
+                    <p style={{ fontWeight: "bold" }}>
+                      {item?.ten_kh ? item?.ten_kh.trim() : "Không có dữ liệu"}
+                    </p>
+
+                    <p>{dayjs(item?.time).format("DD/MM/YYYY")}</p>
+
+                    <span>{item?.dien_giai.trim()}</span>
+                  </div>
                 </div>
               </div>
-              <div className="ticket__detail__container">
-                <span>{item.dien_giai.trim()}</span>
-              </div>
-              <span className="right_icon">></span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div
         className="page_2_side_default_right  right__side__ticket__detail"
-        style={{ flex: "0.6", padding: "16px", background: "#fff" }}
+        style={{ flex: "0.7", background: "#fff" }}
       >
         <div className="detail__info__customer__container">
           <Space
+            className="detail__info__customer"
             direction="horizontal"
             style={{
               justifyContent: "space-between",
-              borderBottom: "1px solid #657194",
-              paddingBottom: "10px",
+              padding: "10px",
             }}
             align="start"
           >
@@ -189,7 +206,7 @@ const ReplyTicket = () => {
                   flexShrink: 0,
                 }}
               >
-                {selectedItem.ma_kh ? selectedItem.ma_kh.substr(0, 1) : ""}
+                {selectedItem?.ma_kh ? selectedItem?.ma_kh.substr(0, 1) : ""}
               </Avatar>
               <Space direction="vertical">
                 <span>
@@ -198,7 +215,7 @@ const ReplyTicket = () => {
                     className="main_text_color"
                     style={{ fontWeight: "bold" }}
                   >
-                    {selectedItem.ma_kh}
+                    {selectedItem?.ma_kh}
                   </span>
                 </span>
                 <span>
@@ -207,8 +224,8 @@ const ReplyTicket = () => {
                     className="main_text_color"
                     style={{ fontWeight: "bold" }}
                   >
-                    {selectedItem.ten_kh
-                      ? selectedItem.ten_kh
+                    {selectedItem?.ten_kh
+                      ? selectedItem?.ten_kh
                       : "Không có dữ liệu"}
                   </span>
                 </span>
@@ -221,8 +238,8 @@ const ReplyTicket = () => {
                   className="main_text_color"
                   style={{ fontWeight: "bold" }}
                 >
-                  {selectedItem.ten_loai
-                    ? selectedItem.ten_loai
+                  {selectedItem?.ten_loai
+                    ? selectedItem?.ten_loai
                     : "Không có dữ liệu"}
                 </span>
               </span>
@@ -232,8 +249,8 @@ const ReplyTicket = () => {
                   className="main_text_color"
                   style={{ fontWeight: "bold" }}
                 >
-                  {selectedItem.time
-                    ? dayjs(selectedItem.time).format("DD/MM/YYYY")
+                  {selectedItem?.time
+                    ? dayjs(selectedItem?.time).format("DD/MM/YYYY")
                     : "Không có dữ liệu"}
                 </span>
               </span>
@@ -243,8 +260,8 @@ const ReplyTicket = () => {
                   className="main_text_color"
                   style={{ fontWeight: "bold" }}
                 >
-                  {selectedItem.time
-                    ? dayjs(selectedItem.time).format("HH:mm:ss")
+                  {selectedItem?.time
+                    ? dayjs(selectedItem?.time).format("HH:mm:ss")
                     : "Không có dữ liệu"}
                 </span>
               </span>
@@ -256,12 +273,13 @@ const ReplyTicket = () => {
             direction="vertical"
           >
             <span className="default_header_label">Nội dung :</span>
-            <span>{selectedItem.dien_giai}</span>
+            <span>{selectedItem?.dien_giai}</span>
           </Space>
 
           <Space
             direction="vertical"
-            className={`${selectedItem.status == 0 ? "hidden" : ""}`}
+            style={{ padding: "10px" }}
+            className={`${selectedItem?.status == 0 ? "hidden" : ""}`}
           >
             <Space
               style={{
@@ -279,8 +297,8 @@ const ReplyTicket = () => {
                     className="main_text_color"
                     style={{ fontWeight: "bold" }}
                   >
-                    {selectedItem.ten_nvbh2
-                      ? selectedItem.ten_nvbh2
+                    {selectedItem?.ten_nvbh2
+                      ? selectedItem?.ten_nvbh2
                       : "Không có dữ liệu"}
                   </span>
                 </span>
@@ -290,8 +308,8 @@ const ReplyTicket = () => {
                     className="main_text_color"
                     style={{ fontWeight: "bold" }}
                   >
-                    {selectedItem.time2
-                      ? dayjs(selectedItem.time2).format("DD/MM/YYYY HH:mm:ss")
+                    {selectedItem?.time2
+                      ? dayjs(selectedItem?.time2).format("DD/MM/YYYY HH:mm:ss")
                       : "Không có dữ liệu"}
                   </span>
                 </span>
@@ -307,11 +325,12 @@ const ReplyTicket = () => {
                     minRows: 1,
                     maxRows: 6,
                   }}
-                  defaultValue={selectedItem.phan_hoi}
+                  onChange={handleChangeReply}
+                  defaultValue={selectedItem?.phan_hoi}
                   placeholder="Nội dung..."
                 ></Input.TextArea>
               ) : (
-                <span>{selectedItem.phan_hoi}</span>
+                <span>{selectedItem?.phan_hoi}</span>
               )}
 
               {isEditing ? (
@@ -323,6 +342,7 @@ const ReplyTicket = () => {
                   />
                   <Button
                     onClick={handleEditReplySave}
+                    danger={false}
                     type="primary"
                     shape="circle"
                     icon={<SaveOutlined />}

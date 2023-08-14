@@ -1,8 +1,9 @@
+import { notification } from "antd";
 import axios from "axios";
+import { refreshToken } from "../api";
+import router from "../router/routes";
 import { APP_CONFIG } from "./constants";
 import jwt from "./jwt";
-import router from "../router/routes";
-import { notification } from "antd";
 
 const instance = axios.create({
   timeout: 20000,
@@ -30,30 +31,43 @@ instance.interceptors.response.use(
     return res;
   },
   async (error) => {
-    const config = error.config;
-    if (config.url.includes("/login") || config.url.includes("/refreshToken")) {
+    const config = error?.config;
+    const controller = new AbortController();
+
+    if (
+      config.url.includes("login") ||
+      config.url.includes("Authentication/Refresh")
+    ) {
+      controller.abort();
       jwt.resetAccessToken();
       router.navigate("/login");
       return Promise.reject(error);
     }
+
     if (error.response.status === 401) {
-      const access_token = await jwt.claimNewToken();
-      if (access_token) {
-        instance.defaults.headers.Authorization = access_token;
-        return instance(config);
-      }
-      if (!access_token) {
+      try {
+        const access_token = await refreshToken().then((res) => {
+          return res.data;
+        });
+        if (access_token && access_token.length > 0) {
+          instance.defaults.headers.Authorization = `Bearer ${access_token}`;
+          jwt.resetAccessToken(access_token);
+          return instance(config);
+        }
+      } catch (error) {
+        controller.abort();
         jwt.resetAccessToken();
         router.navigate("/login");
       }
-      return Promise.reject(error);
     }
+
     if (error.response.status === 403) {
       notification.warning({
         message: `Bạn không có quyền truy cập.`,
         description: "Vui lòng liên hệ người quản lý !",
       });
-      return router.navigate("/login");
+      controller.abort();
+      router.navigate(-1);
     }
 
     return Promise.reject(error);

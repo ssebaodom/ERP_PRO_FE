@@ -1,23 +1,23 @@
-import React from "react";
-import "./TourList.css";
-import { Button, Space, Table } from "antd";
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
-import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTourList } from "../../API";
+import { notification, Table } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { handleImportExcel } from "../../../../app/Functions/importExcel";
+import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import TableLocale from "../../../../Context/TableLocale";
+import { formStatus } from "../../../../utils/constants";
+import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
+import { ApiGetTourList, SoFuckingUltimateApi } from "../../API";
 import ModalAddTour from "../../Modals/ModalAddTour/ModalAddTour";
+import "./TourList.css";
 
 const TourList = () => {
   // initialize #########################################################################
   const [data, setData] = useState();
+  const [importData, setImoprtData] = useState();
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
+  const printRef = useRef();
   const [tableParams, setTableParams] = useState({
     keywords: "",
     orderby: "ma_tuyen",
@@ -37,6 +37,7 @@ const TourList = () => {
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   //functions #########################################################################
 
@@ -44,62 +45,68 @@ const TourList = () => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
       setLoading(true);
-      getdata();
     }
   };
 
   const handleEdit = (record) => {
     setCurrentRecord(record.ma_tuyen);
     setOpenModalAddTaskState(true);
-    setOpenModalType("Edit");
+    setOpenModalType("EDIT");
   };
 
   const handleOpenDeleteDialog = (record) => {
     setIsOpenModalDeleteTask(true);
-    setCurrentItemSelected(record);
+    setCurrentItemSelected(record ? record : {});
   };
 
-  const handleDelete = () => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
-    handleCloseDeleteDialog();
-    refreshData();
+  const handleDelete = (keys) => {
+    SoFuckingUltimateApi({
+      store: "api_delete_tour_list",
+      data: {
+        ma_tuyen: keys.replaceAll(" ", ""),
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+          handleCloseDeleteDialog();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {});
   };
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
+    setSelectedRowKeys([]);
   };
 
   const getdata = () => {
+    delete pagination?.current;
     ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",
         dataIndex: "",
-        editable: false,  
+        editable: false,
         dataType: "Operation",
-        
+
         align: "center",
         fixed: "right",
         render: (_, record) => {
           return (
-            <span style={{ display: "flex", gap: "15px", height: "20px", justifyContent: "center",  }}>
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
+            <OperationColumn
+              record={record}
+              editFunction={handleEdit}
+              deleteFunction={handleOpenDeleteDialog}
+            />
           );
         },
       });
@@ -110,7 +117,7 @@ const TourList = () => {
         return item;
       });
       setData(data);
-      setTotalResults(res.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.pagegination.totalRecord);
       setLoading(false);
     });
   };
@@ -122,7 +129,7 @@ const TourList = () => {
       current: paginationChanges.current,
     });
     setTableParams({ ...tableParams, ...filters, ...sorter });
-
+    setSelectedRowKeys([]);
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== pagination?.pageSize) {
       setData([]);
@@ -131,8 +138,38 @@ const TourList = () => {
 
   const openModalAddTask = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
-    setOpenModalType("Add");
+    setOpenModalType(formStatus.ADD);
     setCurrentRecord(0);
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    setSelectedRowKeys([...keys]);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        return record.key;
+      });
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
+  };
+
+  const handlePrint = (event) => {
+    handleImportExcel(event, setImoprtData);
+  };
+
+  const changePaginations = (item) => {
+    setPagination({ ...pagination, pageSize: item });
   };
 
   // effectively #########################################################################
@@ -141,37 +178,32 @@ const TourList = () => {
     getdata();
   }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
+  useEffect(() => {
+    console.log(importData);
+  }, [JSON.stringify(importData)]);
+
   return (
     <div className="default_list_layout page_default">
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách tuyến (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          <Button
-            className="default_button"
-            onClick={openModalAddTask}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
-      <div className="task__list__data_container">
+      <HeaderTableBar
+        name={"tuyến"}
+        title={"Danh sách tuyến"}
+        changePaginations={changePaginations}
+        totalResults={totalResults}
+        addEvent={openModalAddTask}
+        refreshEvent={refreshData}
+        deleteItems={{
+          delete: handleOpenDeleteDialog,
+          count: selectedRowKeys.length,
+        }}
+      />
+      <div className="h-full min-h-0">
         <Table
           columns={tableColumns}
-          rowSelection={true}
-          rowKey={(record) => record.key}
+          rowSelection={rowSelection}
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
+          locale={TableLocale()}
           pagination={{
             ...pagination,
             total: totalResults,
@@ -188,13 +220,26 @@ const TourList = () => {
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
       />
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá tuyến : ${currentItemSelected.ma_tuyen} - ${currentItemSelected.ten_tuyen}`}
+        description={`Xoá  ${
+          currentItemSelected.ma_tuyen
+            ? "tuyến : " +
+              currentItemSelected.ma_tuyen +
+              " - " +
+              currentItemSelected.ten_tuyen
+            : `${selectedRowKeys.length} tuyến`
+        }`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
+        keys={
+          currentItemSelected.ma_tuyen
+            ? currentItemSelected.ma_tuyen
+            : selectedRowKeys.join(",").trim()
+        }
       />
     </div>
   );

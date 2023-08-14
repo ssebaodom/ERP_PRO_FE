@@ -1,9 +1,46 @@
-import { Input, InputNumber, DatePicker, Form, Select } from "antd";
-import React from "react";
+import { DatePicker, Form, Input, InputNumber, Select } from "antd";
+import React, { useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import { ApiWebLookup } from "../../components/DMS/API";
+import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
-import { quantityFormat, datetimeFormat } from "../Options/DataFomater";
+import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
-const renderCells = (cell) => {
+const RenderCells = (cell, form) => {
+  const [selectLoading, setSelectLoading] = useState(false);
+  const [selectOptions, setSelectOptions] = useState([]);
+  const lookupData = async (item) => {
+    await setSelectLoading(true);
+    ApiWebLookup({
+      userId: "1",
+      controller: item.controller,
+      pageIndex: 1,
+      FilterValueCode: item.value.trim(),
+    }).then((res) => {
+      const resOptions = res.data.map((item) => {
+        return {
+          value: item.code.trim(),
+          label: item.name.trim(),
+        };
+      });
+      setSelectLoading(false);
+      setSelectOptions([...resOptions]);
+    });
+  };
+
+  const handleSelectionChange = useDebouncedCallback((actions, value) => {
+    lookupData({ controller: actions, value: value });
+  }, 600);
+
+  const onChangeSelection = (key, item) => {
+    if (cell.reference) {
+      form.setFieldValue(
+        `${cell.record.key}_${cell.reference}`,
+        item.label.trim()
+      );
+    }
+  };
+
   let inputNode;
   switch (cell.inputType) {
     case "Numeric":
@@ -25,12 +62,17 @@ const renderCells = (cell) => {
           }}
           defaultActiveFirstOption={false}
           showArrow={false}
-          notFoundContent={SelectNotFound(false, cell.lookupData)}
+          dropdownStyle={{ minWidth: "30%" }}
+          notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           filterOption={false}
-          onSearch={cell.searchItem}
-          onChange={cell.handleChange}
-          options={cell.lookupData}
-        />
+          onSearch={(e) => {
+            handleSelectionChange(cell.controller, e);
+          }}
+          optionLabelProp="value"
+          onSelect={onChangeSelection}
+        >
+          {SelectItemCode(selectOptions)}
+        </Select>
       );
 
       break;
@@ -63,4 +105,4 @@ const renderCells = (cell) => {
   );
 };
 
-export default renderCells;
+export default RenderCells;

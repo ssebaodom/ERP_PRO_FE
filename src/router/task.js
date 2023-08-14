@@ -1,10 +1,9 @@
-import TaskList from "../components/DMS/Pages/Task/TaskList";
 import Test from "../components/DMS/Modals/Test";
-import Home from "../pages/Home/Home";
-import Invoices from "../pages/Invoices";
 import Maps from "../components/DMS/Pages/Maps/Maps";
-import TaskTypeList from "../components/DMS/Pages/TaskType/TaskTypeList";
+import TaskList from "../components/DMS/Pages/Task/TaskList";
 import TaskSchedule from "../components/DMS/Pages/TaskSchedule/TaskSchedule";
+import TaskTypeList from "../components/DMS/Pages/TaskType/TaskTypeList";
+import Home from "../pages/Home/Home";
 
 const taskRoutes = [
   {

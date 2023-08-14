@@ -23,8 +23,9 @@
     flex-direction: column;
     gap: 10px;
     justify-content: space-between;
+    padding-top: 12px;
 }
 
-.image__detail__info > *{
+.image__detail__info>* {
     flex: none;
 }

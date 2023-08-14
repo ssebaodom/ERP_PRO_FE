@@ -1,13 +1,8 @@
+import { Image, Modal } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalDetailImages.css";
-import { Image, Modal, Space } from "antd";
 
-import send_icon from "../../../../Icons/send_icon.svg";
-import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  SoFuckingUltimateApi,
-} from "../../API";
+import { ApiGetTaskMaster } from "../../API";
 
 const ModalDetailImages = (props) => {
   const [isOpenModal, setOpenModal] = useState();
@@ -44,7 +39,7 @@ const ModalDetailImages = (props) => {
       <div className="default_modal_header">
         <span className="default_header_label">Xem ảnh</span>
       </div>
-      <div className="default_modal_container">
+      <div className="default_modal_container p-0">
         <div className="default_modal_group_items">
           <Image
             style={{ flex: "0.6" }}

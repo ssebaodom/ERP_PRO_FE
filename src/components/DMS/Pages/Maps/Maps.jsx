@@ -1,9 +1,7 @@
 import { Button, Space, Table } from "antd";
-import React from "react";
-import renderColumns from "../../../../app/hooks/renderColumns";
-import "./Maps.css";
+import React, { useState } from "react";
 import send_icon from "../../../../Icons/send_icon.svg";
-import { useState } from "react";
+import "./Maps.css";
 
 const Maps = () => {
   const [selectedLatlong1, setSelectedLatlong1] = useState(
@@ -81,7 +79,7 @@ const Maps = () => {
           rowKey={(record) => record.key}
           dataSource={data}
           rowClassName={"default_table_row"}
-          className=".default_table_none_pagination"
+          className="default_table_none_pagination"
           pagination={{
             position: ["none"],
             showSizeChanger: false,

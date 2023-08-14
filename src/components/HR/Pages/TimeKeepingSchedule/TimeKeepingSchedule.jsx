@@ -1,6 +1,6 @@
 import React from "react";
 import HROptions from "../../Modals/HROptions";
-import { Button, Table, Image, DatePicker,Checkbox } from "antd";
+import { Button, Table, Image, DatePicker, Checkbox } from "antd";
 import router from "../../../../router/routes";
 import { useState } from "react";
 import { ApiGetTimekeepingSchedule } from "../../API";
@@ -16,12 +16,9 @@ import {
 const { RangePicker } = DatePicker;
 
 const TimeKeepingSchedule = () => {
-
-  const handletest = (e,key)=>{
-    console.log(key)
-  }
-
-
+  const handletest = (e, key) => {
+    console.log(key);
+  };
 
   const [tableColumn, setTableColumn] = useState([]);
   const [data, setData] = useState([]);
@@ -35,6 +32,8 @@ const TimeKeepingSchedule = () => {
     position: ["bottomLeft"],
     className: "default_pagination_bar",
   });
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchData = (params) => {
     ApiGetTimekeepingSchedule(params).then((res) => {
@@ -71,7 +70,13 @@ const TimeKeepingSchedule = () => {
           return (old = [
             ...old,
             {
-              title: <span> <Checkbox onChange={(e)=>handletest(e,key)}></Checkbox>{parseInt(key) + 1}</span>,
+              title: (
+                <span>
+                  {" "}
+                  <Checkbox onChange={(e) => handletest(e, key)}></Checkbox>
+                  {parseInt(key) + 1}
+                </span>
+              ),
               dataIndex: key,
               textWrap: "word-break",
               render: (checked) => (
@@ -99,12 +104,54 @@ const TimeKeepingSchedule = () => {
           ]);
         });
       });
+      setLoading(false);
     });
   };
 
+  const handleTableChange = (paginationChanges, filters, sorter) => {
+    setPagination({
+      ...pagination,
+      pageindex: paginationChanges.current,
+      current: paginationChanges.current,
+    });
+    setTableParams({ ...tableParams, ...filters, ...sorter });
+    setSelectedRowKeys([]);
+
+    // `dataSource` is useless since `pageSize` changed
+    if (pagination.pageSize !== pagination?.pageSize) {
+      setData([]);
+    }
+  };
+
+  const onSelect = async (record, selected, selectedRows) => {
+    const keys = selectedRows.map((item) => item.key);
+    console.log(selectedRows);
+    setSelectedRowKeys([...keys]);
+  };
+
+  const onSelectAll = (selected, selectedRows) => {
+    console.log(selectedRows);
+    if (selected) {
+      const selectedKeys = selectedRows.map((record) => {
+        return record.key;
+      });
+      setSelectedRowKeys([...selectedKeys]);
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onSelectAll: onSelectAll,
+    onSelect: onSelect,
+  };
+
+    // effectively #########################################################################
   useEffect(() => {
+    setLoading(true);
     fetchData(tableParams);
-  }, [tableParams]);
+  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
 
   return (
     <div className="page_2_side_default">
@@ -118,14 +165,15 @@ const TimeKeepingSchedule = () => {
         </div>
         <div className="page_2_side_default_right_details">
           <Table
-            rowSelection={true}
+            rowSelection={rowSelection}
             columns={tableColumn}
             onHeaderCell={(columns) => console.log(columns)}
-            // rowKey={(record) => record.login.uuid}
             dataSource={data}
             className={"default_table"}
             rowClassName={"default_table_row"}
             pagination={pagination}
+            loading={loading}
+            onChange={handleTableChange}
           />
         </div>
       </div>

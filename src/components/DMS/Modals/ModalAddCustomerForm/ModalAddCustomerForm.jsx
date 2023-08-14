@@ -1,14 +1,10 @@
+import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerForm.css";
-import { Input, Modal, Space, Button, Select, Form, notification } from "antd";
 
-import send_icon from "../../../../Icons/send_icon.svg";
-import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  SoFuckingUltimateApi,
-} from "../../API";
 import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import send_icon from "../../../../Icons/send_icon.svg";
+import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 // bắt buộc khai báo bên ngoài
 
@@ -16,11 +12,13 @@ const ModalAddCustomerForm = (props) => {
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
+  const [disableFields, setDisableFields] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
     props.handleCloseModal();
     inputForm.resetFields();
+    setDisableFields(false);
   };
 
   const onSubmitForm = () => {
@@ -28,6 +26,7 @@ const ModalAddCustomerForm = (props) => {
     SoFuckingUltimateApi({
       store: "Api_Create_Customer_Form",
       data: {
+        action: props.openModalType === "EDIT" ? props.openModalType : "ADD",
         ma_hinh_thuc: a.formCode,
         ten_hinh_thuc: a.formName,
         status: a.status,
@@ -55,20 +54,26 @@ const ModalAddCustomerForm = (props) => {
   const onSubmitFormFail = () => {};
 
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    SoFuckingUltimateGetApi({
+      store: "Get_Forms_Customer",
+      data: {
+        id: id.trim(),
+        pageIndex: 1,
+        pageSize: 10,
+        SearchKey: "",
+        status: "",
+      },
+    }).then((res) => {
+      inputForm.setFieldValue(`formCode`, res.data[0]?.ma_hinh_thuc.trim());
+      inputForm.setFieldValue(`formName`, res.data[0]?.ten_hinh_thuc.trim());
+      inputForm.setFieldValue(`status`, res.data[0]?.status);
+      setDisableFields(true);
     });
   };
 
   useEffect(() => {
     setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
-      setInitialValues({});
+    if (props.openModalState && props.openModalType === "EDIT") {
       getDataEdit(props.currentRecord ? props.currentRecord : 0);
     }
   }, [JSON.stringify(props)]);
@@ -84,9 +89,9 @@ const ModalAddCustomerForm = (props) => {
       cancelButtonProps={{ style: { display: "none" } }}
       width={600}
     >
-          <div className="default_modal_header">
+      <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          props.openModalType == "EDIT" ? "Sửa" : "Thêm mới"
         } danh mục hình thức`}</span>
       </div>
       <Form
@@ -105,6 +110,7 @@ const ModalAddCustomerForm = (props) => {
               rules={[{ required: true, message: "Điền mã hình thức" }]}
             >
               <Input
+                disabled={disableFields}
                 onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
                 placeholder="Nhập mã hình thức"
               />

@@ -23,8 +23,28 @@
 
 .customer__history {
     min-height: 0;
-    overflow-y: scroll;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.split__view__detail__left__item__container {
+    position: relative;
+}
+
+.split__view__item__null {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.filter__dropdown ul,
+.filter__dropdown li {
+    padding: 0 !important;
 }

@@ -1,4 +1,3 @@
-import HttpService from "./https";
 import jwtDecode from "jwt-decode";
 import Cookies from "universal-cookie";
 import { App } from "antd";
@@ -32,10 +31,6 @@ const claimNewToken = async () => {
     token: getAccessToken(),
     refreshToken: getRefreshToken(),
   };
-  await HttpService.get("refreshToken", payload).then((res) => {
-    if (res) setAccessToken(res.data);
-    return getAccessToken();
-  });
 };
 
 const checkExistToken = () => {
@@ -45,7 +40,7 @@ const checkExistToken = () => {
 };
 
 const saveClaims = (token) => {
-  const claims = jwtDecode(token);
+  const claims = jwtDecode(token ? token : "");
   return claims;
 };
 

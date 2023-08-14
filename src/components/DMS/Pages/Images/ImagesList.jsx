@@ -1,15 +1,15 @@
-import React, { useRef } from "react";
-import "./ImagesList.css";
-import { useEffect, useState } from "react";
+import { Button, Input, Select, Space } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { ApiGetTaskList } from "../../API";
-import { Button, Input } from "antd";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ModalDetailImages from "../../Modals/ModalDetailImages/ModalDetailImages";
+import Filter from "./Filter/Filter";
+import "./ImagesList.css";
 
 const ImagesList = () => {
   // initialize #########################################################################
 
-  const { state } = useLocation()
+  const { state } = useLocation();
 
   useEffect(() => {
     console.log(state, "Id ở đây");
@@ -28,28 +28,14 @@ const ImagesList = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [openModalState, setOpenModalState] = useState(false);
   const [currentRecord, setCurrentRecord] = useState({});
+  const [isOpenAdvanceFilter, setIsOpenAdvanceFilter] = useState(false);
 
   //functions #########################################################################
-
-  const handleLoad = (event) => {
-    // console.log(event.target.naturalHeight);
-    // console.log(event.target.naturalWidth);
-    // console.log(event.target.naturalWidth / event.target.naturalHeight);
-    // console.log(event.target);
-    // const ratio = event.target.naturalWidth / event.target.naturalHeight;
-    // if (ratio > 1.5) {
-    //   event.target.classList.add("images__width");
-    // }
-    // if (ratio < 0.8) {
-    //   event.target.classList.add("images__height");
-    // }
-  };
 
   const refreshData = () => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
       setLoading(true);
-      getdata();
     }
   };
 
@@ -129,6 +115,13 @@ const ImagesList = () => {
     setCurrentRecord(item);
   };
 
+  const handleFilter = useCallback((item) => {
+    console.log(item);
+  }, []);
+
+  const handleOpenAdvanceFilter = () => {
+    setIsOpenAdvanceFilter(true);
+  };
 
   // effectively #########################################################################
   useEffect(() => {
@@ -143,25 +136,57 @@ const ImagesList = () => {
     >
       <div className="split__view__header__bar">
         <div className="split__view__search__bar">
-          <Input
-            style={{
-              width: "210px",
-              height: "30px",
-            }}
-            size="middle"
-            className="default_input"
-            placeholder="Tìm kiếm..."
-          />
+          <div className="flex gap-3">
+            <Input
+              style={{
+                width: "210px",
+                height: "30px",
+              }}
+              size="middle"
+              className="default_input"
+              placeholder="Tìm kiếm..."
+            />
+
+            <Space>
+              <span>Đơn vị: </span>
+              <Select
+                className="default_select"
+                defaultValue="lucy"
+                style={{ width: "180px" }}
+                options={[
+                  { value: "jack", label: "Jack" },
+                  { value: "lucy", label: "Lucy" },
+                  { value: "Yiminghe", label: "yiminghe" },
+                ]}
+              />
+            </Space>
+
+            <Space>
+              <span>Albums: </span>
+              <Select
+                className="default_select"
+                defaultValue="lucy"
+                style={{ width: "180px" }}
+                options={[
+                  { value: "jack", label: "Jack" },
+                  { value: "lucy", label: "Lucy" },
+                  { value: "Yiminghe", label: "yiminghe" },
+                ]}
+              />
+            </Space>
+          </div>
+
           <Button
             style={{ borderRadius: "4px", height: "30px" }}
             className="default_button"
+            onClick={handleOpenAdvanceFilter}
           >
             <span style={{ fontWeight: "bold" }}>Nâng cao</span>
           </Button>
         </div>
       </div>
 
-      <div className="images_list" onLoad={handleLoad}>
+      <div className="images_list">
         {data.map((item, index) => {
           return (
             <div
@@ -185,6 +210,11 @@ const ImagesList = () => {
         openModalState={openModalState}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalState}
+      />
+      <Filter
+        isOpenAdvanceFilter={isOpenAdvanceFilter}
+        setIsOpenAdvanceFilter={setIsOpenAdvanceFilter}
+        onFilter={handleFilter}
       />
     </div>
   );

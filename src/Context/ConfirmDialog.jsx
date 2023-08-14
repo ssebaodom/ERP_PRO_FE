@@ -44,7 +44,9 @@ const ConfirmDialog = (props) => {
           <Button
             className="default_primary_button"
             icon={<img src={send_icon} alt="" />}
-            onClick={props.handleOkModal}
+            onClick={(e) => {
+              props.handleOkModal(props?.keys);
+            }}
           >
             Lưu
           </Button>

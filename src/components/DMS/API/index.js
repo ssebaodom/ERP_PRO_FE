@@ -37,9 +37,11 @@ export const ApiGetTourList = async (payload) => {
 };
 
 export const ApiGetTourDetail = async (payload) => {
-  return await https.post(`User/get_ddmtuyen?ma_tuyen=${payload.ma_tuyen}`).then((res) => {
-    return res.data;
-  });
+  return await https
+    .post(`User/get_ddmtuyen?ma_tuyen=${payload.ma_tuyen}`)
+    .then((res) => {
+      return res.data;
+    });
 };
 
 export const ApiGetTicketList = async (payload) => {
@@ -56,13 +58,22 @@ export const ApiCreateTaskSchedule = async (payload) => {
     });
 };
 
-
-
 export const SoFuckingUltimateApi = async (payload) => {
-    return await https
-      .post(`Selling/UltimateRequest`, payload)
-      .then((res) => {
-        return res;
-      });
-  };
-  
+  return await https.post(`Selling/UltimateRequest`, payload).then((res) => {
+    return res;
+  });
+};
+
+export const SoFuckingUltimateGetApi = async (payload) => {
+  return await https.post(`user/get_ultimate`, payload).then((res) => {
+    return res.data;
+  });
+};
+
+export const UltimatePutDataApi = async (payload) => {
+  return await https
+    .post(`Selling/UltimateRequest_tables`, payload)
+    .then((res) => {
+      return res.data;
+    });
+};

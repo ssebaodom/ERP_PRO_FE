@@ -1,7 +1,24 @@
-import CustomerResource from "../components/DMS/Pages/CustomerResource/CustomerResource";
+// import { lazy } from "react";
+
+// const CustomerArea = lazy(() =>
+//   import("../components/DMS/Pages/CustomerArea/CustomerArea")
+// );
+
+// const CustomerForm = lazy(() =>
+//   import("../components/DMS/Pages/CustomerForm/CustomerForm")
+// );
+
+// const CustomerClassify = lazy(() =>
+//   import("../components/DMS/Pages/CustomerClassify/CustomerClassify")
+// );
+
+// const CustomerResource = lazy(() =>
+//   import("../components/DMS/Pages/CustomerResource/CustomerResource")
+// );
+import CustomerArea from "../components/DMS/Pages/CustomerArea/CustomerArea";
 import CustomerClassify from "../components/DMS/Pages/CustomerClassify/CustomerClassify";
 import CustomerForm from "../components/DMS/Pages/CustomerForm/CustomerForm";
-import CustomerArea from "../components/DMS/Pages/CustomerArea/CustomerArea";
+import CustomerResource from "../components/DMS/Pages/CustomerResource/CustomerResource";
 
 const documentsRoutes = [
   {
@@ -10,20 +27,7 @@ const documentsRoutes = [
     path: "documents",
     children: [],
   },
-  //   {
-  //     label: "Danh mục album",
-  //     claims: "Produce.documents.dmalbum",
-  //     path: "documents/albumslist",
-  //     parent: "documents",
-  //     element: <span>123abc</span>,
-  //   },
-  //   {
-  //     label: "Danh mục loại công việc",
-  //     claims: "Produce.documents.dmloaicv",
-  //     path: "documents/tasktypelist",
-  //     parent: "documents",
-  //     element: <span>123abc</span>,
-  //   },
+
   {
     label: "Danh mục nguồn khách hàng",
     claims: "Produce.documents.customerresource",

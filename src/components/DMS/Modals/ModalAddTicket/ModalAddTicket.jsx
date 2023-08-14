@@ -1,38 +1,34 @@
+import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddTicket.css";
-import {
-  Input,
-  Modal,
-  Space,
-  Button,
-  Select,
-  Form,
-  ColorPicker,
-  notification,
-} from "antd";
 
-import send_icon from "../../../../Icons/send_icon.svg";
-import {
-  ApiGetTaskDetail,
-  ApiGetTaskMaster,
-  ApiWebLookup,
-  SoFuckingUltimateApi,
-} from "../../API";
-import SelectNotFound from "../../../../Context/SelectNotFound";
-import SelectItemCode from "../../../../Context/SelectItemCode";
-import { useDebouncedCallback } from "use-debounce";
 import { Upload } from "antd";
 import ImgCrop from "antd-img-crop";
+import { memo } from "react";
+import { useSelector } from "react-redux";
+import send_icon from "../../../../Icons/send_icon.svg";
+import { getUserInfo } from "../../../../store/selectors/Selectors";
+import { formStatus } from "../../../../utils/constants";
+import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
+import PremiumLock from "../../../ReuseComponents/PremiumLock";
+import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 // bắt buộc khai báo bên ngoài
 
-const ModalAddTicket = (props) => {
+const ModalAddTicket = ({
+  handleCloseModal,
+  openModalState,
+  currentRecord,
+  openModalType,
+  refreshData,
+}) => {
   const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
   const [selectOptions, setSelectOptions] = useState([]);
   const [selectLoading, setSelectLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const isPremium = useSelector(getUserInfo).isPremium;
 
   const onChange = ({ fileList }) => {
     setFileList(fileList);
@@ -54,7 +50,7 @@ const ModalAddTicket = (props) => {
 
   const handleCancelModal = () => {
     setOpenModal(false);
-    props.handleCloseModal();
+    handleCloseModal();
     inputForm.resetFields();
     setFileList([]);
   };
@@ -64,6 +60,9 @@ const ModalAddTicket = (props) => {
     SoFuckingUltimateApi({
       store: "api_create_ticket",
       data: {
+        action:
+          openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
+        id_ticket: String(currentRecord).trim(),
         ma_kh: a.customerCode,
         ma_nv: a.employeeCode,
         dien_giai: a.description,
@@ -78,7 +77,7 @@ const ModalAddTicket = (props) => {
           notification.success({
             message: `Thành công`,
           });
-          props.refreshData();
+          refreshData();
           handleCancelModal();
         } else {
           notification.warning({
@@ -93,65 +92,36 @@ const ModalAddTicket = (props) => {
 
   const onSubmitFormFail = () => {};
 
-  const lookupData = (item) => {
-    setSelectLoading(true);
-    ApiWebLookup({
-      userId: "1",
-      controller: item.controller,
-      pageIndex: 1,
-      FilterValueCode: item.value.trim(),
-    }).then((res) => {
-      const resOptions = res.data.map((item) => {
-        return {
-          value: item.code.trim(),
-          label: item.name.trim(),
-        };
-      });
-      setSelectLoading(false);
-      setSelectOptions([...resOptions]);
-    });
-  };
-
-  const handleSelectionChange = useDebouncedCallback((actions, value) => {
-    switch (actions) {
-      case "sale_employee":
-        lookupData({ controller: "dmnvbh_lookup", value: value });
-        break;
-      case "customer":
-        lookupData({ controller: "dmkh_lookup", value: value });
-        break;
-      case "unit":
-        lookupData({ controller: "dmdvcs_lookup", value: value });
-        break;
-      case "ticket_type":
-        lookupData({ controller: "dmloaitk_lookup", value: value });
-        break;
-      case "task":
-        lookupData({ controller: "sysevents_lookup", value: value });
-        break;
-      default:
-        break;
-    }
-  }, 600);
-
   const getDataEdit = (id) => {
-    ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
-      inputForm.setFieldValue(`taskName`, res.data[0]?.text);
-      inputForm.setFieldValue(`taskType`, res.data[0]?.loai_cv);
-      inputForm.setFieldValue(`priority`, res.data[0]?.muc_do);
-      inputForm.setFieldValue(`assignedName`, res.data[0]?.assigned_name);
-      inputForm.setFieldValue(`deptName`, res.data[0]?.ma_bp);
-      inputForm.setFieldValue(`tourName`, res.data[0]?.ma_tuyen);
+    SoFuckingUltimateGetApi({
+      store: "Get_ticket_detail",
+      data: {
+        id: id.trim(),
+        pageIndex: 1,
+        pageSize: 10,
+        SearchKey: "",
+        status: "",
+      },
+    }).then((res) => {
+      inputForm.setFieldValue(`customerCode`, res.data[0]?.ma_kh?.trim());
+      inputForm.setFieldValue(`customerName`, res.data[0]?.ten_kh?.trim());
+      inputForm.setFieldValue(`employeeCode`, res.data[0]?.ma_nvbh?.trim());
+      inputForm.setFieldValue(`employeeName`, res.data[0]?.ten_nvbh?.trim());
+      inputForm.setFieldValue(`ticketTypeCode`, res.data[0]?.type);
+      inputForm.setFieldValue(`ticketTypeName`, res.data[0]?.ten_loai?.trim());
+      inputForm.setFieldValue(`taskCode`, res.data[0]?.taskId);
+      inputForm.setFieldValue(`taskName`, res.data[0]?.ten_cv?.trim());
+      inputForm.setFieldValue(`description`, res.data[0]?.dien_giai?.trim());
+      inputForm.setFieldValue(`status`, String(res.data[0]?.status));
     });
   };
 
   useEffect(() => {
-    setOpenModal(props.openModalState);
-    if (props.openModalState && props.openModalType === "Edit") {
-      setInitialValues({});
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+    setOpenModal(openModalState);
+    if (openModalState && openModalType === formStatus.EDIT) {
+      getDataEdit(currentRecord ? currentRecord : "0");
     }
-  }, [JSON.stringify(props)]);
+  }, [JSON.stringify(openModalState)]);
 
   return (
     <Modal
@@ -166,7 +136,7 @@ const ModalAddTicket = (props) => {
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${
-          props.openModalType == "Edit" ? "Sửa" : "Thêm mới"
+          openModalType == formStatus.EDIT ? "Sửa" : "Thêm mới"
         } ticket`}</span>
       </div>
       <Form
@@ -176,170 +146,59 @@ const ModalAddTicket = (props) => {
         onFinish={onSubmitForm}
       >
         <div className="default_modal_group_items">
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Khách hàng
-            </span>
-            <Form.Item
-              style={{ width: "150px", flex: "none" }}
-              name="customerCode"
-              rules={[{ required: true, message: "Điền khách hàng" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Khách hàng`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={true}
-                dropdownStyle={{ minWidth: "20%" }}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("customer", e);
-                }}
-                onSelect={(key, item) => {
-                  inputForm.setFieldValue("customerName", item.label);
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-            <Form.Item name="customerName">
-              <Input
-                disabled={true}
-                className="default_disable_input"
-                placeholder="Tên khách hàng"
-              />
-            </Form.Item>
-          </div>
+          <FormSelectDetail
+            disable={openModalState == formStatus.VIEW ? true : false}
+            label="Khách hàng"
+            keyCode="customerCode"
+            keyName="customerName"
+            controller="dmkh_lookup"
+            form={inputForm}
+            placeHolderCode="Điền khách hàng"
+            placeHolderName="Tên khách hàng"
+            required={true}
+          />
         </div>
 
         <div className="default_modal_group_items">
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Nhân viên
-            </span>
-            <Form.Item
-              style={{ width: "150px", flex: "none" }}
-              name="employeeCode"
-              rules={[{ required: true, message: "Điền nhân viên" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Nhân viên`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={true}
-                dropdownStyle={{ minWidth: "20%" }}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("sale_employee", e);
-                }}
-                onSelect={(key, item) => {
-                  inputForm.setFieldValue("employeeName", item.label);
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-            <Form.Item name="employeeName">
-              <Input
-                disabled={true}
-                className="default_disable_input"
-                placeholder="Tên nhân viên"
-              />
-            </Form.Item>
-          </div>
+          <FormSelectDetail
+            disable={openModalState == formStatus.VIEW ? true : false}
+            label="Nhân viên"
+            keyCode="employeeCode"
+            keyName="employeeName"
+            controller="dmnvbh_lookup"
+            form={inputForm}
+            placeHolderCode="Điền nhân viên"
+            placeHolderName="Tên nhân viên"
+            required={true}
+          />
         </div>
 
         <div className="default_modal_group_items">
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Loại ticket
-            </span>
-            <Form.Item
-              style={{ width: "150px", flex: "none" }}
-              name="ticketTypeCode"
-              rules={[{ required: true, message: "Điền loại ticket" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Loại ticket`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("ticket_type", e);
-                }}
-                onSelect={(key, item) => {
-                  inputForm.setFieldValue("ticketTypeName", item.label);
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-            <Form.Item name="ticketTypeName">
-              <Input
-                disabled={true}
-                className="default_disable_input"
-                placeholder="Tên loại ticket"
-              />
-            </Form.Item>
-          </div>
+          <FormSelectDetail
+            disable={openModalState == formStatus.VIEW ? true : false}
+            label="Loại ticket"
+            keyCode="ticketTypeCode"
+            placeHolderCode="Điền loại ticket"
+            keyName="ticketTypeName"
+            placeHolderName="Tên loại ticket"
+            controller="dmloaitk_lookup"
+            form={inputForm}
+            required={true}
+          />
         </div>
 
         <div className="default_modal_group_items">
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Công việc
-            </span>
-            <Form.Item
-              style={{ width: "150px", flex: "none" }}
-              name="taskCode"
-              rules={[{ required: true, message: "Điền tên công việc" }]}
-            >
-              <Select
-                showSearch
-                placeholder={`Tên công việc`}
-                style={{
-                  width: "100%",
-                }}
-                defaultActiveFirstOption={false}
-                showArrow={false}
-                filterOption={false}
-                dropdownStyle={{ minWidth: "20%" }}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-                onSearch={(e) => {
-                  handleSelectionChange("task", e);
-                }}
-                onSelect={(key, item) => {
-                  inputForm.setFieldValue("taskName", item.label);
-                  setSelectOptions([]);
-                }}
-              >
-                {SelectItemCode(selectOptions)}
-              </Select>
-            </Form.Item>
-            <Form.Item name="taskName">
-              <Input
-                disabled={true}
-                className="default_disable_input"
-                placeholder="Tên công việc"
-              />
-            </Form.Item>
-          </div>
+          <FormSelectDetail
+            disable={openModalState == formStatus.VIEW ? true : false}
+            label="Công việc"
+            keyCode="taskCode"
+            placeHolderCode="Điền tên công việc"
+            keyName="taskName"
+            placeHolderName="Tên công việc"
+            controller="sysevents_lookup"
+            form={inputForm}
+            required={true}
+          />
         </div>
 
         <div className="default_modal_group_items">
@@ -378,28 +237,31 @@ const ModalAddTicket = (props) => {
           </div>
         </div>
 
-        <div className="default_modal_group_items">
-          <ImgCrop
-            rotationSlider
-            modalTitle={"Chỉnh sửa"}
-            showReset
-            resetText={"Khôi phục"}
-            aspect={0.5625}
-          >
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={onChange}
-              onPreview={onPreview}
-              action="localhost:3000"
-              multiple
-              beforeUpload={(file) => {
-                console.log(file);
-              }}
+        <div className="default_modal_group_items relative">
+          <PremiumLock isPremium={isPremium ? isPremium : false}>
+            <ImgCrop
+              rotationSlider
+              modalTitle={"Chỉnh sửa"}
+              showReset
+              resetText={"Khôi phục"}
+              aspect={0.5625}
             >
-              {fileList.length < 5 && "+ Upload"}
-            </Upload>
-          </ImgCrop>
+              <Upload
+                disabled={!isPremium}
+                listType="picture-card"
+                fileList={fileList}
+                onChange={onChange}
+                onPreview={onPreview}
+                action="localhost:3000"
+                multiple
+                beforeUpload={(file) => {
+                  console.log(file);
+                }}
+              >
+                {fileList.length < 5 && "+ Upload"}
+              </Upload>
+            </ImgCrop>
+          </PremiumLock>
         </div>
 
         <Space style={{ justifyContent: "center", alignItems: "center" }}>
@@ -426,4 +288,4 @@ const ModalAddTicket = (props) => {
   );
 };
 
-export default ModalAddTicket;
+export default memo(ModalAddTicket);

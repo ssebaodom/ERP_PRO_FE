@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import "./Dashboard.css";
-import { useSelector } from "react-redux";
-import { getUserInfo } from "../../../store/selectors/Selectors";
-import jwt from "../../../utils/jwt";
-import { Progress } from "antd";
 import { Column } from "@ant-design/plots";
-import dashboard__hi from "../../../Icons/dashboard__hi.svg";
+import { Progress } from "antd";
+import React from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import accept__person from "../../../Icons/accept__person.svg";
 import add__voucher from "../../../Icons/add__voucher.svg";
 import cart from "../../../Icons/cart.svg";
+import dashboard__hi from "../../../Icons/dashboard__hi.svg";
 import location from "../../../Icons/location.svg";
-import accept__person from "../../../Icons/accept__person.svg";
+import { getUserInfo } from "../../../store/selectors/Selectors";
+import "./Dashboard.css";
 
 const Dashboard = () => {
   const userInfo = useSelector(getUserInfo);
@@ -53,7 +53,7 @@ const Dashboard = () => {
     tooltip: {
       showTitle: false,
       formatter: (data) => {
-        return { name: `Tháng: ${data.month}`, value: `${data.sales} đơn`};
+        return { name: `Tháng: ${data.month}`, value: `${data.sales} đơn` };
       },
       domStyles: {
         "g2-tooltip": {
@@ -63,10 +63,19 @@ const Dashboard = () => {
     },
   };
 
+  const navigate = useNavigate();
+
+  const test = () => {
+    navigate("/images/gallary", { state: { id: "MachHung" } });
+  };
+
   return (
     <div className="dashboard page_default">
       <div className="dashboard__general__statistic__container">
-        <div className="dashboard__general__statistic__items--hello dashboard__general__statistic__items">
+        <div
+          onClick={test}
+          className="dashboard__general__statistic__items--hello dashboard__general__statistic__items"
+        >
           <img style={{ flexShrink: "0" }} src={dashboard__hi} alt="icon hi" />
           <span>
             Chào mừng

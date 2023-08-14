@@ -1,16 +1,14 @@
-import React from "react";
-import "./TaskList.css";
-import { Button, Space, Table } from "antd";
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
-import { useEffect, useState } from "react";
-import qs from "qs";
-import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
-import { ApiGetTaskList } from "../../API";
+import { Table } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
-import edit__icon from "../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../Icons/delete__icon.svg";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import TableLocale from "../../../../Context/TableLocale";
+import { formStatus } from "../../../../utils/constants";
+import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
+import { ApiGetTaskList } from "../../API";
+import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
+import "./TaskList.css";
 
 const TaskList = () => {
   // initialize #########################################################################
@@ -35,23 +33,22 @@ const TaskList = () => {
 
   //functions #########################################################################
 
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
       setLoading(true);
-      getdata();
     }
-  };
+  }, [pagination]);
 
   const handleEdit = (record) => {
     setCurrentRecord(record.id);
     setOpenModalAddTaskState(true);
-    setOpenModalType("Edit");
+    setOpenModalType(formStatus.EDIT);
   };
 
   const handleOpenDeleteDialog = (record) => {
     setIsOpenModalDeleteTask(true);
-    setCurrentItemSelected(record);
+    setCurrentItemSelected(record ? record : {});
   };
 
   const handleCloseDeleteDialog = () => {
@@ -59,13 +56,14 @@ const TaskList = () => {
     setCurrentItemSelected({});
   };
 
-  const handleDelete = () => {
+  const handleDelete = (keys) => {
     console.log("Gọi API delete ở đây", currentItemSelected);
     handleCloseDeleteDialog();
     refreshData();
   };
 
   const getdata = () => {
+    delete pagination?.current;
     ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.data?.reportLayoutModel);
       layout.push({
@@ -77,31 +75,11 @@ const TaskList = () => {
         fixed: "right",
         render: (_, record) => {
           return (
-            <span
-              style={{
-                display: "flex",
-                gap: "15px",
-                height: "20px",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
+            <OperationColumn
+              record={record}
+              editFunction={handleEdit}
+              deleteFunction={handleOpenDeleteDialog}
+            />
           );
         },
       });
@@ -112,7 +90,7 @@ const TaskList = () => {
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
+      setTotalResults(res.data.pagegination.totalRecord);
       setLoading(false);
     });
   };
@@ -134,18 +112,16 @@ const TaskList = () => {
 
   const openModalAddTask = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
-    setOpenModalType("Add");
+    setOpenModalType(formStatus.ADD);
     setCurrentRecord(0);
   };
 
   const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
-    console.log(selectedRows);
     setSelectedRowKeys([...keys]);
   };
 
   const onSelectAll = (selected, selectedRows) => {
-    console.log(selectedRows);
     if (selected) {
       const selectedKeys = selectedRows.map((record) => {
         return record.key;
@@ -162,6 +138,10 @@ const TaskList = () => {
     onSelect: onSelect,
   };
 
+  const changePaginations = (item) => {
+    setPagination({ ...pagination, pageSize: item });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
@@ -170,28 +150,20 @@ const TaskList = () => {
 
   return (
     <div className="default_list_layout page_default">
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách công việc (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          <Button
-            className="default_button"
-            onClick={openModalAddTask}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
-      <div className="task__list__data_container">
+      <HeaderTableBar
+        name={"công việc"}
+        title={"Danh sách công việc "}
+        changePaginations={changePaginations}
+        totalResults={totalResults}
+        addEvent={openModalAddTask}
+        refreshEvent={refreshData}
+        deleteItems={{
+          delete: handleOpenDeleteDialog,
+          count: selectedRowKeys.length,
+        }}
+      />
+
+      <div className="h-full min-h-0">
         <Table
           columns={tableColumns}
           rowSelection={rowSelection}
@@ -199,6 +171,7 @@ const TaskList = () => {
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
+          locale={TableLocale()}
           pagination={{
             ...pagination,
             total: totalResults,
@@ -215,13 +188,27 @@ const TaskList = () => {
         openModalType={openModalType}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalAddTaskState}
+        refreshData={refreshData}
       />
+
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá công việc : ${currentItemSelected.text}`}
+        description={`Xoá  ${
+          currentItemSelected.id
+            ? "công việc : " +
+              currentItemSelected.id +
+              " - " +
+              currentItemSelected.text
+            : `${selectedRowKeys.length} công việc`
+        }`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
+        keys={
+          currentItemSelected.id
+            ? currentItemSelected.id
+            : selectedRowKeys.join(",").trim()
+        }
       />
     </div>
   );

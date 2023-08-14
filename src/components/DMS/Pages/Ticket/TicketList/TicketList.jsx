@@ -1,20 +1,14 @@
-import React from "react";
-import "./TicketList.css";
-import { Button, notification, Space, Table } from "antd";
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import ResizableAntdTable from "resizable-antd-table";
-import { useEffect, useState } from "react";
-import {
-  ApiGetTicketList,
-  ApiGetTourList,
-  SoFuckingUltimateApi,
-} from "../../../API";
-import edit__icon from "../../../../../Icons/edit__icon.svg";
-import delete__icon from "../../../../../Icons/delete__icon.svg";
-import ConfirmDialog from "../../../../../Context/ConfirmDialog";
-import ModalAddCustomerResource from "../../../Modals/ModalAddCustomerResource/ModalAddCustomerResource";
+import { notification, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import OperationColumn from "../../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../../app/hooks/renderColumns";
+import ConfirmDialog from "../../../../../Context/ConfirmDialog";
+import TableLocale from "../../../../../Context/TableLocale";
+import { formStatus } from "../../../../../utils/constants";
+import HeaderTableBar from "../../../../ReuseComponents/HeaderTableBar";
+import { ApiGetTicketList, SoFuckingUltimateApi } from "../../../API";
 import ModalAddTicket from "../../../Modals/ModalAddTicket/ModalAddTicket";
+import "./TicketList.css";
 
 const TicketList = () => {
   // initialize #########################################################################
@@ -33,7 +27,7 @@ const TicketList = () => {
     pageSize: 10,
   });
   const [totalResults, setTotalResults] = useState(0);
-  const [openModalType, setOpenModalType] = useState("Add");
+  const [openModalType, setOpenModalType] = useState(formStatus.ADD);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [openModalAddTaskState, setOpenModalAddTaskState] = useState(false);
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
@@ -45,15 +39,14 @@ const TicketList = () => {
   const refreshData = () => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
-      setLoading(true);
-      getdata();
+      setLoading(false);
     }
   };
 
   const handleEdit = (record) => {
-    setCurrentRecord(record.id);
+    setCurrentRecord(record.id_ticket);
     setOpenModalAddTaskState(true);
-    setOpenModalType("Edit");
+    setOpenModalType(formStatus.EDIT);
   };
 
   const handleOpenDeleteDialog = (record) => {
@@ -61,11 +54,11 @@ const TicketList = () => {
     setCurrentItemSelected(record);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (keys) => {
     SoFuckingUltimateApi({
       store: "api_delete_ticket",
       data: {
-        id_ticket: currentItemSelected.id_ticket,
+        id_ticket: keys.replaceAll(" ", ""),
         userid: 0,
       },
     })
@@ -86,12 +79,15 @@ const TicketList = () => {
     handleCloseDeleteDialog();
     refreshData();
   };
+
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
+    setSelectedRowKeys([]);
   };
 
   const getdata = () => {
+    setLoading(true);
     ApiGetTicketList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.data?.reportLayoutModel);
       layout.push({
@@ -101,34 +97,13 @@ const TicketList = () => {
         dataType: "Operation",
         align: "center",
         fixed: "right",
-
         render: (_, record) => {
           return (
-            <span
-              style={{
-                display: "flex",
-                gap: "15px",
-                height: "20px",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                className="default_images_clickable"
-                onClick={(e) => {
-                  handleEdit(record);
-                }}
-                src={edit__icon}
-                alt=""
-              ></img>
-              <img
-                className="default_images_clickable"
-                src={delete__icon}
-                onClick={(e) => {
-                  handleOpenDeleteDialog(record);
-                }}
-                alt=""
-              ></img>
-            </span>
+            <OperationColumn
+              record={record}
+              editFunction={handleEdit}
+              deleteFunction={handleOpenDeleteDialog}
+            />
           );
         },
       });
@@ -139,8 +114,8 @@ const TicketList = () => {
         return item;
       });
       setData(data);
-      setTotalResults(res.data.pagegination.totalpage * pagination.pageSize);
       setLoading(false);
+      setTotalResults(res.data.pagegination.totalRecord);
     });
   };
 
@@ -161,18 +136,16 @@ const TicketList = () => {
 
   const openModalAddTask = () => {
     setOpenModalAddTaskState(!openModalAddTaskState);
-    setOpenModalType("Add");
+    setOpenModalType(formStatus.ADD);
     setCurrentRecord(0);
   };
 
   const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
-    console.log(selectedRows);
     setSelectedRowKeys([...keys]);
   };
 
   const onSelectAll = (selected, selectedRows) => {
-    console.log(selectedRows);
     if (selected) {
       const selectedKeys = selectedRows.map((record) => {
         return record.key;
@@ -189,36 +162,32 @@ const TicketList = () => {
     onSelect: onSelect,
   };
 
+  const changePaginations = (item) => {
+    setPagination({ ...pagination, pageSize: item });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="default_list_layout page_default">
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách ticket (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          <Button
-            className="default_button"
-            onClick={openModalAddTask}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
-      <div className="task__list__data_container">
+      <HeaderTableBar
+        name={"ticket"}
+        title={"Danh sách ticket"}
+        changePaginations={changePaginations}
+        totalResults={totalResults}
+        addEvent={openModalAddTask}
+        refreshEvent={refreshData}
+        deleteItems={{
+          delete: handleOpenDeleteDialog,
+          count: selectedRowKeys.length,
+        }}
+      />
+
+      <div className="h-full min-h-0">
         <Table
           columns={tableColumns}
           rowSelection={rowSelection}
@@ -226,6 +195,7 @@ const TicketList = () => {
           dataSource={data}
           rowClassName={"default_table_row"}
           className="default_table"
+          locale={TableLocale()}
           pagination={{
             ...pagination,
             total: totalResults,
@@ -244,12 +214,25 @@ const TicketList = () => {
         handleCloseModal={setOpenModalAddTaskState}
         refreshData={refreshData}
       />
+
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá ticket : ${currentItemSelected.id_ticket}, khách hàng: ${currentItemSelected.ten_kh}`}
+        description={`Xoá  ${
+          currentItemSelected.id_ticket
+            ? "ticket : " +
+              currentItemSelected.id_ticket +
+              " - Khách: " +
+              currentItemSelected.ten_kh
+            : `${selectedRowKeys.length} ticket`
+        }`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
+        keys={
+          currentItemSelected.id_ticket
+            ? currentItemSelected.id_ticket
+            : selectedRowKeys.join(",").trim()
+        }
       />
     </div>
   );

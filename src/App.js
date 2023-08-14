@@ -1,8 +1,8 @@
+import jwt from "./utils/jwt";
 import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
 import { useNavigate,Navigate } from "react-router-dom";
-import jwt from "./utils/jwt";
 import { useState } from "react";
 import router from "./router/routes";
 import Footer from "./components/Footer/Footer";

@@ -1,24 +1,27 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
-import reportWebVitals from "./reportWebVitals";
-import store from "./store";
 import { Provider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
+import "./index.css";
+import reportWebVitals from "./reportWebVitals";
 import router from "./router/routes";
-import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
+import store from "./store";
 
 //primereact
-import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primeflex/primeflex.css";
+import "primeicons/primeicons.css";
 import "primereact/resources/primereact.min.css";
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
-        
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import { Suspense } from "react";
+import Loading from "./components/Loading/Loading";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <Suspense fallback={<Loading/>}>
+      <RouterProvider router={router} />
+    </Suspense>
   </Provider>
 );
 
