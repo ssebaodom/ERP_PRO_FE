@@ -1,7 +1,5 @@
-import { Button, Input, QRCode, Space } from "antd";
 import React, { useState } from "react";
 import RenderCells from "../../../app/hooks/renderCells";
-import sse__logo from "../../../Icons/sse__logo.svg";
 
 const EditableCell = (cell) => {
   return RenderCells(cell);
@@ -9,8 +7,29 @@ const EditableCell = (cell) => {
 
 const Test = () => {
   const [text, setText] = useState("");
-
   const [image, setImage] = useState("");
+  const [current, setCurrent] = useState(0);
+  const [steps, setSteps] = useState([
+    {
+      key: 0,
+      title: "First",
+    },
+    {
+      key: 1,
+      title: "Second",
+      content: <span>123421412312</span>,
+    },
+    {
+      key: 2,
+      title: "Last",
+      content: "Last-content",
+    },
+  ]);
+
+  const onChange = (value) => {
+    console.log("onChange:", value);
+    setCurrent(value);
+  };
 
   const printImage = (src) => {
     // var win = window.open("", "");
@@ -46,24 +65,7 @@ const Test = () => {
     }
   };
 
-  return (
-    <Space direction="horizontal" align="center" id="myqrcode">
-      <div>
-        <QRCode errorLevel="H" value={text || "-"} icon={sse__logo} />
-        <Input
-          placeholder="-"
-          maxLength={60}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <Button type="primary" onClick={downloadQRCode}>
-          Download
-        </Button>
-
-        <img src={image} alt="" />
-      </div>
-    </Space>
-  );
+  return <div style={{ width: "100%" }}></div>;
 };
 
 export default Test;

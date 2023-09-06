@@ -1,4 +1,4 @@
-import { Form, Select, Space } from "antd";
+import { Form, Select } from "antd";
 import React, { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
@@ -13,6 +13,7 @@ const FormSelect = ({
   placeHolderCode,
   controller,
   width,
+  codeWidth,
   required,
   onChange,
   direction,
@@ -44,16 +45,28 @@ const FormSelect = ({
   }, 600);
 
   return (
-    <Space
-      className="min-h-0"
-      direction={direction ? direction : "vertical"}
+    <div
+      className="split__view__detail__primary__item"
       style={{
-        flex: `${width ? "none" : "1"}`,
-        width: `${width ? String(width) + "px" : "100%"}`,
+        flexDirection: `${
+          direction?.toUpperCase() == "COLUMN" ? "column" : "row"
+        }`,
+        alignItems: `${
+          direction?.toUpperCase() == "COLUMN" ? "flex-start" : "center"
+        }`,
+        flex: `${codeWidth ? 0 : 1}`,
       }}
     >
-      <span className="default_bold_label">{label}</span>
+      <div style={{ width: `${width ? width + "px" : "auto"}`, flexShrink: 0 }}>
+        <span className="default_bold_label">{label}</span>
+      </div>
+
       <Form.Item
+        className="min-w-0"
+        style={{
+          width: `${codeWidth ? String(codeWidth) + "px" : "100%"}`,
+          flex: `${codeWidth ? 0 : 1}`,
+        }}
         name={keyCode}
         rules={[
           {
@@ -64,9 +77,8 @@ const FormSelect = ({
       >
         <Select
           disabled={disable}
-          className={disable ? "default_disable_select" : ""}
+          className={disable ? "default_disable_select" : "default_select"}
           showSearch
-          style={{ width: `${width ? String(width) + "px" : "100%"}` }}
           placeholder={placeHolderCode}
           defaultActiveFirstOption={false}
           showArrow={false}
@@ -86,7 +98,7 @@ const FormSelect = ({
           {SelectItemCode(selectOptions)}
         </Select>
       </Form.Item>
-    </Space>
+    </div>
   );
 };
 

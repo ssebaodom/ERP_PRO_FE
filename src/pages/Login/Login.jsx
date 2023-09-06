@@ -1,27 +1,27 @@
-import React, { useEffect, useState } from "react";
-import "./Login.css";
 import {
-  UserOutlined,
-  EyeTwoTone,
   EyeInvisibleOutlined,
+  EyeTwoTone,
+  UserOutlined
 } from "@ant-design/icons";
-import {
-  Input,
-  Space,
-  Button,
-  Select,
-  Carousel,
-  Form,
-  Checkbox,
-  notification,
-} from "antd";
 import { UilAnalysis, UilExclamationOctagon } from "@iconscout/react-unicons";
-import router from "../../router/routes";
-import jwt from "../../utils/jwt";
-import https from "../../utils/https";
+import {
+  Button,
+  Carousel,
+  Checkbox,
+  Form,
+  Input,
+  notification,
+  Select,
+  Space
+} from "antd";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { setClaims } from "../../store/reducers/claimsSlice";
 import { useDebouncedCallback } from "use-debounce";
+import router from "../../router/routes";
+import { setClaims } from "../../store/reducers/claimsSlice";
+import https from "../../utils/https";
+import jwt from "../../utils/jwt";
+import "./Login.css";
 
 const Login = () => {
   const [loginLoading, setLoginLoading] = useState(false);
@@ -182,6 +182,7 @@ const Login = () => {
                 <Input
                   style={{
                     width: "100%",
+                    padding: "10px 8px",
                   }}
                   onChange={(e) => handleInputUserName(e.target.value)}
                   className="default_input"
@@ -198,6 +199,7 @@ const Login = () => {
                 <Input.Password
                   style={{
                     width: "100%",
+                    padding: "10px 8px",
                   }}
                   onChange={(e) => set_Password(e.target.value)}
                   className="default_input"

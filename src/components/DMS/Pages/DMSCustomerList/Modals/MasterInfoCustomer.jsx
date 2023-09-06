@@ -15,7 +15,6 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền tên khách hàng" }]}
           >
             <Input
-              className={action === "VIEW" ? "default_disable_input" : ""}
               disabled={action === "VIEW" ? true : false}
               placeholder="Nhập tên khách"
             />
@@ -34,12 +33,15 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền số điện thoại" }]}
           >
             <Input
-              className={action === "VIEW" ? "default_disable_input" : ""}
+              className={
+                action === "VIEW" ? "default_disable_input" : "default_input"
+              }
               disabled={action === "VIEW" ? true : false}
               placeholder="Nhập số điện thoại"
             />
           </Form.Item>
         </div>
+
         <div className="default_modal_1_row_items">
           <span className="default_bold_label" style={{ width: "100px" }}>
             Địa chỉ
@@ -51,7 +53,9 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền địa chỉ" }]}
           >
             <Input
-              className={action === "VIEW" ? "default_disable_input" : ""}
+              className={
+                action === "VIEW" ? "default_disable_input" : "default_input"
+              }
               disabled={action === "VIEW" ? true : false}
               placeholder="Nhập địa chỉ"
             />
@@ -70,12 +74,15 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền ngày sinh" }]}
           >
             <Input
-              className={action === "VIEW" ? "default_disable_input" : ""}
+              className={
+                action === "VIEW" ? "default_disable_input" : "default_input"
+              }
               disabled={action === "VIEW" ? true : false}
               placeholder="Nhập ngày sinh"
             />
           </Form.Item>
         </div>
+
         <div className="default_modal_1_row_items">
           <span className="default_bold_label" style={{ width: "100px" }}>
             Tên tuyến
@@ -87,7 +94,9 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền tuyến" }]}
           >
             <Input
-              className={action === "VIEW" ? "default_disable_input" : ""}
+              className={
+                action === "VIEW" ? "default_disable_input" : "default_input"
+              }
               disabled={action === "VIEW" ? true : false}
               placeholder="Nhập tuyến"
             />

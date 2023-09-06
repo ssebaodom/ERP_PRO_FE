@@ -1,24 +1,32 @@
-import jwt from "./utils/jwt";
-import { Outlet } from "react-router-dom";
-import Navbar from "./components/Navbar/Navbar";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import "./App.css";
-import { useNavigate,Navigate } from "react-router-dom";
-import { useState } from "react";
+import Navbar from "./components/Navbar/Navbar";
 import router from "./router/routes";
-import Footer from "./components/Footer/Footer";
-
+import jwt from "./utils/jwt";
 
 function App() {
   const navigate = useNavigate();
   return (
     <>
-    {!jwt.checkExistToken()? <Navigate to="/login" replace={true} />:''}
-    {router.state.location.pathname == '/' &&jwt.checkExistToken()? <Navigate to="Dashboard" replace={true} />:''}
-    <div className="App">
-      <Navbar />
-      <p style={{ lineHeight: "70px",pointerEvents:'none',userSelect:'none' }}>Nav</p>
-      <Outlet />
-    </div>
+      {!jwt.checkExistToken() ? <Navigate to="/login" replace={true} /> : ""}
+      {router.state.location.pathname == "/" && jwt.checkExistToken() ? (
+        <Navigate to="Dashboard" replace={true} />
+      ) : (
+        ""
+      )}
+      <div className="App">
+        <Navbar />
+        <p
+          style={{
+            lineHeight: "70px",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          Nav
+        </p>
+        <Outlet />
+      </div>
     </>
   );
 }

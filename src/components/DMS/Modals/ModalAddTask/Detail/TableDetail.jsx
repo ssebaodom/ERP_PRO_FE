@@ -47,7 +47,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     });
 
     await newData.map((item) => {
-      const index = rawData.findIndex((record) => item.key === record.key);
+      const index = rawData.findIndex((record) => item?.key === record?.key);
       if (index > -1) {
         rawData.splice(index, 1, item);
       }
@@ -121,7 +121,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   };
 
   const onSelect = async (record, selected, selectedRows) => {
-    const keys = selectedRows.map((item) => item.key);
+    const keys = selectedRows.map((item) => item?.key);
     setSelectedRowKeys([...keys]);
     if (selected) {
       await edit(record);

@@ -1,3 +1,4 @@
+import { encrypted } from "../../../app/hooks/enCrypted";
 import https from "../../../utils/https";
 
 export const ApiGetTaskList = async (payload) => {
@@ -65,9 +66,11 @@ export const SoFuckingUltimateApi = async (payload) => {
 };
 
 export const SoFuckingUltimateGetApi = async (payload) => {
-  return await https.post(`user/get_ultimate`, payload).then((res) => {
-    return res.data;
-  });
+  return await https
+    .post(`user/get_ultimate2`, { data: encrypted(payload) })
+    .then((res) => {
+      return res.data;
+    });
 };
 
 export const UltimatePutDataApi = async (payload) => {

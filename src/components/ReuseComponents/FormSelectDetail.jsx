@@ -82,7 +82,7 @@ const FormSelectDetail = ({
           >
             <Select
               disabled={disable}
-              className={disable ? "default_disable_select" : ""}
+              className={disable ? "default_disable_select" : "default_select"}
               showSearch
               placeholder={placeHolderCode}
               defaultActiveFirstOption={false}

@@ -4,13 +4,13 @@ import System from "../pages/System/Pages/System";
 const systemRoutes = [
   {
     label: "Hệ thống",
-    claims: "Produce.system",
+    claims: "Permissions.system",
     path: "System",
     element: <System />,
     children: [
       {
         label: "Phân quyền tài khoản",
-        claims: "Produce.system",
+        claims: "Permissions.system",
         path: "UsersPermissions",
         element: <UserPermissions />,
         children: [],

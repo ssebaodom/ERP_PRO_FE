@@ -1,10 +1,10 @@
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import { Button, notification, Table } from "antd";
+import { notification, Table } from "antd";
 import React, { useEffect, useState } from "react";
 import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import TableLocale from "../../../../Context/TableLocale";
+import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 import ModalAddCustomerForm from "../../Modals/ModalAddCustomerForm/ModalAddCustomerForm";
 import "./CustomerForm.css";
@@ -160,6 +160,10 @@ const CustomerForm = () => {
     onSelect: onSelect,
   };
 
+  const changePaginations = (item) => {
+    setPagination({ ...pagination, pageSize: item });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
@@ -168,41 +172,18 @@ const CustomerForm = () => {
 
   return (
     <div className="default_list_layout page_default">
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách hình thức khách hàng (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          {selectedRowKeys.length > 0 && (
-            <>
-              <Button
-                className="default_button"
-                danger
-                onClick={handleOpenDeleteDialog}
-                icon={<i className="pi pi-trash"></i>}
-              >
-                <span
-                  style={{ fontWeight: "bold" }}
-                >{`Xoá ${selectedRowKeys.length} nguồn`}</span>
-              </Button>
-            </>
-          )}
-          <Button
-            className="default_button"
-            onClick={openModalAddTask}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
+      <HeaderTableBar
+        name={"hình thức"}
+        title={"Danh sách hình thức"}
+        changePaginations={changePaginations}
+        totalResults={totalResults}
+        addEvent={openModalAddTask}
+        refreshEvent={refreshData}
+        deleteItems={{
+          delete: handleOpenDeleteDialog,
+          count: selectedRowKeys.length,
+        }}
+      />
       <div className="h-full min-h-0">
         <Table
           columns={tableColumns}

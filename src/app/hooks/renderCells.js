@@ -6,7 +6,7 @@ import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
-const RenderCells = (cell, form) => {
+const RenderCells = (cell, form, addRow) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
   const lookupData = async (item) => {
@@ -40,17 +40,36 @@ const RenderCells = (cell, form) => {
       );
     }
   };
+  const handleKeypress = (event) => {
+    if (event.key === "Enter") {
+      const allFields = { ...form.getFieldsValue(true) };
+      const keyItems = Object.keys(allFields).filter(
+        (item) => !item.includes("_key")
+      );
+      const keyIndex =
+        keyItems.findIndex((item) => item == event.target.id) + 1;
+      if (keyItems[keyIndex])
+        document.getElementById(keyItems[keyIndex]).focus();
+      else addRow();
+    }
+  };
 
   let inputNode;
   switch (cell.inputType) {
     case "Numeric":
-      inputNode = <InputNumber step={quantityFormat} />;
+      inputNode = (
+        <InputNumber onKeyDown={handleKeypress} step={quantityFormat} />
+      );
       break;
     case "Text":
-      inputNode = <Input className="default_input_detail" />;
+      inputNode = (
+        <Input onKeyDown={handleKeypress} className="default_input_detail" />
+      );
       break;
     case "Datetime":
-      inputNode = <DatePicker format={datetimeFormat} />;
+      inputNode = (
+        <DatePicker onKeyDown={handleKeypress} format={datetimeFormat} />
+      );
       break;
     case "AutoComplete":
       inputNode = (
@@ -60,6 +79,7 @@ const RenderCells = (cell, form) => {
           style={{
             width: 200,
           }}
+          onKeyDown={handleKeypress}
           defaultActiveFirstOption={false}
           showArrow={false}
           dropdownStyle={{ minWidth: "30%" }}

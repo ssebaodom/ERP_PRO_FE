@@ -46,12 +46,16 @@ instance.interceptors.response.use(
 
     if (error.response.status === 401) {
       try {
-        const access_token = await refreshToken().then((res) => {
-          return res.data;
+        var access_token;
+        await refreshToken().then((res) => {
+          console.log(res);
+          jwt.setRefreshToken(res.refreshToken);
+          jwt.setAccessToken(res.token);
+          return (access_token = res.token);
         });
+        console.log(access_token);
         if (access_token && access_token.length > 0) {
           instance.defaults.headers.Authorization = `Bearer ${access_token}`;
-          jwt.resetAccessToken(access_token);
           return instance(config);
         }
       } catch (error) {

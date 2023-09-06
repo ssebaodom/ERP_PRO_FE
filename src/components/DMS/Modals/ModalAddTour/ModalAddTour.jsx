@@ -1,7 +1,6 @@
 import { Button, Form, Input, Modal, notification, Space } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import RenderCells from "../../../../app/hooks/renderCells";
 import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
@@ -15,11 +14,6 @@ import { setTourDetail } from "../../Store/Sagas/Sagas";
 import { getTourDetail } from "../../Store/Selector/Selectors";
 import TableDetail from "./Detail/TableDetail";
 import "./ModalAddTour.css";
-
-// bắt buộc khai báo bên ngoài
-const EditableCell = (cell, form) => {
-  return RenderCells(cell, form);
-};
 
 const ModalAddTour = (props) => {
   const [detailForm] = Form.useForm();
@@ -97,7 +91,12 @@ const ModalAddTour = (props) => {
   ///////////////////////////////////////////////////////////////////////
 
   const checkingData = async () => {
-    detailTable.current.getData();
+    try {
+      await inputForm.validateFields();
+      detailTable.current.getData();
+    } catch (error) {
+      return;
+    }
   };
 
   const detailDataProcess = async (data) => {
@@ -176,6 +175,7 @@ const ModalAddTour = (props) => {
   //effectively////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     setOpenModal(props.openModalState);
+
     if (props.openModalState) {
       getDataEdit(props.currentRecord ? props.currentRecord : "null");
     }
@@ -207,7 +207,6 @@ const ModalAddTour = (props) => {
         form={inputForm}
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
-        onFinish={checkingData}
       >
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
@@ -302,7 +301,7 @@ const ModalAddTour = (props) => {
           <Form.Item>
             <Button
               type="primary"
-              htmlType="submit"
+              onClick={checkingData}
               className="default_primary_button"
               icon={<img src={send_icon} alt="" />}
             >

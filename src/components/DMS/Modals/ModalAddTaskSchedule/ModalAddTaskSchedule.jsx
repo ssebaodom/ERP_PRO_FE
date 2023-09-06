@@ -202,6 +202,7 @@ const ModalAddTaskSchedule = ({
         <div className="default_modal_group_items">
           <Space direction="horizontal">
             <FormSelect
+              direction={"COLUMN"}
               disable={openModalState == formStatus.VIEW ? true : false}
               controller={"dmloaicv_lookup"}
               form={inputForm}
@@ -296,6 +297,7 @@ const ModalAddTaskSchedule = ({
 
         <div className="default_modal_group_items">
           <FormSelect
+            direction={"COLUMN"}
             disable={openModalState == formStatus.VIEW ? true : false}
             controller={"user_lookup"}
             form={inputForm}
@@ -306,6 +308,7 @@ const ModalAddTaskSchedule = ({
           />
 
           <FormSelect
+            direction={"COLUMN"}
             disable={openModalState == formStatus.VIEW ? true : false}
             controller={"dmbp_lookup"}
             form={inputForm}
@@ -316,6 +319,7 @@ const ModalAddTaskSchedule = ({
           />
 
           <FormSelect
+            direction={"COLUMN"}
             disable={openModalState == formStatus.VIEW ? true : false}
             controller={"dmtuyen_lookup"}
             form={inputForm}
@@ -328,8 +332,9 @@ const ModalAddTaskSchedule = ({
 
         <div className="default_modal_group_items group__item__justify__start">
           <FormSelect
+            direction={"COLUMN"}
             disable={openModalState == formStatus.VIEW ? true : false}
-            width={210}
+            codeWidth={315}
             controller={"dmdvcs_lookup"}
             form={inputForm}
             keyCode="unitCode"

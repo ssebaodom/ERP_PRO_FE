@@ -19,8 +19,8 @@ import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
 import { setTourDetail } from "../../../Store/Sagas/Sagas";
 
-const EditableCell = (cell, form) => {
-  return RenderCells(cell, form);
+const EditableCell = (cell, form, addRow) => {
+  return RenderCells(cell, form, addRow);
 };
 
 const TableDetail = ({ form, data, Tablecolumns }, ref) => {
@@ -37,6 +37,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     },
   }));
 
+  ////////////////////////////////////////btntable////////////////////////////////////////
   const BtnSave = async () => {
     const rawData = [...dataSource];
     const newData = [];
@@ -47,7 +48,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     });
 
     await newData.map((item) => {
-      const index = rawData.findIndex((record) => item.key === record.key);
+      const index = rawData.findIndex((record) => item?.key === record?.key);
       if (index > -1) {
         rawData.splice(index, 1, item);
       }
@@ -73,6 +74,27 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     setEditingKey([record.key, ...editingKey]);
   };
 
+  const deleteRow = async () => {
+    const newData = await dataSource.filter((item) => {
+      return !selectedRowKeys.includes(item.key);
+    });
+    setDataSource([...newData]);
+    setSelectedRowKeys([]);
+    setEditingKey([]);
+  };
+
+  const cancel = (record) => {
+    const newEditingKey = editingKey.filter((key) => key !== record);
+    setEditingKey(newEditingKey);
+  };
+
+  const addnew = async () => {
+    await addRow();
+    scrollToField("ma_kh");
+  };
+
+  ///////////////////////////////////////////////////////////////////////////////////////
+
   const scrollToField = (field, fieldName) => {
     const allFields = form.getFieldsValue(true);
 
@@ -86,18 +108,10 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     }
   };
 
-  const deleteRow = async () => {
-    const newData = await dataSource.filter((item) => {
-      return !selectedRowKeys.includes(item.key);
-    });
-    setDataSource([...newData]);
-    setSelectedRowKeys([]);
-    setEditingKey([]);
-  };
-
   const handleChangedValues = (changedValues, allValues) => {
     const keys = Object.keys(allValues);
     const changedObject = Object.keys(changedValues)[0];
+
     const changedKey = changedObject.substring(
       0,
       changedObject.indexOf("_") + 1
@@ -115,13 +129,8 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     }
   };
 
-  const cancel = (record) => {
-    const newEditingKey = editingKey.filter((key) => key !== record);
-    setEditingKey(newEditingKey);
-  };
-
   const onSelect = async (record, selected, selectedRows) => {
-    const keys = selectedRows.map((item) => item.key);
+    const keys = selectedRows.map((item) => item?.key);
     setSelectedRowKeys([...keys]);
     if (selected) {
       await edit(record);
@@ -156,6 +165,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   }, [Tablecolumns]);
 
   useEffect(() => {
+    console.log(data);
     if (data) setDataSource(data);
   }, [data]);
 
@@ -288,7 +298,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
             body: {
               cell: (cells) => {
                 if (dataSource.length > 0) {
-                  return EditableCell(cells, form);
+                  return EditableCell(cells, form, addnew);
                 }
                 return <></>;
               },

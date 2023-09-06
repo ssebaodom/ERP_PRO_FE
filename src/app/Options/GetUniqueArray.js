@@ -13,4 +13,13 @@ function GetUniqueArray(arr, comp) {
   return unique;
 }
 
-export { GetUniqueArray };
+function FilterNullArray(arr, comp) {
+  const unique = arr.filter((e) => {
+    if (e[comp] !== "") {
+      return e;
+    }
+  });
+  return unique;
+}
+
+export { GetUniqueArray, FilterNullArray };

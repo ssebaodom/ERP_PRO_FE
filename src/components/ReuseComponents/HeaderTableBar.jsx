@@ -1,6 +1,7 @@
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import { Button, Select } from "antd";
+import { SyncOutlined } from "@ant-design/icons";
+import { Button, Select, Tooltip } from "antd";
 import React, { memo } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 const HeaderTableBar = ({
   name,
@@ -11,9 +12,14 @@ const HeaderTableBar = ({
   deleteItems,
   printEvent,
   changePaginations,
+  advanceFilter,
 }) => {
+  useHotkeys("ctrl+i", () => {
+    addEvent();
+  });
+
   return (
-    <div className="list__header__bar">
+    <div className="list__header__bar w-full">
       {title && (
         <span className="default_header_label">
           {title}{" "}
@@ -40,54 +46,64 @@ const HeaderTableBar = ({
         )}
 
         {addEvent && (
-          <Button
-            className="default_button"
-            onClick={addEvent}
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
+          <Tooltip placement="topLeft" title="Thêm mới">
+            <Button className="default_button" onClick={addEvent}>
+              <i className="pi pi-plus sub_text_color"></i>
+            </Button>
+          </Tooltip>
         )}
 
         {refreshEvent && (
-          <Button className="default_button" onClick={refreshEvent}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
+          <Tooltip placement="topLeft" title="Làm tươi">
+            <Button className="default_button" onClick={refreshEvent}>
+              <SyncOutlined
+                style={{ fontSize: "20px", width: "20px", height: "20px" }}
+                className="sub_text_color"
+              />
+            </Button>
+          </Tooltip>
         )}
 
         {printEvent && (
-          <Button
-            className="default_button"
-            onClick={() => printEvent}
-            icon={<i className="pi pi-print"></i>}
-          >
-            <span style={{ fontWeight: "bold" }}>In</span>
-          </Button>
+          <Tooltip placement="topLeft" title="In">
+            <Button className="default_button" onClick={() => printEvent}>
+              <i className="pi pi-print sub_text_color"></i>
+            </Button>
+          </Tooltip>
         )}
 
         {changePaginations && (
-          <Select
-            className="w-fit default_pagination_select"
-            defaultValue={10}
-            suffixIcon={
+          <Tooltip placement="topLeft" title="Số bản ghi trên trang">
+            <Select
+              className="w-fit default_pagination_select"
+              defaultValue={10}
+              suffixIcon={
+                <i
+                  className="pi pi-table sub_text_color"
+                  style={{ fontSize: "16px" }}
+                ></i>
+              }
+              onSelect={changePaginations}
+              options={[
+                { value: 10, label: "10" },
+                { value: 20, label: "20" },
+                { value: 50, label: "50" },
+                { value: 100, label: "100" },
+                { value: 200, label: "200" },
+                { value: 500, label: "500" },
+              ]}
+            />
+          </Tooltip>
+        )}
+        {advanceFilter && (
+          <Tooltip placement="topLeft" title="In">
+            <Button className="default_button" onClick={advanceFilter}>
               <i
-                className="pi pi-table sub_text_color"
-                style={{ fontSize: "16px" }}
+                className="pi pi-filter sub_text_color"
+                style={{ fontWeight: "bold" }}
               ></i>
-            }
-            onSelect={changePaginations}
-            options={[
-              { value: 10, label: "10" },
-              { value: 20, label: "20" },
-              { value: 50, label: "50" },
-              { value: 100, label: "100" },
-              { value: 200, label: "200" },
-              { value: 500, label: "500" },
-            ]}
-          />
+            </Button>
+          </Tooltip>
         )}
       </div>
     </div>

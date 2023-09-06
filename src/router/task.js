@@ -8,35 +8,35 @@ import Home from "../pages/Home/Home";
 const taskRoutes = [
   {
     label: "Công việc",
-    claims: "Produce.task",
+    claims: "Permissions.task",
     path: "task",
     element: <Home />,
     children: [],
   },
   {
     label: "Danh mục lịch công việc",
-    claims: "Produce.task.taskSchedule",
+    claims: "Permissions.task.taskSchedule",
     path: "task/taskSchedule",
     parent: "task",
     element: <TaskSchedule />,
   },
   {
     label: "Danh mục công việc",
-    claims: "Produce.task.dmcongviec",
+    claims: "Permissions.task.dmcongviec",
     path: "task/tasklist",
     parent: "task",
     element: <TaskList />,
   },
   {
     label: "Danh mục loại công việc",
-    claims: "Produce.task.dmloaicongviec",
+    claims: "Permissions.task.dmloaicongviec",
     path: "task/tasktypelist",
     parent: "task",
     element: <TaskTypeList />,
   },
   {
     label: "Danh mục tesst",
-    claims: "Produce.task.dmcongviec",
+    claims: "Permissions.task.dmcongviec",
     path: "task/testt",
     parent: "task",
     element: <Test />,
@@ -44,7 +44,7 @@ const taskRoutes = [
 
   {
     label: "Vị trí bất thường",
-    claims: "Produce.task.locations.abnormal",
+    claims: "Permissions.task.locations.abnormal",
     path: "task/locations/abnormal",
     parent: "task",
     element: <Maps />,

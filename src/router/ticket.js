@@ -5,27 +5,27 @@ import TicketType from "../components/DMS/Pages/Ticket/TicketType/TicketType";
 const ticketRoutes = [
   {
     label: "Ticket",
-    claims: "Produce.ticket",
+    claims: "Permissions.ticket",
     path: "ticket",
     children: [],
   },
   {
     label: "Danh mục ticket",
-    claims: "Produce.ticket.ticketList",
+    claims: "Permissions.ticket.ticketList",
     path: "ticket/ticketList",
     parent: "ticket",
     element: <TicketList />,
   },
   {
     label: "Phản hồi ticket",
-    claims: "Produce.ticket.ticketReply",
+    claims: "Permissions.ticket.ticketReply",
     path: "ticket/ticketReply",
     parent: "ticket",
     element: <ReplyTicket />,
   },
   {
     label: "Danh mục loại ticket",
-    claims: "Produce.ticket.ticketType",
+    claims: "Permissions.ticket.ticketType",
     path: "ticket/ticketType",
     parent: "ticket",
     element: <TicketType />,

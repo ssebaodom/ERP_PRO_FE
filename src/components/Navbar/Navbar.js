@@ -1,18 +1,16 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import "./Navbar.css";
+import { UilBell, UilSearch } from "@iconscout/react-unicons";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { UilSearch, UilBell, UilApps } from "@iconscout/react-unicons";
+import "./Navbar.css";
 
-import { UnorderedListOutlined } from "@ant-design/icons";
-import { Link, useNavigate, redirect } from "react-router-dom";
-import { AutoComplete, Input, Dropdown, Menu, Modal, Space } from "antd";
-import router, { navbarObject } from "../../router/routes";
-import jwt from "../../utils/jwt";
-import { setClaims } from "../../store/reducers/claimsSlice";
-import { NotifiContext } from "../../Context/NotifiProvider";
-import useFireStore from "../../app/hooks/sendNotify";
-import sse__logo from "../../Icons/sse__logo.svg";
+import { Dropdown, Input, Menu, Modal } from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import { getRoutesAccess } from "../../app/Functions/getRouteAccess";
 import options__icon from "../../Icons/options__icon.svg";
+import sse__logo from "../../Icons/sse__logo.svg";
+import router, { routes } from "../../router/routes";
+import { setClaims } from "../../store/reducers/claimsSlice";
+import jwt from "../../utils/jwt";
 
 const Navbar = () => {
   const [options, setOptions] = useState([]);
@@ -20,8 +18,10 @@ const Navbar = () => {
   const [isOpenSearchModal, setOpenSearchModal] = useState(false);
   const [inputSearchModal, setInputSearchModal] = useState("");
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
-  const [navbarItems, setNavbarItems] = useState(
-    navbarObject.map((item) => {
+  const [navbarItems, setNavbarItems] = useState();
+
+  const renderNavbar = (navItems) => {
+    const renderedNavbar = navItems.map((item) => {
       if (item?.children?.length > 0) {
         // item.onTitleClick = () => {
         //   handleNavbarClick(item.children[0]);
@@ -39,8 +39,9 @@ const Navbar = () => {
         };
       }
       return item;
-    })
-  );
+    });
+    return renderedNavbar;
+  };
 
   // firebase to send notifications
   // const serviceNotifyParams = useMemo(() => {
@@ -113,6 +114,11 @@ const Navbar = () => {
   };
   useEffect(() => {
     dispatch(setClaims(jwt.getClaims() ? jwt.getClaims() : {}));
+    async function fetchData() {
+      const navitems = await getRoutesAccess(routes);
+      setNavbarItems(await renderNavbar(navitems));
+    }
+    fetchData();
   }, []);
 
   const homeRoutes = [
