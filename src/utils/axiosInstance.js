@@ -48,12 +48,11 @@ instance.interceptors.response.use(
       try {
         var access_token;
         await refreshToken().then((res) => {
-          console.log(res);
           jwt.setRefreshToken(res.refreshToken);
           jwt.setAccessToken(res.token);
           return (access_token = res.token);
         });
-        console.log(access_token);
+
         if (access_token && access_token.length > 0) {
           instance.defaults.headers.Authorization = `Bearer ${access_token}`;
           return instance(config);

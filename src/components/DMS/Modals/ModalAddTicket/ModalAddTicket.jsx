@@ -217,6 +217,7 @@ const ModalAddTicket = ({
             </Form.Item>
           </div>
         </div>
+
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>

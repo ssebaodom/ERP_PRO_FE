@@ -1,4 +1,5 @@
 .group__item_3__columns {
+    padding: 5px 0px;
     display: grid;
     grid-template-columns: 32% repeat(auto-fit, 43%) 25%;
     border-bottom: 1px dashed var(--border, #E2E4EE);

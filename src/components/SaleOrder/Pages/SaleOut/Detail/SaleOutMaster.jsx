@@ -29,7 +29,7 @@ const SaleOutMaster = ({ action, form }) => {
             <Form.Item
               className="flex-1"
               name="so_ct"
-              rules={[{ required: true, message: "Số chứng từ" }]}
+              rules={[{ required: false, message: "Số chứng từ" }]}
             >
               <Input
                 disabled={action === "VIEW" ? true : false}
@@ -58,7 +58,7 @@ const SaleOutMaster = ({ action, form }) => {
           <FormSelect
             width={100}
             disable={action == formStatus.VIEW ? true : false}
-            controller={"dmmagd_lookup"}
+            controller={"dmmagdDXA_lookup"}
             keyCode="ma_gd"
             label="Mã giao dịch"
             placeHolderCode={`Chọn mã giao dịch`}
@@ -76,6 +76,7 @@ const SaleOutMaster = ({ action, form }) => {
             keyName="ten_nvbh"
             controller="dmnvbh_lookup"
             form={form}
+            required={true}
             placeHolderCode="Nhân viên"
             placeHolderName="Tên nhân viên"
           />
@@ -111,7 +112,7 @@ const SaleOutMaster = ({ action, form }) => {
             <Form.Item className="flex-1" name="dien_giai">
               <Input
                 disabled={action === "VIEW" ? true : false}
-                placeholder="Nhập ngày sinh"
+                placeholder="Nhập ghi chú"
               />
             </Form.Item>
           </div>

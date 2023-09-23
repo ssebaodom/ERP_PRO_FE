@@ -1,4 +1,4 @@
-import { DatePicker, Form, Input, InputNumber, Select } from "antd";
+import { Checkbox, DatePicker, Form, Input, InputNumber, Select } from "antd";
 import React, { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApiWebLookup } from "../../components/DMS/API";
@@ -33,7 +33,7 @@ const RenderEditCell = (cell, form, addRow) => {
   }, 600);
 
   const onChangeSelection = (key, item) => {
-    if (cell.reference) {
+    if (cell?.reference) {
       form.setFieldValue(
         `${cell.record.key}_${cell.reference}`,
         item.label.trim()
@@ -60,6 +60,9 @@ const RenderEditCell = (cell, form, addRow) => {
       inputNode = (
         <InputNumber onKeyDown={handleKeypress} step={quantityFormat} />
       );
+      break;
+    case "Boolean":
+      inputNode = <Checkbox onKeyDown={handleKeypress} />;
       break;
     case "Text":
       inputNode = (
@@ -101,24 +104,28 @@ const RenderEditCell = (cell, form, addRow) => {
       inputNode = <Input className="default_input_detail" />;
       break;
   }
+
   return (
     <td>
       {cell.editing ? (
         <Form.Item
           initialValue={cell.record[cell.dataIndex]}
+          valuePropName={cell.inputType == "Boolean" ? "checked" : "value"}
           name={`${cell.record.key}_${cell.dataIndex}`}
           style={{
             margin: 0,
           }}
           rules={[
             {
-              required: true,
-              message: `Please Input ${cell.title}!`,
+              required: cell?.required,
+              message: `${cell.title} trống !`,
             },
           ]}
         >
           {inputNode}
         </Form.Item>
+      ) : cell.inputType == "Boolean" ? (
+        <Checkbox checked={cell.record[cell.dataIndex]} disabled />
       ) : (
         cell.children
       )}

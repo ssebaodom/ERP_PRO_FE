@@ -1,6 +1,5 @@
 import { Button, Modal, Space } from "antd";
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import send_icon from "../Icons/send_icon.svg";
 
 const ConfirmDialog = (props) => {
@@ -21,7 +20,7 @@ const ConfirmDialog = (props) => {
       centered
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
-      width={300}
+      width={props.size ? props.size : 400}
     >
       <div className="default_modal_header">
         <span className="default_header_label">{props.title}</span>

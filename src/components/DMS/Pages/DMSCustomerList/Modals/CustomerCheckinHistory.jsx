@@ -1,12 +1,36 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Dropdown, Input, Select, Space } from "antd";
-import React, { memo, useState } from "react";
+import {
+  Button,
+  DatePicker,
+  Dropdown,
+  Input,
+  Select,
+  Space,
+  Timeline,
+} from "antd";
+import dayjs from "dayjs";
+import React, { memo, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import Locale from "../../../../../Context/Locale";
+import { getUserInfo } from "../../../../../store/selectors/Selectors";
 import LoadingComponents from "../../../../Loading/LoadingComponents";
+import { SoFuckingUltimateGetApi } from "../../../API";
 import "../DMSCustomerList.css";
 
-const CustomerCheckinHistory = ({ loading }) => {
+const CustomerCheckinHistory = ({ customer, loading }) => {
+  const timeLineContainerStyled = {
+    minheight: "0",
+    overflow: "auto",
+  };
+  const timelineLabelStyled = {
+    marginBottom: "25px",
+    fontSize: "16px",
+  };
+
   const openModalAddTask = () => {};
   const [open, setOpen] = useState(false);
+  const [timelineItem, setTimelineItem] = useState([]);
+  const userInfo = useSelector(getUserInfo);
 
   const handleOpenChange = (flag) => {
     setOpen(flag);
@@ -15,6 +39,43 @@ const CustomerCheckinHistory = ({ loading }) => {
   const handleSearch = () => {
     setOpen(false);
   };
+
+  const fetchCustomerHistory = () => {
+    SoFuckingUltimateGetApi({
+      store: "api_history_customer_action",
+      data: {
+        DateFrom: dayjs().hour(0).year(2022),
+        DateTo: dayjs().hour(0),
+        idCustomer: customer,
+        UserID: userInfo.id,
+        UnitId: userInfo.unitId,
+      },
+    }).then((res) => {
+      const timeLine = res.data.map((item) => {
+        return {
+          dot:
+            item.loai_hinh == "VT" ? (
+              <i className="pi pi-check-circle" />
+            ) : item.loai_hinh == "MMDL" ? (
+              <i className="pi pi-user-plus" />
+            ) : (
+              <i className="pi pi-map-marker" />
+            ),
+          children: `${dayjs(item.ngay).format("DD/MM/YYYY HH:mm")} - ${
+            item.tieu_de
+          }`,
+        };
+      });
+
+      setTimelineItem(timeLine);
+    });
+  };
+
+  useEffect(() => {
+    if (customer) {
+      fetchCustomerHistory();
+    }
+  }, [customer]);
 
   const items = [
     {
@@ -138,7 +199,24 @@ const CustomerCheckinHistory = ({ loading }) => {
         </Dropdown>
       </Space>
 
-      <div className="customer__history relative h-full">
+      <div
+        className="relative h-full flex flex-column"
+        style={timeLineContainerStyled}
+      >
+        <span className="default_bold_label" style={timelineLabelStyled}>
+          Lịch sử hoạt động
+        </span>
+
+        {loading ? (
+          <LoadingComponents size={50} text="Đang tải..." />
+        ) : timelineItem.length > 0 ? (
+          <Timeline items={timelineItem} />
+        ) : (
+          <Locale />
+        )}
+      </div>
+
+      {/* <div className="customer__history relative h-full">
         {loading ? (
           <LoadingComponents size={30} text="Đang tải..." />
         ) : (
@@ -203,7 +281,7 @@ const CustomerCheckinHistory = ({ loading }) => {
             </div>
           </>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

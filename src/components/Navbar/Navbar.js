@@ -9,7 +9,7 @@ import { getRoutesAccess } from "../../app/Functions/getRouteAccess";
 import options__icon from "../../Icons/options__icon.svg";
 import sse__logo from "../../Icons/sse__logo.svg";
 import router, { routes } from "../../router/routes";
-import { setClaims } from "../../store/reducers/claimsSlice";
+import { setClaims, setIsBackgrouds } from "../../store/reducers/claimsSlice";
 import jwt from "../../utils/jwt";
 
 const Navbar = () => {
@@ -302,6 +302,10 @@ const Navbar = () => {
     router.navigate(results[0].path);
   };
 
+  const handleSetBackground = () => {
+    dispatch(setIsBackgrouds(true));
+  };
+
   return (
     <div className="navbar">
       <div className="first_navbar_row_left">
@@ -319,7 +323,12 @@ const Navbar = () => {
               onClick={handleOpenSearchModal}
               color="red"
             ></img>
-            <span className="default_header_label">DMS</span>
+            <span
+              onClick={handleSetBackground}
+              className="default_header_label"
+            >
+              DMS
+            </span>
           </div>
         </div>
 
@@ -333,7 +342,7 @@ const Navbar = () => {
             height: "30px",
             lineHeight: "30px",
             border: "none",
-            width: "86%",
+            width: "85%",
             userSelect: "none",
           }}
           overflowedIndicator={

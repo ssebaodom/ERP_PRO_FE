@@ -14,6 +14,7 @@ import "primeicons/primeicons.css";
 import "primereact/resources/primereact.min.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { Suspense } from "react";
+import App from "./App";
 import Loading from "./components/Loading/Loading";
 import themeComponents from "./utils/theme";
 
@@ -26,7 +27,11 @@ root.render(
           ...themeComponents,
         }}
       >
-        <RouterProvider router={router} />
+        <RouterProvider
+          router={router}
+          future={{ v7_startTransition: true }}
+          fallbackElement={<App />}
+        />
       </ConfigProvider>
     </Suspense>
   </Provider>

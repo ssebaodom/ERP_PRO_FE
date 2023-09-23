@@ -1,5 +1,6 @@
-import { Form, Input } from "antd";
+import { DatePicker, Form, Input } from "antd";
 import React, { memo } from "react";
+import { formStatus } from "../../../../../utils/constants";
 
 const MasterInfoCustomer = ({ action }) => {
   return (
@@ -15,7 +16,7 @@ const MasterInfoCustomer = ({ action }) => {
             rules={[{ required: true, message: "Điền tên khách hàng" }]}
           >
             <Input
-              disabled={action === "VIEW" ? true : false}
+              disabled={action === formStatus.VIEW ? true : false}
               placeholder="Nhập tên khách"
             />
           </Form.Item>
@@ -29,14 +30,16 @@ const MasterInfoCustomer = ({ action }) => {
 
           <Form.Item
             className="flex-1"
-            name="phone"
+            name="contactPhone"
             rules={[{ required: true, message: "Điền số điện thoại" }]}
           >
             <Input
               className={
-                action === "VIEW" ? "default_disable_input" : "default_input"
+                action === formStatus.VIEW
+                  ? "default_disable_input"
+                  : "default_input"
               }
-              disabled={action === "VIEW" ? true : false}
+              disabled={action === formStatus.VIEW ? true : false}
               placeholder="Nhập số điện thoại"
             />
           </Form.Item>
@@ -54,9 +57,11 @@ const MasterInfoCustomer = ({ action }) => {
           >
             <Input
               className={
-                action === "VIEW" ? "default_disable_input" : "default_input"
+                action === formStatus.VIEW
+                  ? "default_disable_input"
+                  : "default_input"
               }
-              disabled={action === "VIEW" ? true : false}
+              disabled={action === formStatus.VIEW ? true : false}
               placeholder="Nhập địa chỉ"
             />
           </Form.Item>
@@ -73,12 +78,11 @@ const MasterInfoCustomer = ({ action }) => {
             name="birthDay"
             rules={[{ required: true, message: "Điền ngày sinh" }]}
           >
-            <Input
-              className={
-                action === "VIEW" ? "default_disable_input" : "default_input"
-              }
-              disabled={action === "VIEW" ? true : false}
-              placeholder="Nhập ngày sinh"
+            <DatePicker
+              disabled={action === formStatus.VIEW ? true : false}
+              format={"DD/MM/YYYY"}
+              style={{ width: "100%" }}
+              placeholder="Chọn ngày"
             />
           </Form.Item>
         </div>
@@ -95,9 +99,11 @@ const MasterInfoCustomer = ({ action }) => {
           >
             <Input
               className={
-                action === "VIEW" ? "default_disable_input" : "default_input"
+                action === formStatus.VIEW
+                  ? "default_disable_input"
+                  : "default_input"
               }
-              disabled={action === "VIEW" ? true : false}
+              disabled={true}
               placeholder="Nhập tuyến"
             />
           </Form.Item>

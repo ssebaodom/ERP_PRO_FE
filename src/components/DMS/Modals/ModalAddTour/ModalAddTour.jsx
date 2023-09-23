@@ -125,30 +125,7 @@ const ModalAddTour = (props) => {
 
   const getDataEdit = (id) => {
     ApiGetTourDetail({ ma_tuyen: id }).then((res) => {
-      const layout = res.detail.map((item) => {
-        item.editable = true;
-        if (item.Field === "ma_kh") {
-          return {
-            title: item.Name,
-            dataIndex: item.Field,
-            type: item.Type,
-            editable: true,
-            key: item.Field,
-            reference: "ten_kh",
-            controller: "dmkh_lookup",
-          };
-        }
-
-        return {
-          title: item.Name,
-          dataIndex: item.Field,
-          type: item.Type,
-          editable: true,
-          key: item.Field,
-        };
-      });
-
-      setColumns(layout);
+      setColumns(res.detail);
 
       const data = res.master.map((item, index) => {
         item.key = index;
@@ -288,6 +265,7 @@ const ModalAddTour = (props) => {
           Tablecolumns={columns}
           data={dataSource}
           ref={detailTable}
+          Action={props.openModalType}
         />
 
         <Space style={{ justifyContent: "center", alignItems: "center" }}>

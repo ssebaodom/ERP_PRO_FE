@@ -6,6 +6,7 @@ const claims = createSlice({
     claims: [],
     textTest: "",
     userInfo: {},
+    isBackgound: false,
   },
   reducers: {
     setClaims(state, action) {
@@ -17,7 +18,11 @@ const claims = createSlice({
         unitId: action?.payload?.MA_DVCS,
         unitName: action?.payload?.DVCS,
         isPremium: false,
+        id: parseInt(action?.payload?.Id),
       };
+    },
+    setIsBackgrouds(state, action) {
+      state.isBackgound = action?.payload;
     },
     setText(state, action) {
       state.textTest = action?.payload;
@@ -27,4 +32,4 @@ const claims = createSlice({
 
 const claimsReducer = claims.reducer;
 export default claimsReducer;
-export const { setClaims, setText } = claims.actions;
+export const { setClaims, setText, setIsBackgrouds } = claims.actions;

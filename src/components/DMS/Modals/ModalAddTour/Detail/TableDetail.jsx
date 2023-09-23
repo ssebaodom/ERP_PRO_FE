@@ -9,21 +9,21 @@ import React, {
 import addNewRow from "../../../../../app/hooks/addNewRow";
 import getChangedTableRow from "../../../../../app/hooks/getChangedTableRow";
 import getEditRowsValue from "../../../../../app/hooks/getEditRowsValue";
-import RenderCells from "../../../../../app/hooks/renderCells";
-import renderEditColumns from "../../../../../app/hooks/renderEditColumns";
+import RenderEditCell from "../../../../../app/hooks/RenderEditCell";
+import renderEditColumnsV2 from "../../../../../app/hooks/renderEditColumnsV2";
 import { GetUniqueArray } from "../../../../../app/Options/GetUniqueArray";
 import TableLocale from "../../../../../Context/TableLocale";
-import checked__icon from "../../../../../Icons/checked__icon.svg";
 import copy__icon from "../../../../../Icons/copy__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
 import { setTourDetail } from "../../../Store/Sagas/Sagas";
 
 const EditableCell = (cell, form, addRow) => {
-  return RenderCells(cell, form, addRow);
+  return RenderEditCell(cell, form, addRow);
 };
 
-const TableDetail = ({ form, data, Tablecolumns }, ref) => {
+const TableDetail = ({ form, data, Tablecolumns, Action }, ref) => {
+  const [detailForm] = Form.useForm();
   const [editingKey, setEditingKey] = useState([]);
   const [dataSource, setDataSource] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -32,6 +32,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
 
   useImperativeHandle(ref, () => ({
     getData: async () => {
+      await detailForm.validateFields();
       await BtnSave();
       setIsChecked(true);
     },
@@ -41,7 +42,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   const BtnSave = async () => {
     const rawData = [...dataSource];
     const newData = [];
-    const rows = await form.validateFields();
+    const rows = await detailForm.validateFields();
     await editingKey.map(async (key) => {
       const changedData = await getChangedTableRow(key, rows, rawData);
       newData.push(changedData);
@@ -62,13 +63,17 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   const addRow = async () => {
     const newRow = addNewRow(columns);
     setDataSource([...dataSource, newRow]);
-    edit(newRow);
+    const inputRecord = getEditRowsValue(newRow);
+    detailForm.setFieldsValue({
+      ...inputRecord,
+    });
     setSelectedRowKeys([...selectedRowKeys, newRow.key]);
+    setEditingKey([...editingKey, newRow.key]);
   };
 
   const edit = (record) => {
     const inputRecord = getEditRowsValue(record);
-    form.setFieldsValue({
+    detailForm.setFieldsValue({
       ...inputRecord,
     });
     setEditingKey([record.key, ...editingKey]);
@@ -83,11 +88,6 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     setEditingKey([]);
   };
 
-  const cancel = (record) => {
-    const newEditingKey = editingKey.filter((key) => key !== record);
-    setEditingKey(newEditingKey);
-  };
-
   const addnew = async () => {
     await addRow();
     scrollToField("ma_kh");
@@ -96,7 +96,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   ///////////////////////////////////////////////////////////////////////////////////////
 
   const scrollToField = (field, fieldName) => {
-    const allFields = form.getFieldsValue(true);
+    const allFields = detailForm.getFieldsValue(true);
 
     if (!fieldName) {
       const itemFocusName = Object.keys(allFields)
@@ -133,15 +133,13 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     const keys = selectedRows.map((item) => item?.key);
     setSelectedRowKeys([...keys]);
     if (selected) {
-      await edit(record);
-      scrollToField("ma_kh", `${selectedRows.pop().key}_ma_kh`);
-    } else cancel(record.key);
+      scrollToField("ma_vt", `${selectedRows.pop().key}_ma_vt`);
+    }
   };
 
   const onSelectAll = (selected, selectedRows) => {
     if (selected) {
       const selectedKeys = selectedRows.map((record) => {
-        edit(record);
         return record.key;
       });
       setEditingKey([...selectedKeys]);
@@ -161,12 +159,44 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
   ////////////////////////Effects////////////////////
 
   useEffect(() => {
-    if (Tablecolumns) setColumns(Tablecolumns);
+    if (Tablecolumns.length > 0) {
+      const layout = Tablecolumns.map((item) => {
+        item.editable = true;
+        if (item.Field == "ma_kh") {
+          return {
+            title: item.Name,
+            dataIndex: item.Field,
+            type: item.Type,
+            editable: true,
+            key: item.Field,
+            reference: "ten_kh",
+            controller: "dmkh_lookup",
+            required: true,
+          };
+        }
+
+        return {
+          title: item.Name,
+          dataIndex: item.Field,
+          type: item.Type,
+          editable: true,
+          key: item.Field,
+        };
+      });
+      setColumns(layout);
+    }
   }, [Tablecolumns]);
 
   useEffect(() => {
-    console.log(data);
-    if (data) setDataSource(data);
+    setEditingKey([]);
+    setSelectedRowKeys([]);
+    if (data) {
+      const tableData = data.map((item, index) => {
+        item.key = index;
+        return item;
+      });
+      setDataSource(tableData);
+    }
   }, [data]);
 
   useEffect(() => {
@@ -192,30 +222,6 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
             flex: "none",
           }}
         >
-          {editingKey.length > 0 ? (
-            <Tooltip placement="topLeft" title="Nhận">
-              <Button
-                className="default_detail_button"
-                icon={
-                  <img
-                    style={{
-                      height: "12px",
-                      width: "12px",
-                      margin: "0 auto",
-                    }}
-                    src={checked__icon}
-                    alt=""
-                  />
-                }
-                onClick={() => {
-                  BtnSave();
-                }}
-              ></Button>
-            </Tooltip>
-          ) : (
-            ""
-          )}
-
           <Tooltip placement="topLeft" title="Thêm dòng">
             <Button
               className="default_primary_detail_button"
@@ -287,7 +293,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
       </div>
 
       <Form
-        form={form}
+        form={detailForm}
         component={false}
         onValuesChange={handleChangedValues}
         ref={ref}
@@ -298,14 +304,14 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
             body: {
               cell: (cells) => {
                 if (dataSource.length > 0) {
-                  return EditableCell(cells, form, addnew);
+                  return EditableCell(cells, detailForm, addnew);
                 }
                 return <></>;
               },
             },
           }}
           locale={TableLocale()}
-          columns={renderEditColumns(columns, editingKey)}
+          columns={renderEditColumnsV2(columns, Action)}
           dataSource={dataSource}
           rowClassName="default_detail_table_row"
           className="default_detail_table"

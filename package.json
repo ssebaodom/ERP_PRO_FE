@@ -5,6 +5,7 @@
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
     "@ant-design/happy-work-theme": "^1.0.0",
+    "@goongmaps/goong-map-react": "^1.1.2",
     "@iconscout/react-unicons": "^2.0.0",
     "@reduxjs/toolkit": "^1.9.3",
     "@testing-library/jest-dom": "^5.16.5",

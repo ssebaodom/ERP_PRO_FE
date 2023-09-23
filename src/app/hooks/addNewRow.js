@@ -11,6 +11,9 @@ const addNewRow = (columns) => {
       case "Numeric":
         newRow[item.dataIndex] = 0;
         break;
+      case "Boolean":
+        newRow[item.dataIndex] = false;
+        break;
       case "Datetime":
         newRow[item.dataIndex] = dayjs();
         break;

@@ -1,16 +1,16 @@
 import { Form, Input, Select } from "antd";
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
 import { ApiWebLookup } from "../DMS/API";
 
-const FormSelectDetail = ({
+const FormSelectDetailv2 = ({
   disable,
   form,
   label,
   keyCode,
-  keyName,
+  NameData,
   placeHolderCode,
   placeHolderName,
   controller,
@@ -22,6 +22,7 @@ const FormSelectDetail = ({
 }) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
+  const [detailValue, setDetailValue] = useState("");
 
   const lookupData = (item) => {
     setSelectLoading(true);
@@ -33,7 +34,7 @@ const FormSelectDetail = ({
     }).then((res) => {
       const resOptions = res.data.map((item) => {
         return {
-          value: typeof item.code == "string" ? item.code.trim() : item.code,
+          value: item.code.trim(),
           label: item.name.trim(),
         };
       });
@@ -45,6 +46,10 @@ const FormSelectDetail = ({
   const handleSelectionChange = useDebouncedCallback((actions, value) => {
     lookupData({ controller: actions, value: value });
   }, 600);
+
+  useEffect(() => {
+    if (NameData) setDetailValue(NameData);
+  }, [NameData]);
 
   return (
     <div className="split__view__detail__primary__items">
@@ -95,7 +100,7 @@ const FormSelectDetail = ({
                 handleSelectionChange(controller, e);
               }}
               onSelect={(key, item) => {
-                form.setFieldValue(keyName, item.label);
+                setDetailValue(item.label);
                 setSelectOptions([]);
                 if (onChange) {
                   onChange(key, item);
@@ -105,17 +110,16 @@ const FormSelectDetail = ({
               {SelectItemCode(selectOptions)}
             </Select>
           </Form.Item>
-          <Form.Item name={keyName} className="flex-1">
-            <Input
-              disabled={true}
-              className="default_disable_input"
-              placeholder={placeHolderName}
-            />
-          </Form.Item>
+          <Input
+            value={detailValue}
+            disabled={true}
+            className="default_disable_input"
+            placeholder={placeHolderName}
+          />
         </div>
       </div>
     </div>
   );
 };
 
-export default memo(FormSelectDetail);
+export default memo(FormSelectDetailv2);

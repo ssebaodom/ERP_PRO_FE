@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
-  useState,
+  useState
 } from "react";
 import addNewRow from "../../../../../app/hooks/addNewRow";
 import getChangedTableRow from "../../../../../app/hooks/getChangedTableRow";
@@ -13,7 +13,6 @@ import RenderEditCell from "../../../../../app/hooks/RenderEditCell";
 import renderEditColumnsV2 from "../../../../../app/hooks/renderEditColumnsV2";
 import { GetUniqueArray } from "../../../../../app/Options/GetUniqueArray";
 import TableLocale from "../../../../../Context/TableLocale";
-import checked__icon from "../../../../../Icons/checked__icon.svg";
 import copy__icon from "../../../../../Icons/copy__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
@@ -33,8 +32,13 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
 
   useImperativeHandle(ref, () => ({
     getData: async () => {
-      await BtnSave();
-      setIsChecked(true);
+      try {
+        await detailForm.validateFields();
+        await BtnSave();
+        setIsChecked(true);
+      } catch (error) {
+        console.error(error);
+      }
     },
   }));
 
@@ -162,6 +166,7 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
             key: item.field,
             reference: "ten_vt",
             controller: "dmvt_lookup",
+            required: true,
           };
         }
 
@@ -213,29 +218,6 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
             flex: "none",
           }}
         >
-          {editingKey.length > 0 ? (
-            <Tooltip placement="topLeft" title="Nhận">
-              <Button
-                className="default_detail_button"
-                icon={
-                  <img
-                    style={{
-                      height: "12px",
-                      width: "12px",
-                      margin: "0 auto",
-                    }}
-                    src={checked__icon}
-                    alt=""
-                  />
-                }
-                onClick={() => {
-                  BtnSave();
-                }}
-              ></Button>
-            </Tooltip>
-          ) : (
-            ""
-          )}
 
           <Tooltip placement="topLeft" title="Thêm dòng">
             <Button

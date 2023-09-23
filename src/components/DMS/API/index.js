@@ -80,3 +80,11 @@ export const UltimatePutDataApi = async (payload) => {
       return res.data;
     });
 };
+
+export const UltimatePutDataApi2 = async (payload) => {
+  return await https
+    .post(`Selling/UltimateRequest_tables2`, payload)
+    .then((res) => {
+      return res.data;
+    });
+};

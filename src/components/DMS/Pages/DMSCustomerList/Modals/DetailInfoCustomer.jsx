@@ -8,7 +8,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Khu vực"
-        keyCode="areaCode"
+        keyCode="area"
         keyName="areaName"
         controller="dmkhuvuc_lookup"
         form={form}
@@ -18,8 +18,8 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Tỉnh"
-        keyCode="provinceCode"
-        keyName="provinceName"
+        keyCode="city"
+        keyName="cityName"
         controller="dmtinh_lookup"
         form={form}
         placeHolderCode="Tỉnh"
@@ -28,7 +28,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Quận"
-        keyCode="districtCode"
+        keyCode="district"
         keyName="districtName"
         controller="dmquan_lookup"
         form={form}
@@ -38,8 +38,8 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Xã/phường"
-        keyCode="wardsCode"
-        keyName="wardsName"
+        keyCode="commune"
+        keyName="communeName"
         controller="dmphuong_lookup"
         form={form}
         placeHolderCode="Xã/phường"
@@ -48,7 +48,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Nguồn"
-        keyCode="resourceCode"
+        keyCode="resource"
         keyName="resourceName"
         controller="dmnguonkh_lookup"
         form={form}
@@ -58,7 +58,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Đơn vị"
-        keyCode="unitCode"
+        keyCode="unit"
         keyName="unitName"
         controller="dmdvcs_lookup"
         form={form}
@@ -68,8 +68,8 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Phân loại"
-        keyCode="typeCode"
-        keyName="typeName"
+        keyCode="classify"
+        keyName="classifyName"
         controller="dmphanloai_lookup"
         form={form}
         placeHolderCode="Phân loại"
@@ -78,8 +78,8 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Hình thức"
-        keyCode="formCode"
-        keyName="formName"
+        keyCode="forms"
+        keyName="formsName"
         controller="dmhinhthuc_lookup"
         form={form}
         placeHolderCode="Hình thức"
@@ -88,7 +88,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Tuyến"
-        keyCode="tourCode"
+        keyCode="tour"
         keyName="tourName"
         controller="dmtuyen_lookup"
         form={form}
@@ -98,7 +98,7 @@ const DetailInfoCustomer = ({ form, action }) => {
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Nhân viên"
-        keyCode="employeeCode"
+        keyCode="employee"
         keyName="employeeName"
         controller="dmnvbh_lookup"
         form={form}

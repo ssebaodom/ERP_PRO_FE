@@ -12,7 +12,6 @@ import {
 } from "../../../../../app/Functions/getTableValue";
 import addNewRow from "../../../../../app/hooks/addNewRow";
 import getChangedTableRow from "../../../../../app/hooks/getChangedTableRow";
-import getEditRowsValue from "../../../../../app/hooks/getEditRowsValue";
 import RenderEditCell from "../../../../../app/hooks/RenderEditCell";
 import renderEditColumnsV2 from "../../../../../app/hooks/renderEditColumnsV2";
 import { FilterNullArray } from "../../../../../app/Options/GetUniqueArray";
@@ -21,6 +20,7 @@ import checked__icon from "../../../../../Icons/checked__icon.svg";
 import copy__icon from "../../../../../Icons/copy__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
+import { formStatus } from "../../../../../utils/constants";
 
 import { setFinalDetails } from "../../../Store/Sagas/Sagas";
 
@@ -66,14 +66,12 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
   };
 
   const addRow = async () => {
-    const newRow = addNewRow(columns);
-    setDataSource([...dataSource, newRow]);
-    const inputRecord = getEditRowsValue(newRow);
-    detailForm.setFieldsValue({
-      ...inputRecord,
-    });
-    setSelectedRowKeys([...selectedRowKeys, newRow.key]);
-    setEditingKey([...editingKey, newRow.key]);
+    if (Action != formStatus.VIEW) {
+      const newRow = addNewRow(columns);
+      setDataSource([...dataSource, newRow]);
+      setSelectedRowKeys([...selectedRowKeys, newRow.key]);
+      setEditingKey([...editingKey, newRow.key]);
+    }
   };
 
   const deleteRow = async () => {
@@ -93,15 +91,17 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
   ///////////////////////////////////////////////////////////////////////////////////////
 
   const scrollToField = (field, fieldName) => {
-    const allFields = detailForm.getFieldsValue(true);
+    if (Action != formStatus.VIEW) {
+      const allFields = detailForm.getFieldsValue(true);
 
-    if (!fieldName) {
-      const itemFocusName = Object.keys(allFields)
-        .filter((item) => item.includes(field))
-        .pop();
-      document.getElementById(itemFocusName).focus();
-    } else {
-      document.getElementById(fieldName).focus();
+      if (!fieldName) {
+        const itemFocusName = Object.keys(allFields)
+          .filter((item) => item.includes(field))
+          .pop();
+        document.getElementById(itemFocusName).focus();
+      } else {
+        document.getElementById(fieldName).focus();
+      }
     }
   };
 
@@ -194,6 +194,42 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
   useEffect(() => {
     if (Tablecolumns) {
       const layout = Tablecolumns.map((item) => {
+        if (item.field === "ma_vt") {
+          return {
+            title: item.name,
+            dataIndex: item.field,
+            type: item.type,
+            editable: true,
+            key: item.field,
+            reference: "ten_vt",
+            controller: "dmvt_lookup",
+            required: true,
+          };
+        }
+        if (item.field === "ma_kho") {
+          return {
+            title: item.name,
+            dataIndex: item.field,
+            type: item.type,
+            editable: true,
+            key: item.field,
+            reference: "ten_kho",
+            controller: "dmkho_lookup",
+            required: true,
+          };
+        }
+        if (item.field === "dvt") {
+          return {
+            title: item.name,
+            dataIndex: item.field,
+            type: item.type,
+            editable: true,
+            key: item.field,
+            controller: "dmdvt_lookup",
+            required: true,
+          };
+        }
+
         return {
           title: item.name,
           dataIndex: item.field,

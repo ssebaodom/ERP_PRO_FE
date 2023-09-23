@@ -54,7 +54,7 @@ const FormSelect = ({
         alignItems: `${
           direction?.toUpperCase() == "COLUMN" ? "flex-start" : "center"
         }`,
-        flex: `${codeWidth ? 0 : 1}`,
+        flex: `${codeWidth ? "none" : 1}`,
       }}
     >
       <div style={{ width: `${width ? width + "px" : "auto"}`, flexShrink: 0 }}>
@@ -65,7 +65,7 @@ const FormSelect = ({
         className="min-w-0"
         style={{
           width: `${codeWidth ? String(codeWidth) + "px" : "100%"}`,
-          flex: `${codeWidth ? 0 : 1}`,
+          flex: `${codeWidth ? "none" : 1}`,
         }}
         name={keyCode}
         rules={[

@@ -5,7 +5,7 @@ const ApproveItemsInitial = {
 };
 
 const approveItems = createSlice({
-  name: "tourDetails",
+  name: "approveItems",
   initialState: { ...ApproveItemsInitial },
   reducers: {
     setDetailData(state, action) {

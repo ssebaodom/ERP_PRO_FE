@@ -9,9 +9,12 @@ const getRoutesAccess = async (routes) => {
   });
 
   const functionRoutes = routes.filter((item) => item.path == "/")[0].children;
-
   let homeRoute = functionRoutes.filter((item) => {
-    if (claims.includes(item.claims)) {
+    if (infoData.Role != "Admin") {
+      if (claims.includes(item.claims)) {
+        return item;
+      }
+    } else {
       return item;
     }
   });

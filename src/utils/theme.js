@@ -27,6 +27,16 @@ const themeComponents = {
       colorTextDisabled: "rgb(101, 113, 148)",
       colorBgContainerDisabled: "rgb(226, 228, 238)",
     },
+    Menu: {
+      colorPrimary: "rgb(71, 121, 207)",
+      itemSelectedColor: "rgb(71, 121, 207)",
+      horizontalItemSelectedColor: "rgb(71, 121, 207)",
+      horizontalItemHoverColor: "rgb(71, 121, 207)",
+      colorPrimaryBorder: "rgb(71, 121, 207)",
+    },
+    Steps: {
+      colorPrimary: "rgb(71, 121, 207)",
+    },
   },
 };
 

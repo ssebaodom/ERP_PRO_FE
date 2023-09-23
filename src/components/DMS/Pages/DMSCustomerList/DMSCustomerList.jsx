@@ -1,14 +1,20 @@
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Pagination, Space, Tabs } from "antd";
-import TabPane from "antd/es/tabs/TabPane";
+import { Button, Form, notification, Pagination, Space, Tabs } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
+import { dataProcessing } from "../../../../app/hooks/dataFormatHelper";
+import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
 import LoadingComponents from "../../../Loading/LoadingComponents";
-import { SoFuckingUltimateGetApi } from "../../API";
+import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
+import {
+  SoFuckingUltimateApi,
+  SoFuckingUltimateGetApi,
+  UltimatePutDataApi,
+} from "../../API";
 import {
   fetchDMSCustomersDetail,
   setCurrentTab,
@@ -17,6 +23,7 @@ import { getcurrentDMSCustomer } from "../../Store/Selector/Selectors";
 import "./DMSCustomerList.css";
 import CIHistory from "./Modals/CIHistory";
 import CustomerCheckinHistory from "./Modals/CustomerCheckinHistory";
+import CustomerContact from "./Modals/CustomerContact";
 import DetailInfoCustomer from "./Modals/DetailInfoCustomer";
 import Filter from "./Modals/Filter";
 import MasterInfoCustomer from "./Modals/MasterInfoCustomer";
@@ -39,9 +46,7 @@ const DMSCustomerList = () => {
   });
 
   const [totalResults, setTotalResults] = useState(0);
-  const [openModalType, setOpenModalType] = useState("Add");
-  const [currentRecord, setCurrentRecord] = useState(null);
-  const [currentItemSelected, setCurrentItemSelected] = useState({});
+  const [currentRecord, setCurrentRecord] = useState({});
   const [isOpenAdvanceFilter, setIsOpenAdvanceFilter] = useState(false);
   const [filterForm] = Form.useForm();
   const [selectOptions, setSelectOptions] = useState([]);
@@ -50,29 +55,62 @@ const DMSCustomerList = () => {
   const [action, setAction] = useState(formStatus.VIEW);
   const detailCustomer = useSelector(getcurrentDMSCustomer);
   const [initialCustomerValue, setInitialCustomerValue] = useState({});
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+  const userInfo = useSelector(getUserInfo);
+
+  const tabItems = [
+    {
+      key: "detail",
+      label: "Chi tiết",
+      children: <DetailInfoCustomer form={detailForm} action={action} />,
+    },
+    {
+      key: "contact",
+      label: "Liên hệ",
+      children: <CustomerContact action={action} />,
+      forceRender: true,
+    },
+    {
+      key: "SOHistory",
+      label: "Lịch sử mua hàng",
+      children: <SOHistory />,
+    },
+    {
+      key: "CIHistory",
+      label: "Lịch sử viếng thăm",
+      children: <CIHistory />,
+    },
+    {
+      key: "TKHistory",
+      label: "Lịch sử phản hồi",
+      children: <TKHistory />,
+    },
+  ];
 
   //functions #########################################################################
 
   const refreshData = () => {
     setPagination({ ...pagination, pageIndex: 1, current: 1 });
+    setCurrentRecord({});
     if (pagination.pageIndex === 1) {
       setLoading(true);
     }
   };
 
   const getdata = async () => {
-    setLoading(true);
+    const tablepagination = { ...pagination };
+    delete tablepagination?.current;
     await SoFuckingUltimateGetApi({
       store: "get_vcrdm",
       data: {
         ...tableParams,
-        ...pagination,
+        ...tablepagination,
       },
     }).then((res) => {
       setCustomerList(res.data);
       setTotalResults(res.pagegination.totalRecord);
-      setLoading(false);
     });
+    setLoading(false);
   };
 
   const handleTableChange = (paginationChanges, filters, sorter) => {
@@ -97,10 +135,49 @@ const DMSCustomerList = () => {
     await setIsOpenAdvanceFilter(true);
   };
 
-  const onSubmitForm = () => {
-    const a = { ...filterForm.getFieldsValue() };
-    // console.log(a);
-    const initialValue = filterForm.getFieldValue("customerCode");
+  const onSubmitForm = (items) => {
+    const data = {
+      ...dataProcessing(items, [
+        "areaName",
+        "districtName",
+        "employeeName",
+        "formsName",
+        "classifyName",
+        "cityName",
+        "resourceName",
+        "tourName",
+        "typeName",
+        "unitName",
+        "communeName",
+      ]),
+      stt_rec_dm:
+        action === formStatus.EDIT && currentRecord?.ma_kh
+          ? currentRecord?.ma_kh?.trim()
+          : "",
+      UserId: userInfo.id,
+    };
+
+    SoFuckingUltimateApi({
+      store: "api_Create_DMSCustomer",
+      data: { ...data },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          setAction(formStatus.VIEW);
+          setInitialCustomerValue({ ...initialCustomerValue, ...items });
+          refreshData();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const handleSelectedCustomer = (item) => {
@@ -109,13 +186,8 @@ const DMSCustomerList = () => {
   };
 
   const onFilter = (items) => {
-    console.log(items);
-  };
-
-  const handleSaveDetailForm = (items) => {
-    console.log(items);
-    setAction(formStatus.VIEW);
-    setInitialCustomerValue({ ...initialCustomerValue, ...items });
+    setPagination({ ...pagination, pageIndex: 1, current: 1 });
+    setTableParams({ ...tableParams, ...items });
   };
 
   const onTabChanges = (tabKey) => {
@@ -128,53 +200,116 @@ const DMSCustomerList = () => {
     setPagination({ ...pagination, pageIndex: 1 });
   }, 800);
 
+  const handleAddNew = () => {
+    setAction(formStatus.ADD);
+    setInitialCustomerValue({});
+    setCurrentRecord({});
+  };
+
+  const handleOpenDeleteDialog = () => {
+    if (currentRecord?.ma_kh && action !== formStatus.ADD) {
+      setIsOpenDeleteModal(true);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsOpenDeleteModal(false);
+  };
+
+  const handleDelete = (key) => {
+    SoFuckingUltimateApi({
+      store: "api_Delete_DMSCustomer",
+      data: {
+        stt_rec_dm: currentRecord.ma_kh,
+      },
+    }).then((res) => {
+      if (res.status === 200 && res.data === true) {
+        notification.success({
+          message: `Thành công`,
+        });
+        refreshData();
+        setAction(formStatus.VIEW);
+        handleCloseDeleteDialog();
+        setCurrentRecord({});
+      } else {
+        notification.warning({
+          message: `Có lỗi xảy ra khi thực hiện`,
+        });
+      }
+    });
+  };
+
+  const handleExcelData = (excelData) => {
+    console.log(userInfo);
+    UltimatePutDataApi({
+      store: "api_import_dmsCustomer",
+      data: {
+        UnitID: userInfo.unitId,
+        UserId: userInfo.id,
+      },
+      listData: excelData,
+    })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   // Khi chọn khách sẽ load dữ liệu detail
   useEffect(() => {
-    if (currentRecord) {
+    if (currentRecord?.ma_kh) {
       setLoadingDetail(true);
-      fetchDMSCustomersDetail(currentRecord);
+      fetchDMSCustomersDetail(currentRecord?.ma_kh);
     }
   }, [JSON.stringify(currentRecord)]);
 
   // Khi lấy dữ liệu set thành initial để khi huỷ không bị mất
   useEffect(() => {
-    if (detailCustomer && currentRecord) {
+    if (detailCustomer && currentRecord?.ma_kh) {
       setInitialCustomerValue({
         customerName: detailCustomer?.ten_dm?.trim(),
-        phone: detailCustomer?.dien_thoai?.trim(),
+        contactPhone: detailCustomer?.dien_thoai?.trim(),
         address: detailCustomer?.dia_chi?.trim(),
-        birthDay: dayjs(detailCustomer?.ngay_sinh).format("DD/MM/YYYY"),
+        birthDay: dayjs(detailCustomer?.ngay_sinh).isValid()
+          ? dayjs(detailCustomer?.ngay_sinh)
+          : undefined,
         tourName: detailCustomer?.ten_tuyen?.trim(),
-        areaCode: detailCustomer?.nh_kh1?.trim(),
+        area: detailCustomer?.nh_kh1?.trim(),
         areaName: detailCustomer?.ten_khu_vuc?.trim(),
-        provinceCode: detailCustomer?.nh_kh2?.trim(),
-        provinceName: detailCustomer?.ten_tinh?.trim(),
-        districtCode: detailCustomer?.nh_kh3?.trim(),
+        city: detailCustomer?.nh_kh2?.trim(),
+        cityName: detailCustomer?.ten_tinh?.trim(),
+        district: detailCustomer?.nh_kh3?.trim(),
         districtName: detailCustomer?.ten_quan?.trim(),
-        wardsCode: detailCustomer?.nh_kh4?.trim(),
-        wardsName: detailCustomer?.ten_phuong?.trim(),
-        resourceCode: detailCustomer?.nh_kh5?.trim(),
+        commune: detailCustomer?.nh_kh4?.trim(),
+        communeName: detailCustomer?.ten_phuong?.trim(),
+        resource: detailCustomer?.nh_kh5?.trim(),
         resourceName: detailCustomer?.nh_kh5?.trim(),
-        unitCode: detailCustomer?.nh_kh6?.trim(),
+        unit: detailCustomer?.nh_kh6?.trim(),
         unitName: detailCustomer?.ten_dvcs?.trim(),
-        typeCode: detailCustomer?.nh_kh7?.trim(),
-        typeName: detailCustomer?.nh_kh7?.trim(),
-        formCode: detailCustomer?.nh_kh7?.trim(),
-        formName: detailCustomer?.nh_kh7?.trim(),
-        tourCode: detailCustomer?.ma_tuyen?.trim(),
-        employeeCode: detailCustomer?.ma_nvbh?.trim(),
+        classify: detailCustomer?.nh_kh7?.trim(),
+        classifyName: detailCustomer?.nh_kh7?.trim(),
+        forms: detailCustomer?.nh_kh8?.trim(),
+        formsName: detailCustomer?.nh_kh8?.trim(),
+        tour: detailCustomer?.ma_tuyen?.trim(),
+        employee: detailCustomer?.ma_nvbh?.trim(),
         employeeName: detailCustomer?.ma_nvbh?.trim(),
+        contactPhone2: detailCustomer?.dien_thoai_dd?.trim(),
+        email: detailCustomer?.email?.trim(),
+        MST: detailCustomer?.ma_so_thue?.trim(),
+        contactPerson: detailCustomer?.ong_ba?.trim(),
       });
       detailForm.resetFields();
       setLoadingDetail(false);
     }
-  }, [JSON.stringify(detailCustomer)]);
+  }, [detailCustomer]);
 
   // Refresh lại form để nhận dữ liệu
   useEffect(() => {
@@ -186,42 +321,20 @@ const DMSCustomerList = () => {
       className="default_list_layout page_default"
       style={{ height: "90vh", gap: "15px" }}
     >
-      <div className="list__header__bar">
-        <span className="default_header_label">
-          Danh sách khách hàng DMS (
-          <span className="sub_text_color">{totalResults}</span>)
-        </span>
-        <div className="list__header__tools">
-          <Button
-            className="default_button"
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Thêm mới</span>
-          </Button>
-          <Button
-            className="default_button"
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Nhập dữ liệu</span>
-          </Button>
-          <Button
-            className="default_button"
-            icon={<PlusOutlined className="sub_text_color" />}
-          >
-            <span style={{ fontWeight: "bold" }}>Xuất dữ liệu</span>
-          </Button>
-          <Button className="default_button" onClick={refreshData}>
-            <SyncOutlined
-              style={{ fontSize: "20px", width: "20px", height: "20px" }}
-              className="sub_text_color"
-            />
-          </Button>
-        </div>
-      </div>
-
-      <div className="split__view__container">
+      <div className="split__view__container" style={{ height: "97%" }}>
         <div className="split__view__header__bar">
-          <div className="split__view__search__bar">
+          <HeaderTableBar
+            name={"khách hàng DMS"}
+            title={"Danh sách khách hàng DMS"}
+            totalResults={totalResults}
+            advanceFilter={openAdvanceFilter}
+            refreshEvent={refreshData}
+            addEvent={handleAddNew}
+            deleteEvent={handleOpenDeleteDialog}
+            uploadFunction={handleExcelData}
+          />
+
+          {/* <div className="split__view__search__bar">
             <Input
               style={{
                 width: "15vw",
@@ -241,7 +354,7 @@ const DMSCustomerList = () => {
             >
               <span style={{ fontWeight: "bold" }}>Nâng cao</span>
             </Button>
-          </div>
+          </div> */}
         </div>
         <div className="split__view__detail">
           <div className="split__view__detail__left">
@@ -257,10 +370,10 @@ const DMSCustomerList = () => {
                   <div
                     key={index}
                     className={`split__view__detail__left__item split_view_item ${
-                      item.ma_kh === currentRecord ? "selected" : ""
+                      item.ma_kh === currentRecord?.ma_kh ? "selected" : ""
                     }`}
                     onClick={(e) => {
-                      handleSelectedCustomer(item.ma_kh);
+                      handleSelectedCustomer(item);
                     }}
                   >
                     <span>{index}</span>
@@ -291,7 +404,7 @@ const DMSCustomerList = () => {
             <Form
               initialValues={initialCustomerValue}
               form={detailForm}
-              onFinish={handleSaveDetailForm}
+              onFinish={onSubmitForm}
               className="split__view__detail__primary relative"
             >
               {loadingDetail ? (
@@ -306,37 +419,19 @@ const DMSCustomerList = () => {
                   <MasterInfoCustomer action={action} />
                   <div
                     className="split__view__detail__primary__items"
-                    style={{ alignItems: "normal" }}
+                    style={{ alignItems: "normal", paddingRight: "12px" }}
                   >
                     <Tabs
                       onTabClick={onTabChanges}
                       moreIcon={<span>...</span>}
                       style={{ minWidth: "0" }}
-                    >
-                      <TabPane tab="Chi tiết" key="detail">
-                        {/* Thông tin chi tiết */}
-                        <DetailInfoCustomer form={detailForm} action={action} />
-                      </TabPane>
-                      <TabPane tab="Lịch sử mua hàng" key="SOHistory">
-                        <SOHistory />
-                      </TabPane>
-                      <TabPane tab="Lịch sử viếng thăm" key="CIHistory">
-                        <CIHistory />
-                      </TabPane>
-                      <TabPane tab="Lịch sử phản hồi" key="TKHistory">
-                        <TKHistory />
-                      </TabPane>
-                      <TabPane tab="Lịch sử quầy kệ" key="5">
-                        third
-                      </TabPane>
-                      <TabPane tab="Khác" key="Other">
-                        third
-                      </TabPane>
-                    </Tabs>
+                      items={tabItems}
+                      destroyInactiveTabPane={false}
+                    />
                   </div>
 
                   <Space className="justify-content-end pr-3">
-                    {action !== "VIEW" ? (
+                    {action !== formStatus.VIEW ? (
                       <>
                         <Button
                           onClick={(e) => {
@@ -357,14 +452,12 @@ const DMSCustomerList = () => {
                         </Button>
                       </>
                     ) : (
-                      <>
-                        <Button
-                          onClick={(e) => setAction(formStatus.EDIT)}
-                          className="default_warning_button"
-                        >
-                          Sửa
-                        </Button>
-                      </>
+                      <Button
+                        onClick={(e) => setAction(formStatus.EDIT)}
+                        className="default_warning_button"
+                      >
+                        Sửa
+                      </Button>
                     )}
                   </Space>
                 </>
@@ -372,7 +465,7 @@ const DMSCustomerList = () => {
             </Form>
 
             <CustomerCheckinHistory
-              customer={currentRecord}
+              customer={currentRecord?.ma_kh}
               loading={loadingDetail}
             />
           </div>
@@ -382,7 +475,16 @@ const DMSCustomerList = () => {
       <Filter
         setIsOpenAdvanceFilter={setIsOpenAdvanceFilter}
         isOpenAdvanceFilter={isOpenAdvanceFilter}
-        onFilter
+        onFilter={onFilter}
+      />
+      <ConfirmDialog
+        state={isOpenDeleteModal}
+        title="Xoá khách hàng"
+        description={`Xoá khách hàng: ${currentRecord.ten_kh}, SDT: ${currentRecord.dien_thoai}`}
+        handleOkModal={handleDelete}
+        handleCloseModal={handleCloseDeleteDialog}
+        keys={currentRecord?.ma_kh}
+        size={400}
       />
     </div>
   );

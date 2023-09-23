@@ -19,6 +19,7 @@ import CustomerArea from "../components/DMS/Pages/CustomerArea/CustomerArea";
 import CustomerClassify from "../components/DMS/Pages/CustomerClassify/CustomerClassify";
 import CustomerForm from "../components/DMS/Pages/CustomerForm/CustomerForm";
 import CustomerResource from "../components/DMS/Pages/CustomerResource/CustomerResource";
+import SaleEmployee from "../components/SaleOrder/Pages/SaleEmployee/SaleEmployee";
 
 const documentsRoutes = [
   {
@@ -55,6 +56,13 @@ const documentsRoutes = [
     path: "documents/customerarea",
     parent: "documents",
     element: <CustomerArea />,
+  },
+  {
+    label: "Danh mục nhân viên",
+    claims: "Permissions.documents.customerList",
+    path: "documents/customerlist",
+    parent: "documents",
+    element: <SaleEmployee />,
   },
 ];
 

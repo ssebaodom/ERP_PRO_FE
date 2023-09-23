@@ -1,15 +1,32 @@
-import { Button, Divider, Form, Input, Pagination, Space, Steps } from "antd";
+import {
+  Button,
+  Divider,
+  Form,
+  Input,
+  notification,
+  Pagination,
+  Space,
+  Steps,
+} from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
-import { formatData } from "../../../../app/hooks/dataFormatHelper";
+import { getIndexRow } from "../../../../app/Functions/getIndexRow";
+import {
+  dataProcessing,
+  formatData,
+} from "../../../../app/hooks/dataFormatHelper";
+import ConfirmDialog from "../../../../Context/ConfirmDialog";
+import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
+import { UltimatePutDataApi } from "../../../DMS/API";
 import Filter from "../../../DMS/Pages/DMSCustomerList/Modals/Filter";
 import LoadingComponents from "../../../Loading/LoadingComponents";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import { SoFuckingUltimateGetApi } from "../../../SystemOptions/API";
+import { SoFuckingUltimateApi } from "../../API";
 import {
   fetchSaleOutDetail,
   fetchSaleOutMaster,
@@ -26,15 +43,15 @@ import "./SaleOut.css";
 
 const SaleOut = () => {
   // initialize #########################################################################
-  const [detailForm] = Form.useForm();
+  const [masterForm] = Form.useForm();
 
   const [detailData, setDetailData] = useState([]);
   const [detailColums, setDetailColums] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [tableParams, setTableParams] = useState({
-    DateFrom: "2022-10-30",
+    DateFrom: "2022/10/30",
+    DateTo: dayjs(),
   });
   const [pagination, setPagination] = useState({
     pageIndex: 1,
@@ -42,16 +59,14 @@ const SaleOut = () => {
   });
 
   const [totalResults, setTotalResults] = useState(0);
-  const [openModalType, setOpenModalType] = useState(formStatus.ADD);
   const [currentRecord, setCurrentRecord] = useState({
     stt_rec: "A00000000",
-    ngay_ct: dayjs().format("DD/MM/YYYY"),
+    so_ct: "000001",
+    ngay_ct: dayjs(),
   });
-  const [currentItemSelected, setCurrentItemSelected] = useState({});
   const [isOpenAdvanceFilter, setIsOpenAdvanceFilter] = useState(false);
-  const [filterForm] = Form.useForm();
-  const [selectOptions, setSelectOptions] = useState([]);
-  const [selectLoading, setSelectLoading] = useState(false);
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+
   const [customerList, setCustomerList] = useState([]);
   const [action, setAction] = useState(formStatus.VIEW);
   const [initialCustomerValue, setInitialCustomerValue] = useState({});
@@ -60,6 +75,7 @@ const SaleOut = () => {
   const currentSaleOutMaster = useSelector(getCurrentSaleOutMaster);
   const currentSaleOutDetail = useSelector(getCurrentSaleOutDetail);
   const finalDetails = useSelector(getFinalDetail);
+  const userInfo = useSelector(getUserInfo);
 
   const detailTable = useRef();
 
@@ -85,6 +101,7 @@ const SaleOut = () => {
   };
 
   const getdata = async () => {
+    delete pagination?.current;
     setLoading(true);
     await SoFuckingUltimateGetApi({
       store: "api_get_order_list",
@@ -99,20 +116,6 @@ const SaleOut = () => {
     });
   };
 
-  const handleTableChange = (paginationChanges, filters, sorter) => {
-    setPagination({
-      ...pagination,
-      pageIndex: paginationChanges.current,
-      current: paginationChanges.current,
-    });
-    setTableParams({ ...tableParams, ...filters, ...sorter });
-
-    // `dataSource` is useless since `pageSize` changed
-    if (pagination.pageSize !== pagination?.pageSize) {
-      setDetailData([]);
-    }
-  };
-
   const handleChangePagintion = (currentPage, pageSize) => {
     setPagination({ ...pagination, pageIndex: currentPage });
   };
@@ -122,8 +125,49 @@ const SaleOut = () => {
   };
 
   const onSubmitForm = () => {
-    const a = { ...filterForm.getFieldsValue() };
-    const initialValue = filterForm.getFieldValue("customerCode");
+    const master = {
+      ...dataProcessing(masterForm.getFieldsValue(), [
+        "cacel_reason",
+        "t_so_luong",
+        "t_tt_nt",
+        "ten_kh2",
+        "ten_nvbh",
+        "ten_kh",
+      ]),
+      stt_rec: action == formStatus.EDIT ? currentRecord.stt_rec : null,
+      so_ct: action == formStatus.EDIT ? currentRecord.so_ct : "",
+      UserId: 0,
+      UnitId: userInfo.unitId,
+    };
+
+    var detail = [...finalDetails];
+    detail = detail.map((item, index) => {
+      return {
+        stt_rec0: getIndexRow(index),
+        ...item,
+      };
+    });
+    UltimatePutDataApi({
+      store: "app_create_sale_out",
+      data: master,
+      listData: detail,
+    })
+      .then((res) => {
+        if (res.status != "Failed") {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+          setAction(formStatus.VIEW);
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const handleSelectedMasterItem = (item) => {
@@ -135,9 +179,13 @@ const SaleOut = () => {
     console.log(items);
   };
 
-  const handleSaveDetailForm = (items) => {
-    setAction(formStatus.VIEW);
-    detailTable.current.getData();
+  const handleSaveDetailForm = async (items) => {
+    try {
+      await masterForm.validateFields();
+      detailTable.current.getData();
+    } catch (error) {
+      return;
+    }
   };
 
   const onStepsChange = (step) => {
@@ -159,6 +207,46 @@ const SaleOut = () => {
   const handleHiddenFilter = () => {
     setIsSimpleFilter((prevCurrPos) => false);
     handleSearchCustomer("");
+  };
+
+  const handleAddNew = () => {
+    setAction(formStatus.ADD);
+    setInitialCustomerValue({});
+    setDetailData([]);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    if (currentRecord.stt_rec != "A00000000" && action !== formStatus.ADD) {
+      setIsOpenDeleteModal(true);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsOpenDeleteModal(false);
+  };
+
+  const handleDelete = (key) => {
+    SoFuckingUltimateApi({
+      store: "api_Order_Cancel",
+      data: {
+        LetterId: currentRecord.stt_rec,
+        UserId: 0,
+        UnitId: userInfo.unitId,
+      },
+    }).then((res) => {
+      if (res.status === 200 && res.data === true) {
+        notification.success({
+          message: `Thành công`,
+        });
+        refreshData();
+        setAction(formStatus.VIEW);
+        handleCloseDeleteDialog();
+      } else {
+        notification.warning({
+          message: `Có lỗi xảy ra khi thực hiện`,
+        });
+      }
+    });
   };
 
   // effectively #########################################################################
@@ -199,12 +287,12 @@ const SaleOut = () => {
 
   // Refresh lại form để nhận dữ liệu
   useEffect(() => {
-    detailForm.resetFields();
+    masterForm.resetFields();
   }, [JSON.stringify(initialCustomerValue)]);
 
   useEffect(() => {
-    if (finalDetails) {
-      console.log(finalDetails);
+    if (finalDetails.length > 0) {
+      onSubmitForm();
     }
   }, [finalDetails]);
 
@@ -221,6 +309,8 @@ const SaleOut = () => {
             totalResults={totalResults}
             advanceFilter={openAdvanceFilter}
             refreshEvent={refreshData}
+            addEvent={handleAddNew}
+            deleteEvent={handleOpenDeleteDialog}
           />
         </div>
         <div className="split__view__detail">
@@ -229,7 +319,7 @@ const SaleOut = () => {
               className={` ${
                 isSimpleFilter
                   ? "split__view__detail__left__filter"
-                  : "split__view__detail__left__item"
+                  : "split__view__detail__left__item_SO"
               } split__view__header split__view__detail__header`}
               onClick={handleShowFilter}
             >
@@ -267,8 +357,8 @@ const SaleOut = () => {
                 customerList.map((item, index) => (
                   <div
                     key={index}
-                    className={`split__view__detail__left__item split_view_item ${
-                      item.so_ct === currentRecord ? "selected" : ""
+                    className={`split__view__detail__left__item_SO split_view_item ${
+                      item.so_ct === currentRecord.so_ct ? "selected" : ""
                     }`}
                     onClick={(e) => {
                       handleSelectedMasterItem(item);
@@ -303,8 +393,7 @@ const SaleOut = () => {
           <div className="split__view__detail__right">
             <Form
               initialValues={initialCustomerValue}
-              form={detailForm}
-              onFinish={handleSaveDetailForm}
+              form={masterForm}
               className="split__view__detail__primary relative w-full justify-content-between"
               style={{ flex: 1 }}
             >
@@ -333,7 +422,7 @@ const SaleOut = () => {
                         }`,
                       }}
                     >
-                      <SaleOutMaster action={action} form={detailForm} />
+                      <SaleOutMaster action={action} form={masterForm} />
                     </div>
 
                     <div
@@ -345,7 +434,7 @@ const SaleOut = () => {
                       }}
                     >
                       <SaleoutDetail
-                        masterForm={detailForm}
+                        masterForm={masterForm}
                         data={detailData}
                         Action={action}
                         Tablecolumns={detailColums}
@@ -362,7 +451,7 @@ const SaleOut = () => {
                         <>
                           <Button
                             onClick={(e) => {
-                              detailForm.resetFields();
+                              masterForm.resetFields();
                               setAction(formStatus.VIEW);
                             }}
                             className="default_subsidiary_button"
@@ -371,8 +460,7 @@ const SaleOut = () => {
                           </Button>
 
                           <Button
-                            type="primary"
-                            htmlType="submit"
+                            onClick={handleSaveDetailForm}
                             className="default_primary_button"
                           >
                             Lưu
@@ -400,7 +488,18 @@ const SaleOut = () => {
       <Filter
         setIsOpenAdvanceFilter={setIsOpenAdvanceFilter}
         isOpenAdvanceFilter={isOpenAdvanceFilter}
-        onFilter
+        onFilter={onFilter}
+      />
+
+      <ConfirmDialog
+        state={isOpenDeleteModal}
+        title="Xoá đơn hàng"
+        description={`Xoá chứng từng: ${currentRecord.so_ct}, ngày lập: ${dayjs(
+          currentRecord.ngay_ct
+        ).format("DD/MM/YYYY")}`}
+        handleOkModal={handleDelete}
+        handleCloseModal={handleCloseDeleteDialog}
+        keys={currentRecord.stt_rec}
       />
     </div>
   );

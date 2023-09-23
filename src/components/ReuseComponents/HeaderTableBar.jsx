@@ -1,7 +1,8 @@
 import { SyncOutlined } from "@ant-design/icons";
 import { Button, Select, Tooltip } from "antd";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import UploadFileModal from "./UploadFileModal";
 
 const HeaderTableBar = ({
   name,
@@ -13,7 +14,25 @@ const HeaderTableBar = ({
   printEvent,
   changePaginations,
   advanceFilter,
+  deleteEvent,
+  uploadFunction,
+  fileExample,
 }) => {
+  const [uploadState, setUploadState] = useState(false);
+
+  const handleCancelUpload = () => {
+    setUploadState(false);
+  };
+
+  const handleOpenUpload = () => {
+    setUploadState(true);
+  };
+
+  const handleSuccessUpload = (data) => {
+    handleCancelUpload();
+    uploadFunction(data);
+  };
+
   useHotkeys("ctrl+i", () => {
     addEvent();
   });
@@ -32,6 +51,12 @@ const HeaderTableBar = ({
       )}
 
       <div className="list__header__tools">
+        {deleteEvent && (
+          <Button className="default_button" danger onClick={deleteEvent}>
+            <i className="pi pi-trash"></i>
+          </Button>
+        )}
+
         {deleteItems && deleteItems.count > 0 && (
           <Button
             className="default_button"
@@ -95,6 +120,7 @@ const HeaderTableBar = ({
             />
           </Tooltip>
         )}
+
         {advanceFilter && (
           <Tooltip placement="topLeft" title="In">
             <Button className="default_button" onClick={advanceFilter}>
@@ -104,6 +130,26 @@ const HeaderTableBar = ({
               ></i>
             </Button>
           </Tooltip>
+        )}
+
+        {uploadFunction && (
+          <>
+            <Tooltip placement="topLeft" title="Import dữ liệu">
+              <Button className="default_button" onClick={handleOpenUpload}>
+                <i
+                  className="pi pi-download sub_text_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
+
+            <UploadFileModal
+              onCancel={handleCancelUpload}
+              onOk={handleSuccessUpload}
+              openState={uploadState}
+              fileExample={fileExample}
+            />
+          </>
         )}
       </div>
     </div>
