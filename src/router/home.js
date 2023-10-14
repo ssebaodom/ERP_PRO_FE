@@ -7,6 +7,7 @@ import Dashboard from "../pages/Dashboard/Pages/Dashboard";
 import documentsRoutes from "./document";
 import imageRoutes from "./images";
 import itemsRoute from "./items";
+import reportsRoute from "./report";
 import SORoutes from "./saleorder";
 import systemRoutes from "./system";
 import taskRoutes from "./task";
@@ -150,6 +151,7 @@ const homeRoutes = [
       ...systemRoutes,
       ...SORoutes,
       ...itemsRoute,
+      ...reportsRoute,
     ],
   },
   {

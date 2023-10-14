@@ -30,3 +30,15 @@
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
+
+.p-treenode-content.p-highlight {
+    color: #4779cf !important;
+}
+
+.p-treenode-content:focus {
+    box-shadow: inset 0 0 0 0.15rem #4779cf5f !important;
+}
+
+.p-tree-toggler:focus {
+    box-shadow: 0 0 0 0.2rem #4779cf5f !important;
+}

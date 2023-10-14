@@ -32,15 +32,14 @@ function App() {
       )}
       <div className="App" style={isBackgound ? backgroundStyled : {}}>
         <Navbar />
-        <p
+        <div
           style={{
-            lineHeight: "70px",
+            height: "60px",
+            lineHeight: "60px",
             pointerEvents: "none",
             userSelect: "none",
           }}
-        >
-          Nav
-        </p>
+        ></div>
         <Outlet />
       </div>
     </>

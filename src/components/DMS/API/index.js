@@ -73,6 +73,12 @@ export const SoFuckingUltimateGetApi = async (payload) => {
     });
 };
 
+export const SoFuckingUltimateGetApi2 = async (payload) => {
+  return await https.post(`user/get_ultimate`, payload).then((res) => {
+    return res.data;
+  });
+};
+
 export const UltimatePutDataApi = async (payload) => {
   return await https
     .post(`Selling/UltimateRequest_tables`, payload)

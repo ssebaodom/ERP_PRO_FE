@@ -161,6 +161,9 @@ const CustomerForm = () => {
   };
 
   const changePaginations = (item) => {
+    if (pagination.pageSize !== item) {
+      setData([]);
+    }
     setPagination({ ...pagination, pageSize: item });
   };
 

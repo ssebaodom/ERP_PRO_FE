@@ -17,3 +17,11 @@ export const getTourDetail = (state) => {
 export const getTaskDetail = (state) => {
   return state.taskReducer.detailData;
 };
+
+export const getCurrentImagesList = (state) => {
+  return state.imagesListReducer.currentImagesList;
+};
+
+export const getCurrentImageIndex = (state) => {
+  return state.imagesListReducer.currentImageIndex;
+};

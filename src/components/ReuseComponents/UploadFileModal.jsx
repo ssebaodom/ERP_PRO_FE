@@ -37,7 +37,7 @@ const UploadFileModal = ({ openState, onOk, onCancel, fileExample }) => {
 
     ws["!cols"] = [...colsWidth];
     XLSX.utils.book_append_sheet(wb, ws, "data");
-    XLSX.writeFile(wb, "dmtuyen.xlsx");
+    XLSX.writeFile(wb, "importExample.xlsx");
   };
 
   const props = {

@@ -1,7 +1,7 @@
 import {
   EyeInvisibleOutlined,
   EyeTwoTone,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import { UilAnalysis, UilExclamationOctagon } from "@iconscout/react-unicons";
 import {
@@ -12,7 +12,7 @@ import {
   Input,
   notification,
   Select,
-  Space
+  Space,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";

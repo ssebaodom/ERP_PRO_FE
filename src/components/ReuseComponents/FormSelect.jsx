@@ -1,5 +1,5 @@
 import { Form, Select } from "antd";
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
@@ -17,10 +17,10 @@ const FormSelect = ({
   required,
   onChange,
   direction,
+  multiple,
 }) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
-
   const lookupData = (item) => {
     setSelectLoading(true);
     ApiWebLookup({
@@ -76,6 +76,7 @@ const FormSelect = ({
         ]}
       >
         <Select
+          mode={multiple ? "multiple" : ""}
           disabled={disable}
           className={disable ? "default_disable_select" : "default_select"}
           showSearch
@@ -102,4 +103,4 @@ const FormSelect = ({
   );
 };
 
-export default FormSelect;
+export default memo(FormSelect);

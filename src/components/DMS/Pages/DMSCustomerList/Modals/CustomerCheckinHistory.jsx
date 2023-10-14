@@ -210,7 +210,7 @@ const CustomerCheckinHistory = ({ customer, loading }) => {
         {loading ? (
           <LoadingComponents size={50} text="Đang tải..." />
         ) : timelineItem.length > 0 ? (
-          <Timeline items={timelineItem} />
+          <Timeline style={{ padding: "0px 10px" }} items={timelineItem} />
         ) : (
           <Locale />
         )}

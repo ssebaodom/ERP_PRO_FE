@@ -1,7 +1,9 @@
 import { SyncOutlined } from "@ant-design/icons";
-import { Button, Select, Tooltip } from "antd";
-import React, { memo, useState } from "react";
+import { Button, Popover, Select, Tooltip } from "antd";
+import PropTypes from "prop-types";
+import React, { memo, useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import ReportLayoutPicker from "./ReportLayoutPicker";
 import UploadFileModal from "./UploadFileModal";
 
 const HeaderTableBar = ({
@@ -10,15 +12,27 @@ const HeaderTableBar = ({
   addEvent,
   refreshEvent,
   title,
-  deleteItems,
+  deleteItems = {
+    count: 0,
+    delete: null,
+  },
   printEvent,
   changePaginations,
   advanceFilter,
   deleteEvent,
   uploadFunction,
   fileExample,
+  ReportLayout = {
+    columns: [],
+    layoutCallBack: null,
+  },
 }) => {
   const [uploadState, setUploadState] = useState(false);
+  const [layoutKey, setLayoutKey] = useState([]);
+
+  const handleLayoutSelected = useCallback((layout) => {
+    setLayoutKey(layout);
+  }, []);
 
   const handleCancelUpload = () => {
     setUploadState(false);
@@ -31,6 +45,12 @@ const HeaderTableBar = ({
   const handleSuccessUpload = (data) => {
     handleCancelUpload();
     uploadFunction(data);
+  };
+
+  const handleCloseRpLayoutPicker = (state) => {
+    if (!state) {
+      ReportLayout.layoutCallBack(layoutKey);
+    }
   };
 
   useHotkeys("ctrl+i", () => {
@@ -122,7 +142,7 @@ const HeaderTableBar = ({
         )}
 
         {advanceFilter && (
-          <Tooltip placement="topLeft" title="In">
+          <Tooltip placement="topLeft" title="Lọc">
             <Button className="default_button" onClick={advanceFilter}>
               <i
                 className="pi pi-filter sub_text_color"
@@ -151,9 +171,66 @@ const HeaderTableBar = ({
             />
           </>
         )}
+
+        {ReportLayout.layoutCallBack && (
+          <Tooltip placement="topLeft" title="Cấu trúc báo cáo">
+            <Popover
+              onOpenChange={handleCloseRpLayoutPicker}
+              placement="bottomLeft"
+              content={
+                <ReportLayoutPicker
+                  layout={ReportLayout.columns}
+                  selectCallback={handleLayoutSelected}
+                />
+              }
+              title="Cấu trúc"
+              trigger="click"
+            >
+              <Button className="default_button">
+                <i
+                  className="pi pi-eye sub_text_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Popover>
+          </Tooltip>
+        )}
       </div>
     </div>
   );
 };
 
+/**
+ * @param name - Tên hiển thị trên các chức năng.
+ * @param title - Tiêu đề hiển thị.
+ * @function addEvent - Function cho nút thêm mới.
+ * @function refreshEvent - Function làm mới trang.
+ * @param {Object} deleteItems.count - Số lượng items.
+ * @function deleteItems.delete - Function xoá items.
+ * @callback printEvent - Callback in.
+ * @callback changePaginations - Callback đổi số bản ghi trên trang.
+ * @function advanceFilter - Function mở lọc nâng cao.
+ * @function deleteEvent - Function xoá 1 item.
+ * @callback uploadFunction - Callback xử lý đẩy excel.
+ * @param {Array} fileExample[] - Mảng tên các trường.
+ * @param {Object} ReportLayout.columns[] - Cấu trúc {key:'abc', title: 'def'}.
+ * @callback ReportLayout.layoutCallBack - Callback trả về mảng các trường đã chọn.
+ */
+
 export default memo(HeaderTableBar);
+
+HeaderTableBar.prototype = {
+  name: PropTypes.string.isRequired,
+  totalResults: PropTypes.number.isRequired,
+  addEvent: PropTypes.func,
+  refreshEvent: PropTypes.func,
+  title: PropTypes.string.isRequired,
+  deleteItems: PropTypes.object,
+  printEvent: PropTypes.func,
+  changePaginations: PropTypes.func,
+  advanceFilter: PropTypes.func,
+  deleteEvent: PropTypes.func,
+  uploadFunction: PropTypes.func,
+  fileExample: PropTypes.array,
+  ReportLayout: PropTypes.object,
+};

@@ -1,6 +1,7 @@
 import store from "../../../../store";
 import { SoFuckingUltimateGetApi, UltimatePutDataApi } from "../../API";
 import { actions as DMSCustomer } from "../Reducers/DMSCustomer";
+import { actions as imagesList } from "../Reducers/ImagesList";
 import { actions as taskActions } from "../Reducers/Task";
 import { actions as tourDetail } from "../Reducers/TourDetail";
 
@@ -83,5 +84,21 @@ export const createUltimate = async (payload) => {
     return status;
   } catch (error) {
     return error;
+  }
+};
+
+export const setCurrentImageIndex = async (payload) => {
+  try {
+    store.dispatch(imagesList.setCurrentImageIndex(payload));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const setCurrentImagesList = async (payload) => {
+  try {
+    store.dispatch(imagesList.setCurrentImagesList(payload));
+  } catch (error) {
+    console.error(error);
   }
 };

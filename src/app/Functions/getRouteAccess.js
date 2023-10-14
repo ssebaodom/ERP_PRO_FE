@@ -8,9 +8,10 @@ const getRoutesAccess = async (routes) => {
     if (currKey.includes("Permissions.")) return infoData[currKey];
   });
 
-  const functionRoutes = routes.filter((item) => item.path == "/")[0].children;
-  let homeRoute = functionRoutes.filter((item) => {
-    if (infoData.Role != "Admin") {
+  const functionRoutes = await routes.filter((item) => item.path == "/")[0]
+    .children;
+  let homeRoute = await functionRoutes.filter((item) => {
+    if (infoData.RoleId != "1") {
       if (claims.includes(item.claims)) {
         return item;
       }
@@ -19,7 +20,7 @@ const getRoutesAccess = async (routes) => {
     }
   });
 
-  homeRoute.map((item, index) => {
+  await homeRoute.map((item, index) => {
     item.key = item.path;
     if (item.parent) {
       homeRoute.map((item2) => {

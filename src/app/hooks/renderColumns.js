@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import React from "react";
 import { datetimeFormat } from "../Options/DataFomater";
 
-const renderColumns = (columns) => {
+const renderColumns = (columns = [], sorter) => {
   let layout = [];
   const getAlignment = (item) => {
     if (item.type === "Datetime") {
@@ -27,6 +27,11 @@ const renderColumns = (columns) => {
       dataIndex: item.field,
       editable: true,
       dataType: item.type,
+      sorter: sorter
+        ? {
+            multiple: 1,
+          }
+        : false,
       align: getAlignment(item),
       render: (data) => {
         if (item.type === "Datetime") {
@@ -47,5 +52,10 @@ const renderColumns = (columns) => {
   });
   return layout;
 };
+
+/**
+ * @param columns - Mảng cấu trúc của table.
+ * @param sorter - Sắp xếp hay không.
+ */
 
 export default renderColumns;

@@ -1,103 +1,121 @@
-import React, { useState } from "react";
 import { Tree } from "primereact/tree";
+import React, { useState } from "react";
 
-import "./System.css";
-import { Toast } from "primereact/toast";
 import { Outlet, useNavigate } from "react-router-dom";
+import "./System.css";
 
 const System = () => {
   const [selectedNodeKey, setSelectedNodeKey] = useState("");
   const [expandedKeys, setExpandedKeys] = useState({});
   const navigate = useNavigate();
 
+  const datatest = [
+    {
+      key: "A",
+      data: 1,
+    },
+    {
+      key: "A.1",
+      parent: "A",
+      data: 1,
+    },
+    {
+      key: "A.2",
+      parent: "A",
+      data: 1,
+    },
+    {
+      key: "B",
+      data: 1,
+    },
+    {
+      key: "B.1",
+      parent: "B",
+      data: 1,
+    },
+    {
+      key: "B.1.1",
+      parent: "B.1",
+      data: 1,
+    },
+    {
+      key: "B.2",
+      parent: "B",
+      data: 1,
+    },
+  ];
+
+  // const flatenTable = (item) => {
+  //   var listItem = [];
+  //   if (item?.children) {
+  //     listItem.push({
+  //       key: item.key,
+  //       parent: item.parent,
+  //     });
+  //     item.children.map((child) => {
+  //       return (listItem = [...listItem, ...flatenTable(child)]);
+  //     });
+  //   } else {
+  //     listItem.push({
+  //       key: item.key,
+  //       parent: item.parent,
+  //     });
+  //   }
+  //   return listItem;
+  // };
+
   const data = [
     {
       key: "0",
-      label: "Hệ thống",
-      data: "Hệ thống",
-      icon: "pi pi-fw pi-inbox",
+      label: "Phân quyền",
+      data: "Phân quyền",
+      icon: "pi pi-unlock",
       children: [
         {
           key: "0-0-0",
           label: "Phân quyền truy cập",
-          icon: "pi pi-fw pi-file",
+          icon: "pi pi-user",
           data: "UsersPermissions",
- 
         },
         {
           key: "0-0-1",
-          label: "Resume.doc",
-          icon: "pi pi-fw pi-file",
-          data: "UsersPermissions",
- 
+          label: "Phần quyền nhóm truy cập",
+          icon: "pi pi-users",
+          data: "GroupPermissions",
         },
         {
-          key: "0-1",
-          label: "Home",
-          data: "Home Folder",
-          icon: "pi pi-fw pi-home",
-          children: [
-            {
-              key: "0-1-0",
-              label: "Invoices.txt",
-              icon: "pi pi-fw pi-file",
-              data: "UsersPermissions",
-            },
-          ],
+          key: "0-0-2",
+          label: "Phần quyền đơn vị cơ sở",
+          icon: "pi pi-sitemap",
+          data: "UnitPermissions",
         },
       ],
     },
     {
       key: "1",
-      label: "Events",
+      label: "Tài khoản",
       data: "Events Folder",
-      icon: "pi pi-fw pi-calendar",
+      icon: "pi pi-id-card",
       children: [
         {
           key: "1-0",
-          label: "Meeting",
-          icon: "pi pi-fw pi-calendar-plus",
-          data: "Meeting",
-        },
-        {
-          key: "1-1",
-          label: "Product Launch",
-          icon: "pi pi-fw pi-calendar-plus",
-          data: "Product Launch",
-        },
-        {
-          key: "1-2",
-          label: "Report Review",
-          icon: "pi pi-fw pi-calendar-plus",
-          data: "Report Review",
+          label: "Tạo tài khoản",
+          icon: "pi pi-user-plus",
+          data: "Accounts",
         },
       ],
     },
     {
       key: "2",
-      label: "Movies",
+      label: "Chứng từ",
       data: "Movies Folder",
-      icon: "pi pi-fw pi-star-fill",
+      icon: "pi pi-ticket",
       children: [
         {
           key: "2-0",
-          icon: "pi pi-fw pi-star-fill",
-          label: "Al Pacino",
-          data: "Pacino Movies",
-          children: [
-            {
-              key: "2-0-0",
-              label: "Scarface",
-              icon: "pi pi-fw pi-video",
-              data: "Scarface Movie",
-            },
-            {
-              key: "2-0-1",
-              label: "Serpico",
-              icon: "pi pi-fw pi-video",
-              data: "Serpico Movie",
-            },
-          ],
+          icon: "pi pi-check-circle",
+          label: "Duyệt chứng từ",
+          data: "VoucherApprove",
         },
         {
           key: "2-1",
@@ -124,6 +142,14 @@ const System = () => {
   ];
 
   const onSelect = (event) => {
+    if (event.node.key in expandedKeys) {
+      const { [event.node.key]: removedProperty, ...newExpandedKeys } =
+        expandedKeys;
+      setExpandedKeys({ ...newExpandedKeys });
+    } else {
+      setExpandedKeys({ ...expandedKeys, [event.node.key]: true });
+    }
+
     const node = { ...event.node };
     if (!node.children) {
       console.log(node);
@@ -146,6 +172,9 @@ const System = () => {
           selectionKeys={selectedNodeKey}
           expandedKeys={expandedKeys}
           onSelect={onSelect}
+          onToggle={(e) => {
+            setExpandedKeys(e.value);
+          }}
           onUnselect={onUnselect}
           filter
           filterMode="strict"

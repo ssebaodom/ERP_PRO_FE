@@ -1,14 +1,29 @@
 import { notification, Table } from "antd";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import TableLocale from "../../../../Context/TableLocale";
+import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
-import { SoFuckingUltimateGetApi } from "../../../DMS/API";
+import { SoFuckingUltimateGetApi, UltimatePutDataApi2 } from "../../../DMS/API";
+import ExcelFailedModel from "../../../ReuseComponents/ExcelFailedModel";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import { SoFuckingUltimateApi } from "../../API";
 import SaleEmployeeModal from "../../Modals/SaleEmployeeModal/SaleEmployeeModal";
+
+const exampleStruct = [
+  "Mã nhân viên",
+  "Tên nhân viên",
+  "Tên khác",
+  "Địa chỉ",
+  "Điện thoại",
+  "Ghi chú",
+  "User id",
+  "User quản lý",
+  "Đơn vị",
+];
 
 const SaleEmployee = () => {
   // initialize #########################################################################
@@ -30,6 +45,8 @@ const SaleEmployee = () => {
   const [isOpenModalDeleteTask, setIsOpenModalDeleteTask] = useState(false);
   const [currentItemSelected, setCurrentItemSelected] = useState({});
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [excelFailedData, setExcelFailedData] = useState([]);
+  const userInfo = useSelector(getUserInfo);
 
   //functions #########################################################################
 
@@ -164,7 +181,34 @@ const SaleEmployee = () => {
   };
 
   const changePaginations = (item) => {
+    if (pagination.pageSize !== item) {
+      setData([]);
+    }
     setPagination({ ...pagination, pageSize: item });
+  };
+
+  const handleExcelData = (excelData) => {
+    UltimatePutDataApi2({
+      store: "api_import_employee",
+      data: {
+        UnitID: userInfo.unitId,
+        UserId: userInfo.id,
+      },
+      listData: excelData,
+    })
+      .then((res) => {
+        if (res?.length > 0) {
+          setExcelFailedData(res);
+        } else {
+          notification.success({
+            message: `Thành công`,
+          });
+          refreshData();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   // effectively #########################################################################
@@ -186,6 +230,8 @@ const SaleEmployee = () => {
           delete: handleOpenDeleteDialog,
           count: selectedRowKeys.length,
         }}
+        uploadFunction={handleExcelData}
+        fileExample={exampleStruct}
       />
 
       <div className="h-full min-h-0">
@@ -236,6 +282,8 @@ const SaleEmployee = () => {
             : selectedRowKeys.join(",").trim()
         }
       />
+
+      <ExcelFailedModel data={excelFailedData} />
     </div>
   );
 };

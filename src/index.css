@@ -48,6 +48,11 @@ body {
 }
 
 
+.primary_bold_text {
+  color: var(--light_blue);
+  font-weight: bold;
+}
+
 .main_text_color {
   color: #0C122F !important;
 }
@@ -58,6 +63,10 @@ body {
 
 .sub_text_color {
   color: #1A4898 !important;
+}
+
+.danger_text_color {
+  color: red !important;
 }
 
 
@@ -318,6 +327,7 @@ body {
   white-space: nowrap !important;
   word-break: keep-all !important;
   font-size: 15px;
+  border: none !important;
 }
 
 .default_table_row .ant-table-cell-fix-right {
@@ -325,6 +335,7 @@ body {
 }
 
 .default_table_row:nth-child(odd) {
+  height: 36px;
   background-color: #f4f5fa !important;
   background: #f4f5fa !important;
   border: none !important;
@@ -332,11 +343,16 @@ body {
 }
 
 .default_table_row:nth-child(even) {
+  height: 36px;
   background-color: #fff !important;
   background: #fff !important;
   border-radius: 4px;
   border: none !important;
 }
+
+
+
+
 
 .default_images_clickable {
   cursor: pointer;
@@ -407,7 +423,7 @@ body {
 .default_list_layout {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 15px;
   height: 88vh;
   overflow-y: hidden;
 }
@@ -513,6 +529,7 @@ body {
   display: flex;
   gap: 0px 15px;
   justify-content: space-between;
+
 }
 
 .default_modal_group_items * {
@@ -565,6 +582,19 @@ body {
   height: 100%;
 }
 
+.default_table .ant-table-column-sorter {
+  flex-shrink: 0;
+}
+
+
+.default_table .ant-table-column-sort {
+  background: unset !important;
+}
+
+.default_table .ant-table-cell-row-hover {
+  background: #fafafa !important;
+}
+
 .default_table:first-child {
   height: 100%;
 }
@@ -585,7 +615,7 @@ body {
 }
 
 .default_table .ant-table {
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 .default_table table {
@@ -938,6 +968,7 @@ body {
 }
 
 .list__header__bar {
+  padding: 10px 0px 0px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;

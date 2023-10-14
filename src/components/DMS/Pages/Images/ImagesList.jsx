@@ -1,118 +1,91 @@
-import { Button, Input, Select, Space } from "antd";
-import React, { useCallback, useEffect, useState } from "react";
+import { Input, Select } from "antd";
+import dayjs from "dayjs";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import { ApiGetTaskList } from "../../API";
+import { getClaims } from "../../../../store/selectors/Selectors";
+import { apiGetUnitByUser } from "../../../SystemOptions/API";
+import { ApiWebLookup, SoFuckingUltimateGetApi2 } from "../../API";
 import ModalDetailImages from "../../Modals/ModalDetailImages/ModalDetailImages";
-import Filter from "./Filter/Filter";
+import {
+  setCurrentImageIndex,
+  setCurrentImagesList,
+} from "../../Store/Sagas/Sagas";
 import "./ImagesList.css";
 
 const ImagesList = () => {
-  // initialize #########################################################################
+  const filterItemStyled = {
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "20px",
+  };
 
+  // initialize #########################################################################
   const { state } = useLocation();
 
   useEffect(() => {
     console.log(state, "Id ở đây");
   }, [state]);
 
+  const moreRef = useRef();
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const userInfo = useSelector(getClaims);
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
+    DateFrom: dayjs().add(-12, "month"),
+    DateTo: dayjs(),
     keywords: "",
-    orderby: "id",
+    unit: "",
+    album: "",
+    userID: 1,
+    admin: 1,
   });
   const [pagination, setPagination] = useState({
-    pageindex: 1,
-    pageSize: 10,
+    pageIndex: 0,
+    pageSize: 30,
   });
   const [totalResults, setTotalResults] = useState(0);
   const [openModalState, setOpenModalState] = useState(false);
   const [currentRecord, setCurrentRecord] = useState({});
   const [isOpenAdvanceFilter, setIsOpenAdvanceFilter] = useState(false);
+  const [unitOptions, setUnitOptions] = useState([]);
+  const [albumOptions, setAlbumOptions] = useState([]);
+  const [isNullData, setIsNullData] = useState(false);
 
   //functions #########################################################################
 
   const refreshData = () => {
-    setPagination({ ...pagination, pageindex: 1, current: 1 });
-    if (pagination.pageindex === 1) {
+    setPagination({ ...pagination, pageIndex: 1, current: 1 });
+    if (pagination.pageIndex === 1) {
       setLoading(true);
     }
   };
 
-  const getdata = () => {
-    ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
-      setData([
-        {
-          src: "https://image.lag.vn/upload/news/23/02/06/hu-tao-nhung-dieu-thu-vi__1__STJO.jpg",
-          alt: "",
-        },
-        {
-          src: "https://fptshop.com.vn/uploads/originals/2022/12/14/638066294641988290_hu-tao-genshin-impact.jpg",
-          alt: "",
-        },
-        {
-          src: "https://inkythuatso.com/uploads/thumbnails/800/2022/03/1145723-17-09-22-27.jpg",
-          alt: "",
-        },
-        {
-          src: "https://cdn.sforum.vn/sforum/wp-content/uploads/2022/08/hutao-thumb.jpg",
-          alt: "",
-        },
-        {
-          src: "https://cdn-img.thethao247.vn/origin_768x0/storage/files/haibui/2022/12/20/cosplay-hutao-trong-genshin-impact-theo-phong-cach-hien-dai-234128.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://w0.peakpx.com/wallpaper/251/938/HD-wallpaper-hu-tao-genshin-impact-thumbnail.jpg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-        {
-          src: "https://balard-consulting.fr/wp-content/uploads/2022/11/ERP_Grand-1024x683.jpeg",
-          alt: "",
-        },
-      ]);
+  const getdata = async () => {
+    setLoading(true);
+    await SoFuckingUltimateGetApi2({
+      store: "api_get_images",
+      data: { ...tableParams, ...pagination },
+    }).then((res) => {
+      if (res.data.length > 0) {
+        setIsNullData(false);
+      }
+
+      setLoading(false);
+      setData([...data, ...res.data]);
+      setCurrentImagesList([...data, ...res.data]);
     });
   };
 
-  const handleShowDetailImage = (item) => {
+  const handleShowDetailImage = (item, index) => {
     setOpenModalState(true);
     setCurrentRecord(item);
+    setCurrentImageIndex(index);
   };
 
   const handleFilter = useCallback((item) => {
@@ -123,11 +96,65 @@ const ImagesList = () => {
     setIsOpenAdvanceFilter(true);
   };
 
+  const getFilterData = () => {
+    apiGetUnitByUser({ username: "Admin" }).then((res) => {
+      setUnitOptions(
+        res.map((item) => {
+          return {
+            value: item.dvcsCode,
+            label: item.name,
+          };
+        })
+      );
+    });
+
+    ApiWebLookup({
+      userId: "1",
+      controller: "dmalbum_lookup",
+      pageIndex: 1,
+      FilterValueCode: "",
+    }).then((res) => {
+      const resOptions = res.data.map((item) => {
+        return {
+          value: item.code.trim(),
+          label: item.name.trim(),
+        };
+      });
+      setAlbumOptions(resOptions);
+    });
+  };
+
   // effectively #########################################################################
   useEffect(() => {
-    setLoading(true);
-    getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+    if (pagination.pageIndex > 0) {
+      getdata();
+    }
+  }, [JSON.stringify(tableParams), pagination]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (!isNullData) {
+          setCurrentIndex((old) => {
+            return old + 1;
+          });
+        }
+      }
+    });
+    if (moreRef.current) {
+      observer.observe(moreRef.current);
+    }
+  }, [moreRef]);
+
+  useEffect(() => {
+    if (currentIndex > 0) {
+      setPagination({ ...pagination, pageIndex: currentIndex });
+    }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    getFilterData();
+  }, []);
 
   return (
     <div
@@ -136,7 +163,7 @@ const ImagesList = () => {
     >
       <div className="split__view__header__bar">
         <div className="split__view__search__bar">
-          <div className="flex gap-3">
+          <div className="flex gap-3 w-full">
             <Input
               style={{
                 width: "210px",
@@ -147,42 +174,52 @@ const ImagesList = () => {
               placeholder="Tìm kiếm..."
             />
 
-            <Space>
-              <span>Đơn vị: </span>
+            <div style={filterItemStyled}>
+              <span style={{ whiteSpace: "nowrap" }}>Đơn vị: </span>
               <Select
-                className="default_select"
-                defaultValue="lucy"
-                style={{ width: "180px" }}
-                options={[
-                  { value: "jack", label: "Jack" },
-                  { value: "lucy", label: "Lucy" },
-                  { value: "Yiminghe", label: "yiminghe" },
-                ]}
+                allowClear={true}
+                className="default_select w-full"
+                showArrow={false}
+                filterOption={false}
+                showSearch
+                options={unitOptions}
+                onChange={(item) => {
+                  setIsNullData(true);
+                  setPagination({ ...pagination, pageIndex: 1 });
+                  setTableParams({ ...tableParams, unit: item ? item : "" });
+                  setData([]);
+                }}
+                placeholder="Chọn đơn vị"
               />
-            </Space>
+            </div>
 
-            <Space>
-              <span>Albums: </span>
+            <div style={filterItemStyled}>
+              <span style={{ whiteSpace: "nowrap" }}>Albums: </span>
               <Select
-                className="default_select"
-                defaultValue="lucy"
-                style={{ width: "180px" }}
-                options={[
-                  { value: "jack", label: "Jack" },
-                  { value: "lucy", label: "Lucy" },
-                  { value: "Yiminghe", label: "yiminghe" },
-                ]}
+                allowClear={true}
+                className="default_select w-full"
+                showArrow={false}
+                filterOption={false}
+                showSearch
+                onChange={(item) => {
+                  setIsNullData(true);
+                  setPagination({ ...pagination, pageIndex: 1 });
+                  setTableParams({ ...tableParams, album: item ? item : "" });
+                  setData([]);
+                }}
+                placeholder="Chọn albums"
+                options={albumOptions}
               />
-            </Space>
+            </div>
           </div>
 
-          <Button
+          {/* <Button
             style={{ borderRadius: "4px", height: "30px" }}
             className="default_button"
             onClick={handleOpenAdvanceFilter}
           >
             <span style={{ fontWeight: "bold" }}>Nâng cao</span>
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -193,29 +230,39 @@ const ImagesList = () => {
               key={index}
               className="image__box"
               onClick={(e) => {
-                handleShowDetailImage(item);
+                handleShowDetailImage(item, index);
               }}
             >
-              <img key={index} src={item.src} alt={item.alt}></img>
+              <img key={index} src={item.path_l} alt={item.ma_album}></img>
               <div className="image__box_detail">
-                <span>Khách hàng: TienNQ</span>
-                <span>Nhân viên: Mạch Hưng</span>
-                <span>Lúc: 9:00 - 23/11/2001</span>
+                <span>
+                  Khách hàng: {item.ma_kh} - {item.ten_kh}
+                </span>
+                <span>Nhân viên: {item.comment}</span>
+                <span>
+                  Lúc: {dayjs(item.create_date).format("hh:mm")} -{" "}
+                  {dayjs(item.create_date).format("DD/MM/YYYY")}
+                </span>
               </div>
             </div>
           );
         })}
       </div>
+
+      <div ref={moreRef} style={{ textAlign: "center" }}>
+        Loading more...
+      </div>
+
       <ModalDetailImages
         openModalState={openModalState}
         currentRecord={currentRecord}
         handleCloseModal={setOpenModalState}
       />
-      <Filter
+      {/* <Filter
         isOpenAdvanceFilter={isOpenAdvanceFilter}
         setIsOpenAdvanceFilter={setIsOpenAdvanceFilter}
         onFilter={handleFilter}
-      />
+      /> */}
     </div>
   );
 };
