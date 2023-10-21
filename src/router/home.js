@@ -3,6 +3,7 @@ import App from "../App";
 import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomerList";
 import TourList from "../components/DMS/Pages/Tour/TourList";
 import Errorpage from "../components/Error/Errorpage";
+import ApproveInvoice from "../components/Invoices/Pages/ApproveInvoice/ApproveInvoice";
 import Dashboard from "../pages/Dashboard/Pages/Dashboard";
 import documentsRoutes from "./document";
 import imageRoutes from "./images";
@@ -31,7 +32,7 @@ const homeRoutes = [
     children: [
       {
         label: "Dashboard",
-        claims: "Permissions.dshboard",
+        claims: "Permissions.dashboard",
         path: "Dashboard",
         element: <Dashboard />,
         children: [],
@@ -143,7 +144,7 @@ const homeRoutes = [
       ...ticketRoutes,
       {
         label: "Khách hàng DMS",
-        claims: "Permissions.DMSCustomer",
+        claims: "Permissions.DMSCustomers",
         path: "DMSCustomer",
         element: <DMSCustomerList />,
       },
@@ -152,6 +153,12 @@ const homeRoutes = [
       ...SORoutes,
       ...itemsRoute,
       ...reportsRoute,
+      {
+        label: "Duyệt chứng từ",
+        claims: "Permissions.ApproveInvoice",
+        path: "ApproveInvoice",
+        element: <ApproveInvoice />,
+      },
     ],
   },
   {

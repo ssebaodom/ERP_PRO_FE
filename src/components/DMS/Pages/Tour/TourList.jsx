@@ -109,8 +109,11 @@ const TourList = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
-    ApiGetTourList({ ...tableParams, ...pagination }).then((res) => {
+    ApiGetTourList({
+      ...tableParams,
+      pageindex: pagination.pageindex,
+      pageSize: pagination.pageSize,
+    }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
         title: "Chức năng",

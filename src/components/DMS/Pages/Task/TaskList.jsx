@@ -63,8 +63,11 @@ const TaskList = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
-    ApiGetTaskList({ ...tableParams, ...pagination }).then((res) => {
+    ApiGetTaskList({
+      ...tableParams,
+      pageindex: pagination.pageindex,
+      pageSize: pagination.pageSize,
+    }).then((res) => {
       let layout = renderColumns(res?.data?.reportLayoutModel);
       layout.push({
         title: "Chức năng",

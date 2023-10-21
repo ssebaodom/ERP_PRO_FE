@@ -10,14 +10,14 @@ const imageRoutes = [
   },
   {
     label: "Danh mục album",
-    claims: "Permissions.images.album",
+    claims: "Permissions.images.albums",
     path: "images/albums",
     parent: "images",
     element: <AlbumsList />,
   },
   {
     label: "Hình ảnh",
-    claims: "Permissions.images.album",
+    claims: "Permissions.images.imagelist",
     path: "images/gallary",
     parent: "images",
     element: <ImagesList />,

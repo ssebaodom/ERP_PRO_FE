@@ -98,8 +98,10 @@ const DMSCustomerList = () => {
   };
 
   const getdata = async () => {
-    const tablepagination = { ...pagination };
-    delete tablepagination?.current;
+    const tablepagination = {
+      pageindex: pagination.pageindex,
+      pageSize: pagination.pageSize,
+    };
     await SoFuckingUltimateGetApi({
       store: "get_vcrdm",
       data: {

@@ -80,10 +80,13 @@ const CustomerClassify = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
     SoFuckingUltimateGetApi({
       store: "Get_Classify_Customer",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({

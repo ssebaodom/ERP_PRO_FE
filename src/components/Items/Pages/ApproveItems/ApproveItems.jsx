@@ -84,11 +84,13 @@ const ApproveItems = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
-
     SoFuckingUltimateGetApi({
       store: "api_get_items_approve",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({

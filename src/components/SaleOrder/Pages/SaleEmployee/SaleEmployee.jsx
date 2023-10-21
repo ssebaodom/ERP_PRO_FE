@@ -101,11 +101,14 @@ const SaleEmployee = () => {
   };
 
   const getdata = () => {
-    delete pagination.current;
     setLoading(true);
     SoFuckingUltimateGetApi({
       store: "api_get_sale_employee",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({

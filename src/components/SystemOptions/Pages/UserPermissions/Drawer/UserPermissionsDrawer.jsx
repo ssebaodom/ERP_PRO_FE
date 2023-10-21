@@ -51,12 +51,10 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
       const ids = allClaims
         .filter((item) => claimsSelected.includes(item.claimValue))
         .map((item) => item.id);
-
       apiAlterUserClaims({
         userid: currentUser?.user_id,
         Claims: ids,
       }).then((res) => {
-        console.log(res);
         handleClose();
       });
     } else {
@@ -93,7 +91,6 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
           parent: claim.claimUpper,
         };
       });
-
       setClaimsData(nestedArray(processedClaims));
     }
   }, [allClaims]);

@@ -83,10 +83,13 @@ const TicketType = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
     SoFuckingUltimateGetApi({
       store: "Get_Ticket_type",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({

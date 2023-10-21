@@ -83,10 +83,13 @@ const TaskTypeList = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
     SoFuckingUltimateGetApi({
       store: "Get_Task_type",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({

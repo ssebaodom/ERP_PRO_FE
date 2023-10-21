@@ -9,6 +9,7 @@ import store from "./store";
 
 //primereact
 import { ConfigProvider } from "antd";
+import locale from "antd/locale/vi_VN";
 import "primeflex/primeflex.css";
 import "primeicons/primeicons.css";
 import "primereact/resources/primereact.min.css";
@@ -23,6 +24,7 @@ root.render(
   <Provider store={store}>
     <Suspense fallback={<Loading />}>
       <ConfigProvider
+        locale={locale}
         theme={{
           ...themeComponents,
         }}

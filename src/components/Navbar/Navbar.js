@@ -1,4 +1,4 @@
-import { UilBell, UilSearch } from "@iconscout/react-unicons";
+import { UilSearch } from "@iconscout/react-unicons";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import "./Navbar.css";
@@ -22,10 +22,15 @@ const Navbar = () => {
 
   const renderNavbar = (navItems) => {
     const renderedNavbar = navItems.map((item) => {
+      if (item?.children?.length == 0) {
+        item.label = <span className="navbar_child_route">{item.label}</span>;
+        delete item.children;
+      }
+
       if (item?.children?.length > 0) {
-        // item.onTitleClick = () => {
-        //   handleNavbarClick(item.children[0]);
-        // };
+        item.onTitleClick = () => {
+          handleNavbarClick(item.children[0]);
+        };
         item.children.map((child) => {
           child.label = (
             <span className="navbar_child_route dark_grey_text_color">
@@ -393,7 +398,10 @@ const Navbar = () => {
               placement="bottomRight"
               trigger={["click"]}
             >
-              <UilBell size="30" color="#1677ff"></UilBell>
+              <i
+                className="pi pi-bell"
+                style={{ fontSize: "22px", fontWeight: "bold" }}
+              ></i>
             </Dropdown>
           </li>
         </ul>

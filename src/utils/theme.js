@@ -37,6 +37,13 @@ const themeComponents = {
     Steps: {
       colorPrimary: "rgb(71, 121, 207)",
     },
+    Button: {
+      borderRadius: 4,
+      controlOutline: "rgba(101, 113, 148, 0.1)",
+      colorPrimary: "rgb(26, 72, 152)",
+      colorPrimaryHover: "rgb(71, 121, 207)",
+      colorPrimaryBorder: "rgb(71, 121, 207)",
+    },
   },
 };
 

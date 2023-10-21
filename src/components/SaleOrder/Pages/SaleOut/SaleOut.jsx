@@ -87,7 +87,7 @@ const SaleOut = () => {
     },
     {
       key: 1,
-      title: "Đơn hàng",
+      title: "chi tiết",
     },
   ]);
 
@@ -101,13 +101,13 @@ const SaleOut = () => {
   };
 
   const getdata = async () => {
-    delete pagination?.current;
     setLoading(true);
     await SoFuckingUltimateGetApi({
       store: "api_get_order_list",
       data: {
         ...tableParams,
-        ...pagination,
+        pageindex: pagination.pageIndex,
+        pageSize: pagination.pageSize,
       },
     }).then((res) => {
       setCustomerList(res.data.data);
@@ -302,7 +302,10 @@ const SaleOut = () => {
       style={{ height: "90vh", gap: "15px" }}
     >
       <div className="split__view__container" style={{ height: "96%" }}>
-        <div className="split__view__header__bar">
+        <div
+          className="split__view__header__bar"
+          style={{ padding: "0 12px 12px 12px" }}
+        >
           <HeaderTableBar
             name={"Saleout"}
             title={"Danh sách phiếu saleout"}

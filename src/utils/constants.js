@@ -8,3 +8,10 @@ export const formStatus = {
   EDIT: "EDIT",
   VIEW: "VIEW",
 };
+
+export const FILE_EXTENSION = {
+  EXCEL: "EXCEL",
+  PDF: "PDF",
+  CSV: "CSV",
+  OTHER: "OTHER",
+};

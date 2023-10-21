@@ -81,10 +81,13 @@ const CustomerResource = () => {
   };
 
   const getdata = () => {
-    delete pagination?.current;
     SoFuckingUltimateGetApi({
       store: "Get_Customer_Source",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       let layout = renderColumns(res?.reportLayoutModel);
       layout.push({
@@ -174,8 +177,8 @@ const CustomerResource = () => {
   return (
     <div className="default_list_layout page_default">
       <HeaderTableBar
-        name={"hình thức"}
-        title={"Danh sách hình thức"}
+        name={"nguồn"}
+        title={"Danh sách nguồn khách hàng"}
         changePaginations={changePaginations}
         totalResults={totalResults}
         addEvent={openModalAddTask}

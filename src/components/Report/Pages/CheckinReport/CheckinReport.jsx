@@ -3,9 +3,23 @@ import dayjs from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../Context/TableLocale";
+import { FILE_EXTENSION } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import Filter from "./Drawer/Filter";
+
+const printLayouts = [
+  {
+    key: "CheckinReportPDF",
+    title: "Báo cáo checkin PDF",
+    type: FILE_EXTENSION.PDF,
+  },
+  {
+    key: "CheckinReportExcel",
+    title: "Báo cáo checkin Excel",
+    type: FILE_EXTENSION.EXCEL,
+  },
+];
 
 const CheckinReport = () => {
   const [dataSourse, setDataSource] = useState([]);
@@ -39,11 +53,13 @@ const CheckinReport = () => {
   };
 
   const getReportData = async () => {
-    delete pagination?.current;
-
     await SoFuckingUltimateGetApi2({
       store: "api_rpt_vieng_tham",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageIndex,
+        pageSize: pagination.pageSize,
+      },
     }).then(async (res) => {
       let layout = renderColumns(res?.reportLayoutModel, true);
       await setTotalResults(res?.pagegination?.totalRecord);
@@ -138,6 +154,12 @@ const CheckinReport = () => {
     setTableParams({ ...tableParams, ...filterData });
   }, []);
 
+  const handlePrint = useCallback((item) => {
+    console.log(item);
+  }, []);
+
+  ////////////////////////////////////Effects//////////////////////////
+
   useEffect(() => {
     setLoading(true);
     getReportData();
@@ -156,6 +178,8 @@ const CheckinReport = () => {
           layoutCallBack: onLayoutChange,
         }}
         advanceFilter={handleOpenFilter}
+        printList={printLayouts}
+        printCallBack={handlePrint}
       />
 
       <div className="h-full min-h-0">

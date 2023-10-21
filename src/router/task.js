@@ -3,14 +3,12 @@ import Maps from "../components/DMS/Pages/Maps/Maps";
 import TaskList from "../components/DMS/Pages/Task/TaskList";
 import TaskSchedule from "../components/DMS/Pages/TaskSchedule/TaskSchedule";
 import TaskTypeList from "../components/DMS/Pages/TaskType/TaskTypeList";
-import Home from "../pages/Home/Home";
 
 const taskRoutes = [
   {
     label: "Công việc",
     claims: "Permissions.task",
     path: "task",
-    element: <Home />,
     children: [],
   },
   {
@@ -22,14 +20,14 @@ const taskRoutes = [
   },
   {
     label: "Danh mục công việc",
-    claims: "Permissions.task.dmcongviec",
+    claims: "Permissions.task.taskList",
     path: "task/tasklist",
     parent: "task",
     element: <TaskList />,
   },
   {
     label: "Danh mục loại công việc",
-    claims: "Permissions.task.dmloaicongviec",
+    claims: "Permissions.task.taskType",
     path: "task/tasktypelist",
     parent: "task",
     element: <TaskTypeList />,

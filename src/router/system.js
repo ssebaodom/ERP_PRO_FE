@@ -13,28 +13,29 @@ const systemRoutes = [
     children: [
       {
         label: "Phân quyền tài khoản",
-        claims: "Permissions.system",
+        claims: "Permissions.system.permissions",
         path: "UsersPermissions",
         element: <UserPermissions />,
         children: [],
       },
       {
         label: "Phân quyền nhóm",
-        claims: "Permissions.system",
+        claims: "Permissions.system.permissions",
         path: "GroupPermissions",
         element: <GroupPermissions />,
         children: [],
       },
       {
         label: "Phân quyền đơn vị",
-        claims: "Permissions.system",
+        claims: "Permissions.system.permissions",
         path: "UnitPermissions",
         element: <UnitPermissions />,
         children: [],
       },
+
       {
         label: "Tài khoản",
-        claims: "Permissions.accounts",
+        claims: "Permissions.system.accounts",
         path: "Accounts",
         element: <Accounts />,
         children: [],

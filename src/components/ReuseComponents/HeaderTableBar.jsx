@@ -3,6 +3,7 @@ import { Button, Popover, Select, Tooltip } from "antd";
 import PropTypes from "prop-types";
 import React, { memo, useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import PrintList from "./PrintList";
 import ReportLayoutPicker from "./ReportLayoutPicker";
 import UploadFileModal from "./UploadFileModal";
 
@@ -16,7 +17,6 @@ const HeaderTableBar = ({
     count: 0,
     delete: null,
   },
-  printEvent,
   changePaginations,
   advanceFilter,
   deleteEvent,
@@ -26,8 +26,17 @@ const HeaderTableBar = ({
     columns: [],
     layoutCallBack: null,
   },
+  printList = [
+    {
+      key: "",
+      title: "",
+      type: "",
+    },
+  ],
+  printCallBack,
 }) => {
   const [uploadState, setUploadState] = useState(false);
+  const [printState, setPrintState] = useState(false);
   const [layoutKey, setLayoutKey] = useState([]);
 
   const handleLayoutSelected = useCallback((layout) => {
@@ -42,10 +51,21 @@ const HeaderTableBar = ({
     setUploadState(true);
   };
 
-  const handleSuccessUpload = (data) => {
-    handleCancelUpload();
-    uploadFunction(data);
+  const handleCancelPrint = useCallback(() => {
+    setPrintState(false);
+  }, []);
+
+  const handleOpenPrint = () => {
+    setPrintState(true);
   };
+
+  const handleSuccessUpload = useCallback(
+    (data) => {
+      handleCancelUpload();
+      uploadFunction(data);
+    },
+    [uploadFunction]
+  );
 
   const handleCloseRpLayoutPicker = (state) => {
     if (!state) {
@@ -109,14 +129,6 @@ const HeaderTableBar = ({
           </Tooltip>
         )}
 
-        {printEvent && (
-          <Tooltip placement="topLeft" title="In">
-            <Button className="default_button" onClick={() => printEvent}>
-              <i className="pi pi-print sub_text_color"></i>
-            </Button>
-          </Tooltip>
-        )}
-
         {changePaginations && (
           <Tooltip placement="topLeft" title="Số bản ghi trên trang">
             <Select
@@ -172,6 +184,26 @@ const HeaderTableBar = ({
           </>
         )}
 
+        {printCallBack && printList.length > 0 && (
+          <>
+            <Tooltip placement="topLeft" title="In dữ liệu">
+              <Button className="default_button" onClick={handleOpenPrint}>
+                <i
+                  className="pi pi-print sub_text_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
+
+            <PrintList
+              openState={printState}
+              callBackClick={printCallBack}
+              layouts={printList}
+              onCancel={handleCancelPrint}
+            />
+          </>
+        )}
+
         {ReportLayout.layoutCallBack && (
           <Tooltip placement="topLeft" title="Cấu trúc báo cáo">
             <Popover
@@ -215,8 +247,12 @@ const HeaderTableBar = ({
  * @param {Array} fileExample[] - Mảng tên các trường.
  * @param {Object} ReportLayout.columns[] - Cấu trúc {key:'abc', title: 'def'}.
  * @callback ReportLayout.layoutCallBack - Callback trả về mảng các trường đã chọn.
+ * @param {Object} ReportLayout.columns[] - Cấu trúc {key:'abc', title: 'def'}.
+ * @param {String} printList.key - Key của layout in.
+ * @param {String} printList.title - title của layout in.
+ * @param {String} printList.type - Loại của layout in ví dụ (PDF, EXCEL ....).
+ * @callback printCallBack - Function thực hiện chức năng, sẽ trả về 1 print item.
  */
-
 export default memo(HeaderTableBar);
 
 HeaderTableBar.prototype = {
@@ -226,7 +262,6 @@ HeaderTableBar.prototype = {
   refreshEvent: PropTypes.func,
   title: PropTypes.string.isRequired,
   deleteItems: PropTypes.object,
-  printEvent: PropTypes.func,
   changePaginations: PropTypes.func,
   advanceFilter: PropTypes.func,
   deleteEvent: PropTypes.func,

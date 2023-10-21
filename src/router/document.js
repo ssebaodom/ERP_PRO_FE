@@ -59,7 +59,7 @@ const documentsRoutes = [
   },
   {
     label: "Danh mục nhân viên",
-    claims: "Permissions.documents.customerList",
+    claims: "Permissions.documents.customerlist",
     path: "documents/customerlist",
     parent: "documents",
     element: <SaleEmployee />,
