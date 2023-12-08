@@ -1,5 +1,6 @@
 .dashboard {
-    height: 88vh;
+    height: max-content !important;
+    padding-bottom: 30px;
 }
 
 .dashboard__general__statistic__container {
@@ -18,7 +19,7 @@
 .dashboard__general__statistic__items {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     background-color: white;
     padding: 10px 15px;
@@ -39,10 +40,10 @@
 }
 
 .dashboard__simple__chart__container {
-    margin-top: 50px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 20px;
 }
 
 .dashboard__simple__chart__items__container {

@@ -8,7 +8,7 @@ import TableLocale from "../../../../Context/TableLocale";
 import { formStatus } from "../../../../utils/constants";
 import {
   SoFuckingUltimateApi,
-  SoFuckingUltimateGetApi,
+  SoFuckingUltimateGetApi
 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import ModalApproveItems from "../../Modal/ModalApproveItems/ModalApproveItems";
@@ -175,7 +175,7 @@ const ApproveItems = () => {
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="default_list_layout page_default">

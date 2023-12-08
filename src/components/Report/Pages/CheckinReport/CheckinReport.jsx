@@ -1,23 +1,31 @@
 import { Table } from "antd";
 import dayjs from "dayjs";
+import FileSaver from "file-saver";
 import React, { useCallback, useEffect, useState } from "react";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../Context/TableLocale";
 import { FILE_EXTENSION } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
+import { ApiGetPrintReportFile } from "../../API";
 import Filter from "./Drawer/Filter";
 
 const printLayouts = [
   {
-    key: "CheckinReportPDF",
-    title: "Báo cáo checkin PDF",
-    type: FILE_EXTENSION.PDF,
+    key: "CheckinReportExcel",
+    title: "Báo cáo checkin",
+    link: "File/get-file-pdf",
+    path: "File/Base.xlsx",
+    store: "Get_Test_Data",
+    type: FILE_EXTENSION.EXCEL,
   },
   {
-    key: "CheckinReportExcel",
-    title: "Báo cáo checkin Excel",
-    type: FILE_EXTENSION.EXCEL,
+    key: "CheckinReportPDF",
+    title: "Báo cáo checkin",
+    link: "File/get-file-xml",
+    path: "File/Base.xlsx",
+    store: "Get_Test_Data",
+    type: FILE_EXTENSION.PDF,
   },
 ];
 
@@ -155,7 +163,14 @@ const CheckinReport = () => {
   }, []);
 
   const handlePrint = useCallback((item) => {
-    console.log(item);
+    ApiGetPrintReportFile(item.link, {
+      store: item.store,
+      data: null,
+      path: item.path,
+      fileName: `test`,
+    }).then((res) => {
+      FileSaver.saveAs(res, item.title);
+    });
   }, []);
 
   ////////////////////////////////////Effects//////////////////////////

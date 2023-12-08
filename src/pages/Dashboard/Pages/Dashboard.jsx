@@ -14,7 +14,7 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const userInfo = useSelector(getUserInfo);
 
-  const color = ["#65AEFD", "#4779CF", "#FFA83F"];
+  const color = ["#E2E4EE", "#D5D7E2", "#4779CF"];
   const data = [
     {
       month: "1",
@@ -125,9 +125,7 @@ const Dashboard = () => {
         </div>
       </div>
       <div className="dashboard__simple__chart__container">
-        <span className="default_header_label">
-          Số liệu bán hàng trong tháng
-        </span>
+        <span className="default_header_label">Số liệu chung</span>
         <div className="dashboard__simple__chart__items__container">
           <div className="dashboard__simple__chart__tag">
             <div className="dashboard__simple__chart__tag__title">
@@ -135,7 +133,7 @@ const Dashboard = () => {
             </div>
             <div className="dashboard__simple__chart__tag__details">
               <div className="dashboard__simple__chart__tag__details__chart">
-                *chart is here
+                <Column className="dashboard__simple__chart" {...config} />
               </div>
               <div className="dashboard__simple__chart__tag__details__data">
                 <p>
@@ -145,7 +143,7 @@ const Dashboard = () => {
                   Đơn
                 </p>
                 <p>
-                  <span>*</span> 3.5%
+                  <span>*</span> {-3.5} %
                 </p>
                 <p>Tháng trước {" 69,96 tỷ"}</p>
               </div>
@@ -157,7 +155,7 @@ const Dashboard = () => {
             </div>
             <div className="dashboard__simple__chart__tag__details">
               <div className="dashboard__simple__chart__tag__details__chart">
-                *chart is here
+                <Column className="dashboard__simple__chart" {...config} />
               </div>
               <div className="dashboard__simple__chart__tag__details__data">
                 <p>
@@ -225,7 +223,9 @@ const Dashboard = () => {
         </div>
       </div>
       <div className="dashboard__simple__chart__container">
-        <span className="default_header_label">Lịch công việc</span>
+        <span className="default_header_label">Bán hàng</span>
+
+        {React.createElement(require("./Report/DashboardReport").default)}
       </div>
     </div>
   );

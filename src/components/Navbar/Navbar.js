@@ -13,12 +13,12 @@ import { setClaims, setIsBackgrouds } from "../../store/reducers/claimsSlice";
 import jwt from "../../utils/jwt";
 
 const Navbar = () => {
-  const [options, setOptions] = useState([]);
   const [resultsSearchModal, setResultsSearchModal] = useState([]);
   const [isOpenSearchModal, setOpenSearchModal] = useState(false);
   const [inputSearchModal, setInputSearchModal] = useState("");
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
   const [navbarItems, setNavbarItems] = useState();
+  const [searchFunctions, setSearchFunctions] = useState([]);
 
   const renderNavbar = (navItems) => {
     const renderedNavbar = navItems.map((item) => {
@@ -92,11 +92,6 @@ const Navbar = () => {
     setOpenSearchModal(true);
   };
 
-  const handleOkSearchModal = () => {
-    setOpenSearchModal(false);
-    setInputSearchModal("");
-    setResultsSearchModal([]);
-  };
   const handleCancelSearchModal = () => {
     setOpenSearchModal(false);
     setInputSearchModal("");
@@ -121,43 +116,16 @@ const Navbar = () => {
     dispatch(setClaims(jwt.getClaims() ? jwt.getClaims() : {}));
     async function fetchData() {
       const navitems = await getRoutesAccess(routes);
-      setNavbarItems(await renderNavbar(navitems));
+      setNavbarItems(await renderNavbar(navitems.nestedRoutes || []));
+
+      setSearchFunctions((item) => {
+        return (item = navitems.flatRoutes.filter(
+          (item) => !item.children || !item?.children?.length > 0
+        ));
+      });
     }
     fetchData();
   }, []);
-
-  const homeRoutes = [
-    {
-      name: "Login nè",
-      claims: "Produce.login",
-      path: "/",
-    },
-    {
-      name: "Home nè",
-      claims: "Produce.home",
-      path: "/home",
-      children: [],
-    },
-    {
-      name: "Todo nè",
-      claims: "Produce.login.todo",
-      path: "todo",
-    },
-    {
-      name: "Mạch Hưng nè",
-      claims: "Produce.login.todo.mach_hung",
-      path: "mach_hung",
-      element: <div>Hello world!</div>,
-    },
-    {
-      name: "invoice ne",
-      path: "/invoices",
-    },
-    {
-      name: "Goosc",
-      path: "*",
-    },
-  ];
 
   const a = [
     {
@@ -208,39 +176,15 @@ const Navbar = () => {
   const items = [
     {
       key: "1",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.youtube.com/watch?v=kdVeYgGtO3Q&ab_channel=Tr%C3%BAcNh%C3%A2n"
-        >
-          Cài đặt
-        </a>
-      ),
+      label: "Cài đặt",
     },
     {
-      key: "2",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.youtube.com/watch?v=kdVeYgGtO3Q&ab_channel=Tr%C3%BAcNh%C3%A2n"
-        >
-          Liên hệ
-        </a>
-      ),
+      key: "contact",
+      label: <Link to={"contact"}>Liên hệ</Link>,
     },
     {
       key: "3",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.youtube.com/watch?v=kdVeYgGtO3Q&ab_channel=Tr%C3%BAcNh%C3%A2n"
-        >
-          lịch sử hoạt động
-        </a>
-      ),
+      label: "lịch sử hoạt động",
     },
     {
       key: "4",
@@ -249,32 +193,23 @@ const Navbar = () => {
     },
   ];
   const searchResult = (query) => {
-    const results = homeRoutes.filter((item) =>
-      item.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+    const results = searchFunctions.filter((item) =>
+      item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase())
     );
     return results.map((result, idx) => {
       const category = `${query}`;
       return {
-        value: result.name,
+        value: result.label,
         label: (
-          <Link to={result.path}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                cursor: "pointer",
-              }}
-            >
-              <span>{result.name}</span>
-            </div>
-          </Link>
+          <div
+            className="modal_search_results_item"
+            onClick={() => handleSelectFuntion(result.path)}
+          >
+            <span>{result.label}</span>
+          </div>
         ),
       };
     });
-  };
-
-  const handleSearch = (value) => {
-    setOptions(value ? searchResult(value) : []);
   };
 
   const handleSearchInModal = (value) => {
@@ -302,9 +237,9 @@ const Navbar = () => {
     },
   ];
 
-  const onSelect = (value) => {
-    const results = homeRoutes.filter((item) => item.name == value);
-    router.navigate(results[0].path);
+  const handleSelectFuntion = (path) => {
+    router.navigate(path);
+    handleCancelSearchModal();
   };
 
   const handleSetBackground = () => {
@@ -355,24 +290,6 @@ const Navbar = () => {
           }
         />
       </div>
-      {/* <div className="first_navbar_row_center">
-          <AutoComplete
-            dropdownMatchSelectWidth={252}
-            style={{
-              width: 350,
-            }}
-            options={options}
-            onSelect={onSelect}
-            onSearch={handleSearch}
-          >
-            <Input
-              size="middle"
-              className="navbar_input_search"
-              placeholder="Tìm kiếm..."
-              prefix={<UilSearch size="18" color="#1677ff" />}
-            />
-          </AutoComplete>
-        </div> */}
       <div className="first_navbar_row_right">
         <ul>
           <li>
@@ -407,61 +324,20 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* <div className="sec_navbar_row">
-        <div className="sec_navbar_row_left">
-          <Dropdown menu={{ items: currentActions }} trigger={["click"]}>
-            <UilApps size="30px" color="#1677ff" />
-          </Dropdown>
-          <Menu
-            className="sec_navbar_row_right"
-            mode="horizontal"
-            items={navbarItems}
-            onSelect={handleNavbarClick}
-            selectedKeys={navbarSelectedKey}
-            style={{
-              height: "30px",
-              lineHeight: "30px",
-              backgroundColor: "transparent",
-              marginLeft: "40px",
-            }}
-            overflowedIndicator={
-              <span style={{ color: "#1677ff" }}>Mở rộng ...</span>
-            }
-          />
-        </div>
-        <div className="dxa">
-          <div className="navbar_avatar_container">
-            <Dropdown
-              menu={{ items: items }}
-              overlayClassName="navbar_avatar_dropdown"
-              placement="bottomRight"
-              trigger={["click"]}
-            >
-              <img
-                className="navbar_avatar"
-                src="https://i.ex-cdn.com/mgn.vn/files/content/2023/02/14/hutao-yelan-banner-revenue-1-1657.jpg"
-                alt=""
-              />
-            </Dropdown>
-          </div>
-        </div>
-      </div> */}
-
       <Modal
         className="modal_home_search"
         open={isOpenSearchModal}
-        onOk={handleOkSearchModal}
         onCancel={handleCancelSearchModal}
         closable={false}
+        title="Tìm kiếm"
         okButtonProps={{ style: { display: "none" } }}
-        cancelButtonProps={{ style: { display: "none" } }}
-        style={{ top: 100, padding: 0 }}
-        width={400}
+        cancelText="Đóng"
+        centered
+        width={600}
       >
         <div className="search_modal_search_bar_container">
           <div className="search_modal_search_bar">
             <Input
-              style={{ maxWidth: "500px", minWidth: "100px" }}
               className="navbar_input_search"
               placeholder="Tìm kiếm..."
               value={inputSearchModal}
@@ -473,10 +349,19 @@ const Navbar = () => {
             />
           </div>
           <div className="modal_search_results">
+            {resultsSearchModal.length === 0 && !inputSearchModal && (
+              <p>
+                Tìm gì đó{" "}
+                <i className="pi  pi-comments" style={{ fontSize: "26px" }}></i>
+              </p>
+            )}
+
+            {resultsSearchModal.length === 0 && inputSearchModal && (
+              <p>Không có chức năng tương ứng</p>
+            )}
+
             {resultsSearchModal.map((item, index) => (
-              <div key={index} className="modal_search_results_item">
-                {item.label}
-              </div>
+              <>{item.label}</>
             ))}
           </div>
         </div>

@@ -10,7 +10,7 @@ const nestedArray = (raw) => {
         t[o.parent].children = t[o.parent].children || [];
         t[o.parent].children.push(t[o.path]);
       });
-      return t[root].children;
+      return t[root]?.children || [];
     })(data, undefined);
   const final = tree;
   return final;
@@ -67,8 +67,10 @@ const getRoutesAccess = async (routes) => {
   //   }
   //   return item;
   // });
-
-  return [...(await nestedArray(homeRoute))];
+  return {
+    nestedRoutes: [...(await nestedArray(homeRoute))],
+    flatRoutes: homeRoute,
+  };
 };
 
 export { getRoutesAccess };

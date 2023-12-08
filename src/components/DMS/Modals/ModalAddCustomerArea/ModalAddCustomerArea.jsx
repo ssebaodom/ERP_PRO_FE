@@ -161,12 +161,12 @@ const ModalAddCustomerArea = (props) => {
             </span>
             <Form.Item
               name="areaCode"
-              rules={[{ required: true, message: "Điền mã hình thức" }]}
+              rules={[{ required: true, message: "Điền mã khu vực" }]}
             >
               <Input
                 disabled={disableFields}
                 onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
-                placeholder="Nhập mã hình thức"
+                placeholder="Nhập mã khu vực"
               />
             </Form.Item>
           </div>
@@ -178,9 +178,9 @@ const ModalAddCustomerArea = (props) => {
             </span>
             <Form.Item
               name="areaName"
-              rules={[{ required: true, message: "Điền tên hình thức" }]}
+              rules={[{ required: true, message: "Điền tên khu vực" }]}
             >
-              <Input placeholder="Nhập tên hình thức" />
+              <Input placeholder="Nhập tên khu vực" />
             </Form.Item>
           </div>
         </div>

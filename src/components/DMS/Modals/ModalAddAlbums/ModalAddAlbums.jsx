@@ -37,8 +37,8 @@ const ModalAddAlbums = ({
     inputForm.resetFields();
   };
 
-  const onSubmitForm = () => {
-    const master = { ...inputForm.getFieldsValue() };
+  const onSubmitForm = (data) => {
+    const master = { ...data };
     SoFuckingUltimateApi({
       store: "Api_create_dmalbum",
       data: {
@@ -106,7 +106,7 @@ const ModalAddAlbums = ({
       <div className="default_modal_header">
         <span className="default_header_label">{`${
           openModalType == formStatus.EDIT ? "Sửa" : "Thêm mới"
-        } loại công việc`}</span>
+        } album`}</span>
       </div>
       <Form
         form={inputForm}

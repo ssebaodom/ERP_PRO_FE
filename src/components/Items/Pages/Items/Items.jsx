@@ -1,5 +1,6 @@
 import { Table } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { shallowEqual } from "react-redux";
 import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../Context/TableLocale";
@@ -7,6 +8,11 @@ import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import ModalViewItems from "../../Modal/ModalItems/ModalViewItems";
+import {
+  setCurrentItem,
+  setIsOpenItemListModal,
+  setOpenItemListModalType
+} from "../../Store/Actions/Actions";
 
 const Items = () => {
   // initialize #########################################################################
@@ -30,18 +36,22 @@ const Items = () => {
 
   //functions #########################################################################
 
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     setPagination({ ...pagination, pageindex: 1, current: 1 });
     if (pagination.pageindex === 1) {
       setLoading(true);
     }
-  };
+  }, [pagination]);
 
-  const handleEdit = (record) => {
-    setCurrentRecord(record.ma_vt);
-    setIsOpenViewModal(true);
-    setOpenModalType(formStatus.VIEW);
-  };
+  const handleEdit = useCallback((record) => {
+    setCurrentItem(record.ma_vt);
+    setIsOpenItemListModal(true);
+    setOpenItemListModalType(formStatus.VIEW);
+
+    // setCurrentRecord(record.ma_vt);
+    // setIsOpenViewModal(true);
+    // setOpenModalType(formStatus.VIEW);
+  }, []);
 
   const handleOpenDeleteDialog = (record) => {
     setIsOpenModalDelete(true);
@@ -95,6 +105,9 @@ const Items = () => {
         dataType: "Operation",
         align: "center",
         fixed: "right",
+        shouldCellUpdate: (record, prevRecord) => {
+          return !shallowEqual(record, prevRecord);
+        },
         render: (_, record) => {
           return <OperationColumn record={record} viewFunction={handleEdit} />;
         },
@@ -126,10 +139,14 @@ const Items = () => {
   };
 
   const openModalAddTask = () => {
-    setIsOpenViewModal(!isOpenViewModal);
+    setIsOpenViewModal(true);
     setOpenModalType(formStatus.ADD);
     setCurrentRecord(0);
   };
+
+  const closeModal = useCallback(() => {
+    setIsOpenViewModal(false);
+  }, []);
 
   const onSelect = async (record, selected, selectedRows) => {
     const keys = selectedRows.map((item) => item.key);
@@ -164,7 +181,7 @@ const Items = () => {
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="default_list_layout page_default">
@@ -198,7 +215,7 @@ const Items = () => {
         openModalState={isOpenViewModal}
         openModalType={openModalType}
         currentRecord={currentRecord}
-        handleCloseModal={setIsOpenViewModal}
+        handleCloseModal={closeModal}
         refreshData={refreshData}
       />
     </div>

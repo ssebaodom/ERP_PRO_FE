@@ -1,4 +1,5 @@
 import Accounts from "../components/SystemOptions/Pages/Accounts/Accounts";
+import DashboardOptions from "../components/SystemOptions/Pages/DashboardOptions/DashboardOptions";
 import GroupPermissions from "../components/SystemOptions/Pages/GroupPermissions/GroupPermissions";
 import UnitPermissions from "../components/SystemOptions/Pages/UnitPermissions/UnitPermissions";
 import UserPermissions from "../components/SystemOptions/Pages/UserPermissions/UserPermissions";
@@ -40,12 +41,11 @@ const systemRoutes = [
         element: <Accounts />,
         children: [],
       },
-
       {
-        label: "Duyệt chứng từ",
-        claims: "Permissions.voucher.approve",
-        path: "VoucherApprove",
-        element: <span>Duyệt chứng từ ở đây</span>,
+        label: "Quản lý dashboard",
+        claims: "Permissions.system.dashboards",
+        path: "DashboardOptions",
+        element: <DashboardOptions />,
         children: [],
       },
     ],

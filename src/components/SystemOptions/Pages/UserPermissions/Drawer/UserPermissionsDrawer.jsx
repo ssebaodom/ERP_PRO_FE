@@ -69,6 +69,7 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
       setLoading(true);
       apiGetUserClaims({ userId: currentUser?.user_id })
         .then((res) => {
+          console.log(res);
           const selected = res.data.map((item) => {
             return item.value;
           });
@@ -79,6 +80,7 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
         .catch((err) => {
           console.log(err);
         });
+      setLoading(false);
     }
   }, [currentUser]);
 

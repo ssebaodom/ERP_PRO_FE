@@ -26,6 +26,13 @@ const UserPermissions = () => {
 
   //Functions
 
+  const refreshData = () => {
+    setPagination({ ...pagination, pageindex: 1 });
+    if (pagination.pageindex === 1) {
+      setLoading(false);
+    }
+  };
+
   const showDrawer = (user) => {
     setOpen(true);
     setCurrentUser({ ...user });
@@ -37,10 +44,13 @@ const UserPermissions = () => {
 
   const getdata = () => {
     setLoading(true);
-
     SoFuckingUltimateGetApi({
       store: "api_Get_Users",
-      data: { ...tableParams, ...pagination },
+      data: {
+        ...tableParams,
+        pageindex: pagination.pageindex,
+        pageSize: pagination.pageSize,
+      },
     }).then((res) => {
       setLoading(false);
       setDataSource(res.data);
@@ -76,7 +86,7 @@ const UserPermissions = () => {
         name={"tài khoản"}
         title={"Danh sách tài khoản"}
         totalResults={totalRecord}
-        refreshEvent={getdata}
+        refreshEvent={refreshData}
       />
 
       <div className="flex justify-content-between align-items-center">
@@ -162,6 +172,7 @@ const UserPermissions = () => {
       <Pagination
         total={totalRecord}
         pageSize={10}
+        current={pagination.pageindex}
         showSizeChanger={false}
         className="default_pagination_bar"
         onChange={handlePaginationChange}

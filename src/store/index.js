@@ -4,6 +4,9 @@ import { imagesListReducer } from "../components/DMS/Store/Reducers/ImagesList";
 import { taskReducer } from "../components/DMS/Store/Reducers/Task";
 import { tourDetailsReducer } from "../components/DMS/Store/Reducers/TourDetail";
 import { approveItemsReducer } from "../components/Items/Store/Slices/ApproveItems";
+import { itemsListReducer } from "../components/Items/Store/Slices/Item";
+import { KPIPerformReducer } from "../components/KPI/Store/Slices/KPIPerforms";
+import { KPIPlansReducer } from "../components/KPI/Store/Slices/KPIPlans";
 import { saleoutDetailsReducer } from "../components/SaleOrder/Store/Slice/SaleOutSlice";
 import { AccountsReducer } from "../components/SystemOptions/Store/Reducers/Reducers";
 import claimsReducer from "./reducers/claimsSlice";
@@ -23,6 +26,9 @@ const store = configureStore({
     approveItemsReducer,
     AccountsReducer,
     imagesListReducer,
+    itemsListReducer,
+    KPIPerformReducer,
+    KPIPlansReducer,
   },
 });
 

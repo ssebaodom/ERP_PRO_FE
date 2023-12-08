@@ -217,7 +217,7 @@ const TaskTypeList = () => {
         handleCloseModal={setOpenModalAddTaskState}
         refreshData={refreshData}
       />
-      ''
+
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"

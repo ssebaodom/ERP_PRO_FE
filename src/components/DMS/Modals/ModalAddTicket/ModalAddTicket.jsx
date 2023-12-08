@@ -183,7 +183,7 @@ const ModalAddTicket = ({
             placeHolderName="Tên loại ticket"
             controller="dmloaitk_lookup"
             form={inputForm}
-            required={true}
+            required={false}
           />
         </div>
 

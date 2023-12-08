@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { shallowEqual } from "react-redux";
 import { datetimeFormat } from "../Options/DataFomater";
 
 const renderEditColumns = (columns, editingKey) => {
@@ -19,6 +20,9 @@ const renderEditColumns = (columns, editingKey) => {
         editing: isEditing(record),
         controller: item?.controller,
         reference: item?.reference,
+        shouldCellUpdate: (record, prevRecord) => {
+          return !shallowEqual(record, prevRecord);
+        },
         render: (data) => {
           if (item.type === "Datetime") {
             return dayjs(data).format(datetimeFormat);

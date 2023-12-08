@@ -229,7 +229,7 @@ const ModalAddTour = (props) => {
         <div className="default_modal_group_items">
           <FormSelectDetail
             disable={props.openModalState == formStatus.VIEW ? true : false}
-            label="NV phụ trách"
+            label="Đơn vị"
             keyCode="unitCode"
             keyName="unitName"
             controller="dmdvcs_lookup"

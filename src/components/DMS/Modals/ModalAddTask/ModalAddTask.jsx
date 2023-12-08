@@ -362,8 +362,7 @@ const ModalAddTask = ({
 
           <Form.Item>
             <Button
-              type="primary"
-              htmlType="submit"
+              onClick={checkingData}
               className="default_primary_button"
               icon={<img src={send_icon} alt="" />}
             >

@@ -4,10 +4,12 @@ import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomer
 import TourList from "../components/DMS/Pages/Tour/TourList";
 import Errorpage from "../components/Error/Errorpage";
 import ApproveInvoice from "../components/Invoices/Pages/ApproveInvoice/ApproveInvoice";
+import Contact from "../pages/Contact/Contact";
 import Dashboard from "../pages/Dashboard/Pages/Dashboard";
 import documentsRoutes from "./document";
 import imageRoutes from "./images";
 import itemsRoute from "./items";
+import kpiRoutes from "./KPI";
 import reportsRoute from "./report";
 import SORoutes from "./saleorder";
 import systemRoutes from "./system";
@@ -158,6 +160,14 @@ const homeRoutes = [
         claims: "Permissions.ApproveInvoice",
         path: "ApproveInvoice",
         element: <ApproveInvoice />,
+      },
+      ...kpiRoutes,
+
+      {
+        label: "Liên hệ",
+        claims: "",
+        path: "contact",
+        element: <Contact />,
       },
     ],
   },

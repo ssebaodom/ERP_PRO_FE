@@ -1,17 +1,9 @@
-import React from "react";
-import HROptions from "../../Modals/HROptions";
-import { Button, Table, Image, DatePicker, Checkbox } from "antd";
+import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Checkbox, DatePicker, Table } from "antd";
+import React, { useEffect, useState } from "react";
 import router from "../../../../router/routes";
-import { useState } from "react";
 import { ApiGetTimekeepingSchedule } from "../../API";
-import { useEffect } from "react";
-import ResizableAntdTable from "resizable-antd-table";
-import {
-  EditOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import HROptions from "../../Modals/HROptions";
 
 const { RangePicker } = DatePicker;
 
@@ -147,11 +139,11 @@ const TimeKeepingSchedule = () => {
     onSelect: onSelect,
   };
 
-    // effectively #########################################################################
+  // effectively #########################################################################
   useEffect(() => {
     setLoading(true);
     fetchData(tableParams);
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="page_2_side_default">

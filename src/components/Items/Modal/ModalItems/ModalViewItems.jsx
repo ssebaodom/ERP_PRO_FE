@@ -7,11 +7,18 @@ import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
 import { formStatus } from "../../../../utils/constants";
 
 import TabPane from "antd/es/tabs/TabPane";
+import { useSelector } from "react-redux";
 import {
   SoFuckingUltimateApi,
   SoFuckingUltimateGetApi,
 } from "../../../DMS/API";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
+import { setIsOpenItemListModal } from "../../Store/Actions/Actions";
+import {
+  getCurrentItem,
+  getIsOpenItemListModal,
+  getOpenItemListModalType,
+} from "../../Store/Selectors/Selectors";
 import MainInfo from "./Detail/MainInfo";
 
 const ModalViewItems = ({
@@ -28,7 +35,12 @@ const ModalViewItems = ({
   const [selectOptions, setSelectOptions] = useState([]);
   const [disableFields, setDisableFields] = useState(false);
 
+  const isOpenState = useSelector(getIsOpenItemListModal);
+  const currentItem = useSelector(getCurrentItem);
+  const openType = useSelector(getOpenItemListModalType);
+
   const handleCancelModal = () => {
+    setIsOpenItemListModal(false);
     setOpenModal(false);
     handleCloseModal();
     inputForm.resetFields();
@@ -83,14 +95,14 @@ const ModalViewItems = ({
   };
 
   useEffect(() => {
-    setOpenModal(openModalState);
+    setOpenModal(isOpenState);
     if (
-      openModalState &&
-      (openModalType === formStatus.EDIT || openModalType === formStatus.VIEW)
+      isOpenState &&
+      (openType === formStatus.EDIT || openType === formStatus.VIEW)
     ) {
-      getDataEdit(currentRecord ? currentRecord : 0);
+      getDataEdit(currentItem ? currentItem : 0);
     }
-  }, [JSON.stringify(openModalState)]);
+  }, [JSON.stringify(isOpenState)]);
 
   return (
     <Modal
@@ -102,6 +114,7 @@ const ModalViewItems = ({
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
       width={600}
+      destroyOnClose
     >
       <div className="default_modal_header">
         <span className="default_header_label">{`${

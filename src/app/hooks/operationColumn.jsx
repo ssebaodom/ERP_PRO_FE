@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import PropTypes from "prop-types";
-import React from "react";
+import React, { memo } from "react";
 
 const OperationColumn = ({
   record,
@@ -44,7 +44,7 @@ const OperationColumn = ({
   );
 };
 
-export default OperationColumn;
+export default memo(OperationColumn);
 
 OperationColumn.prototype = {
   record: PropTypes.object.isRequired,

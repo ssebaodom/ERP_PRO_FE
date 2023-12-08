@@ -1,13 +1,16 @@
 import jwtDecode from "jwt-decode";
 import Cookies from "universal-cookie";
-import { App } from "antd";
 const cookies = new Cookies();
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+const STATISTIC_DARDBOARD_SETTINGS = "statistic_dashboard_settings";
+const SIMPLECHART_DARDBOARD_SETTINGS = "simplechart_dashboard_settings";
+const DARDBOARD_REPORT_SETTINGS = "dashboard_Report";
 
 const getAccessToken = () => {
   return `${window.localStorage.getItem(ACCESS_TOKEN_KEY)}`;
 };
+
 const getRefreshToken = () => {
   return window.localStorage.getItem(REFRESH_TOKEN_KEY);
 };
@@ -49,6 +52,35 @@ const getClaims = () => {
   return claims;
 };
 
+const getStatistictboardSetting = () => {
+  return (
+    window.localStorage.getItem(STATISTIC_DARDBOARD_SETTINGS)?.split(",") || []
+  );
+};
+
+const setStatisticboardSetting = (settings) => {
+  return window.localStorage.setItem(STATISTIC_DARDBOARD_SETTINGS, settings);
+};
+
+const getSimpleChartboardSetting = () => {
+  return (
+    window.localStorage.getItem(SIMPLECHART_DARDBOARD_SETTINGS)?.split(",") ||
+    []
+  );
+};
+
+const setSimpleChartboardSetting = (settings) => {
+  return window.localStorage.setItem(SIMPLECHART_DARDBOARD_SETTINGS, settings);
+};
+
+const getDashboardReport = () => {
+  return window.localStorage.getItem(DARDBOARD_REPORT_SETTINGS) || undefined;
+};
+
+const setDashboardReport = (settings) => {
+  return window.localStorage.setItem(DARDBOARD_REPORT_SETTINGS, settings);
+};
+
 const jwt = {
   getAccessToken,
   getRefreshToken,
@@ -59,5 +91,11 @@ const jwt = {
   resetAccessToken,
   saveClaims,
   getClaims,
+  getSimpleChartboardSetting,
+  setSimpleChartboardSetting,
+  getStatistictboardSetting,
+  setStatisticboardSetting,
+  getDashboardReport,
+  setDashboardReport,
 };
 export default jwt;

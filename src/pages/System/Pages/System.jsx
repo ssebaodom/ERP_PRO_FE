@@ -9,41 +9,41 @@ const System = () => {
   const [expandedKeys, setExpandedKeys] = useState({});
   const navigate = useNavigate();
 
-  const datatest = [
-    {
-      key: "A",
-      data: 1,
-    },
-    {
-      key: "A.1",
-      parent: "A",
-      data: 1,
-    },
-    {
-      key: "A.2",
-      parent: "A",
-      data: 1,
-    },
-    {
-      key: "B",
-      data: 1,
-    },
-    {
-      key: "B.1",
-      parent: "B",
-      data: 1,
-    },
-    {
-      key: "B.1.1",
-      parent: "B.1",
-      data: 1,
-    },
-    {
-      key: "B.2",
-      parent: "B",
-      data: 1,
-    },
-  ];
+  // const datatest = [
+  //   {
+  //     key: "A",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "A.1",
+  //     parent: "A",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "A.2",
+  //     parent: "A",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "B",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "B.1",
+  //     parent: "B",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "B.1.1",
+  //     parent: "B.1",
+  //     data: 1,
+  //   },
+  //   {
+  //     key: "B.2",
+  //     parent: "B",
+  //     data: 1,
+  //   },
+  // ];
 
   // const flatenTable = (item) => {
   //   var listItem = [];
@@ -105,40 +105,55 @@ const System = () => {
         },
       ],
     },
+
     {
       key: "2",
-      label: "Chứng từ",
-      data: "Movies Folder",
-      icon: "pi pi-ticket",
+      label: "Màn hình hệ thống",
+      data: "Dashboard screen",
+      icon: "pi pi-wrench",
       children: [
         {
           key: "2-0",
-          icon: "pi pi-check-circle",
-          label: "Duyệt chứng từ",
-          data: "VoucherApprove",
-        },
-        {
-          key: "2-1",
-          label: "Robert De Niro",
-          icon: "pi pi-fw pi-star-fill",
-          data: "De Niro Movies",
-          children: [
-            {
-              key: "2-1-0",
-              label: "Goodfellas",
-              icon: "pi pi-fw pi-video",
-              data: "Goodfellas Movie",
-            },
-            {
-              key: "2-1-1",
-              label: "Untouchables",
-              icon: "pi pi-fw pi-video",
-              data: "Untouchables Movie",
-            },
-          ],
+          label: "Dashboard",
+          icon: "pi pi-user-plus",
+          data: "DashboardOptions",
         },
       ],
     },
+    // {
+    //   key: "2",
+    //   label: "Chứng từ",
+    //   data: "Movies Folder",
+    //   icon: "pi pi-ticket",
+    //   children: [
+    //     {
+    //       key: "2-0",
+    //       icon: "pi pi-check-circle",
+    //       label: "Duyệt chứng từ",
+    //       data: "VoucherApprove",
+    //     },
+    //     {
+    //       key: "2-1",
+    //       label: "Robert De Niro",
+    //       icon: "pi pi-fw pi-star-fill",
+    //       data: "De Niro Movies",
+    //       children: [
+    //         {
+    //           key: "2-1-0",
+    //           label: "Goodfellas",
+    //           icon: "pi pi-fw pi-video",
+    //           data: "Goodfellas Movie",
+    //         },
+    //         {
+    //           key: "2-1-1",
+    //           label: "Untouchables",
+    //           icon: "pi pi-fw pi-video",
+    //           data: "Untouchables Movie",
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
   ];
 
   const onSelect = (event) => {

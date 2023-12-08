@@ -8,11 +8,11 @@ class HttpService {
       .join("&");
   }
 
-  get(apiEndpoint, params = {}) {
+  get(apiEndpoint, params = {}, settings = {}) {
     if (Object.keys(params).length > 0) {
       apiEndpoint = `${apiEndpoint}?${this.querySearch(params)}`;
     }
-    return axios.get(apiEndpoint).then(
+    return axios.get(apiEndpoint, settings).then(
       (res) => {
         return res;
       },
@@ -23,8 +23,8 @@ class HttpService {
     );
   }
 
-  post(apiEndpoint, payload) {
-    return axios.post(apiEndpoint, payload).then(
+  post(apiEndpoint, payload, settings = {}) {
+    return axios.post(apiEndpoint, payload, settings).then(
       (res) => {
         if (res.data.errors) {
           return this.handleErorr(res.data.errors);

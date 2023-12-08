@@ -1,11 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Table, Tooltip } from "antd";
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from "react";
+import React, { memo, useEffect, useState } from "react";
 import {
   getAllValueByColumn,
   getAllValueByRow,
@@ -21,6 +16,7 @@ import copy__icon from "../../../../../Icons/copy__icon.svg";
 import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
 import { formStatus } from "../../../../../utils/constants";
+import emitter from "../../../../../utils/emitter";
 
 import { setFinalDetails } from "../../../Store/Sagas/Sagas";
 
@@ -28,7 +24,7 @@ const EditableCell = (cell, form, addRow) => {
   return RenderEditCell(cell, form, addRow);
 };
 
-const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
+const TableDetail = ({ masterForm, data, Tablecolumns, Action }) => {
   const [detailForm] = Form.useForm();
   const [editingKey, setEditingKey] = useState([]);
   const [dataSource, setDataSource] = useState([]);
@@ -36,18 +32,12 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
   const [columns, setColumns] = useState([]);
   const [isChecked, setIsChecked] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    getData: async () => {
-      await BtnSave();
-      setIsChecked(true);
-    },
-  }));
-
   ////////////////////////////////////////btntable////////////////////////////////////////
   const BtnSave = async () => {
     const rawData = [...dataSource];
     const newData = [];
     const rows = await detailForm.validateFields();
+
     await editingKey.map(async (key) => {
       const changedData = await getChangedTableRow(key, rows, rawData);
       newData.push(changedData);
@@ -251,15 +241,35 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
         key: index,
       }));
       setDataSource(initData);
+
+      setEditingKey(
+        initData.map((item, index) => {
+          return index;
+        })
+      );
     }
   }, [data]);
 
   useEffect(() => {
     if (isChecked) {
+      console.log(dataSource);
+
       setFinalDetails([...FilterNullArray(dataSource, "ma_vt")]);
       setIsChecked(false);
     }
   }, [isChecked]);
+
+  useEffect(() => {
+    emitter.on("HANDLE_SAVE_SALE_OUT", async () => {
+      try {
+        await detailForm.validateFields();
+        await BtnSave();
+        setIsChecked(true);
+      } catch (error) {
+        emitter.emit("SET_SALE_ORDER_STEP", 1);
+      }
+    });
+  }, []);
 
   return (
     <div
@@ -375,7 +385,6 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
         form={detailForm}
         component={false}
         onValuesChange={handleChangedValues}
-        ref={ref}
         className="h-full"
       >
         <Table
@@ -405,4 +414,4 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
   );
 };
 
-export default forwardRef(TableDetail);
+export default memo(TableDetail);

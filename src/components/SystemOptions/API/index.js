@@ -8,13 +8,13 @@ export const SoFuckingUltimateGetApi = async (payload) => {
 
 export const apiGetUserClaims = async (payload) => {
   return await https.post(`Authentication/UserClaim`, payload).then((res) => {
-    return res;
+    return res.data;
   });
 };
 
 export const apiGetAllClaims = async (payload) => {
   return await https.post(`Authentication/ListClaims`, payload).then((res) => {
-    return res;
+    return res.data;
   });
 };
 

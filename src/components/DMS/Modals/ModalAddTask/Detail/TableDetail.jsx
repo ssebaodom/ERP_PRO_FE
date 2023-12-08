@@ -9,7 +9,7 @@ import React, {
 import addNewRow from "../../../../../app/hooks/addNewRow";
 import getChangedTableRow from "../../../../../app/hooks/getChangedTableRow";
 import getEditRowsValue from "../../../../../app/hooks/getEditRowsValue";
-import RenderCells from "../../../../../app/hooks/renderCells";
+import RenderEditCell from "../../../../../app/hooks/RenderEditCell";
 import renderEditColumns from "../../../../../app/hooks/renderEditColumns";
 import { GetUniqueArray } from "../../../../../app/Options/GetUniqueArray";
 import TableLocale from "../../../../../Context/TableLocale";
@@ -19,8 +19,8 @@ import delete__icon from "../../../../../Icons/delete__icon.svg";
 import lock__icon from "../../../../../Icons/lock__icon.svg";
 import { setTaskDetail } from "../../../Store/Sagas/Sagas";
 
-const EditableCell = (cell, form) => {
-  return RenderCells(cell, form);
+const EditableCell = (cell, form, addRow) => {
+  return RenderEditCell(cell, form, addRow);
 };
 
 const TableDetail = ({ form, data, Tablecolumns }, ref) => {
@@ -63,6 +63,12 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     setDataSource([...dataSource, newRow]);
     edit(newRow);
     setSelectedRowKeys([...selectedRowKeys, newRow.key]);
+    const inputRecord = getEditRowsValue(newRow);
+    form.setFieldsValue({
+      ...inputRecord,
+    });
+    setSelectedRowKeys([...selectedRowKeys, newRow.key]);
+    setEditingKey([...editingKey, newRow.key]);
   };
 
   const edit = (record) => {
@@ -93,6 +99,11 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
     setDataSource([...newData]);
     setSelectedRowKeys([]);
     setEditingKey([]);
+  };
+
+  const addnew = async () => {
+    await addRow();
+    scrollToField("ma_kh");
   };
 
   const handleChangedValues = (changedValues, allValues) => {
@@ -288,7 +299,7 @@ const TableDetail = ({ form, data, Tablecolumns }, ref) => {
             body: {
               cell: (cells) => {
                 if (dataSource.length > 0) {
-                  return EditableCell(cells, form);
+                  return EditableCell(cells, form, addnew);
                 }
                 return <></>;
               },

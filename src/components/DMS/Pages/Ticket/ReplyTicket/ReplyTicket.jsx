@@ -102,7 +102,7 @@ const ReplyTicket = () => {
     console.log("Changed");
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   return (
     <div className="page_2_side_default">

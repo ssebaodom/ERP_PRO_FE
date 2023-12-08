@@ -1,4 +1,9 @@
 const themeComponents = {
+  token: {
+    colorPrimary: "#4779cf",
+    colorInfo: "#4779cf",
+    borderRadius: 4,
+  },
   components: {
     Select: {
       borderRadius: 4,

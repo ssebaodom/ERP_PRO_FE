@@ -9,7 +9,7 @@ import {
   Steps,
 } from "antd";
 import dayjs from "dayjs";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
@@ -21,6 +21,7 @@ import {
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
+import emitter from "../../../../utils/emitter";
 import { UltimatePutDataApi } from "../../../DMS/API";
 import Filter from "../../../DMS/Pages/DMSCustomerList/Modals/Filter";
 import LoadingComponents from "../../../Loading/LoadingComponents";
@@ -44,7 +45,6 @@ import "./SaleOut.css";
 const SaleOut = () => {
   // initialize #########################################################################
   const [masterForm] = Form.useForm();
-
   const [detailData, setDetailData] = useState([]);
   const [detailColums, setDetailColums] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -76,8 +76,6 @@ const SaleOut = () => {
   const currentSaleOutDetail = useSelector(getCurrentSaleOutDetail);
   const finalDetails = useSelector(getFinalDetail);
   const userInfo = useSelector(getUserInfo);
-
-  const detailTable = useRef();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState([
@@ -182,13 +180,17 @@ const SaleOut = () => {
   const handleSaveDetailForm = async (items) => {
     try {
       await masterForm.validateFields();
-      detailTable.current.getData();
+      emitter.emit("HANDLE_SAVE_SALE_OUT", {});
     } catch (error) {
+      onStepsChange(0);
       return;
     }
   };
 
   const onStepsChange = (step) => {
+    emitter.on("SET_SALE_ORDER_STEP", (newStep) => {
+      setCurrentStep(newStep);
+    });
     setCurrentStep(step);
   };
 
@@ -253,7 +255,7 @@ const SaleOut = () => {
   useEffect(() => {
     setLoading(true);
     getdata();
-  }, [JSON.stringify(tableParams), JSON.stringify(pagination)]);
+  }, [JSON.stringify(tableParams), pagination]);
 
   // Khi chọn khách sẽ load dữ liệu detail
   useEffect(() => {
@@ -441,7 +443,6 @@ const SaleOut = () => {
                         data={detailData}
                         Action={action}
                         Tablecolumns={detailColums}
-                        ref={detailTable}
                       />
                     </div>
                   </div>

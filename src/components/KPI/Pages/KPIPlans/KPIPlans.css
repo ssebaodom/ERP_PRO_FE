@@ -1,0 +1,19 @@
+.KPI__Employees__container {
+    grid-template-columns: repeat(auto-fill, 275px);
+}
+
+.KPI__Employee {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+}
+
+.KPI__Employee:active {
+    background: #E2E4EE;
+    transform: translate(0%, -7%);
+}
+
+.KPI__Employee__avartar {
+    text-align: center;
+}

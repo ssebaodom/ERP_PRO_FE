@@ -23,26 +23,17 @@ function App() {
   };
 
   return (
-    <>
+    <div className="app-container">
       {!jwt.checkExistToken() ? <Navigate to="/login" replace={true} /> : ""}
-      {router.state.location.pathname == "/" && jwt.checkExistToken() ? (
+      {router.state.location.pathname == "/" && jwt.checkExistToken() && (
         <Navigate to="Dashboard" replace={true} />
-      ) : (
-        ""
       )}
+
+      <Navbar />
       <div className="App" style={isBackgound ? backgroundStyled : {}}>
-        <Navbar />
-        <div
-          style={{
-            height: "60px",
-            lineHeight: "60px",
-            pointerEvents: "none",
-            userSelect: "none",
-          }}
-        ></div>
         <Outlet />
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,6 +1,7 @@
 import { Checkbox, Image } from "antd";
 import dayjs from "dayjs";
 import React from "react";
+import { shallowEqual } from "react-redux";
 import { datetimeFormat } from "../Options/DataFomater";
 
 const renderColumns = (columns = [], sorter) => {
@@ -33,6 +34,9 @@ const renderColumns = (columns = [], sorter) => {
           }
         : false,
       align: getAlignment(item),
+      shouldCellUpdate: (record, prevRecord) => {
+        return !shallowEqual(record, prevRecord);
+      },
       render: (data) => {
         if (item.type === "Datetime") {
           if (dayjs(data).isValid()) {

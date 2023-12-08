@@ -315,7 +315,7 @@ const ModalAddTaskSchedule = ({
             keyCode="deptName"
             label="Bộ phận"
             placeHolderCode={`Nhập bộ phận`}
-            required={true}
+            required={false}
           />
 
           <FormSelect
@@ -342,27 +342,6 @@ const ModalAddTaskSchedule = ({
             placeHolderCode={`Chọn đơn vị`}
             required={true}
           />
-
-          <Space direction="vertical" style={{ flex: "none" }}>
-            <span className="default_bold_label">Loại lịch</span>
-            <Form.Item
-              style={{ flex: "none" }}
-              name="scheduleType"
-              rules={[{ required: true, message: "Chọn loại" }]}
-              initialValue={"0"}
-            >
-              <Select
-                placeholder="Chọn loại"
-                style={{ width: "210px" }}
-                options={[
-                  { value: "0", label: "Một lần" },
-                  { value: "1", label: "Hàng ngày" },
-                  { value: "2", label: "Hàng tuần" },
-                  { value: "3", label: "Hàng tháng" },
-                ]}
-              />
-            </Form.Item>
-          </Space>
         </div>
 
         <div
@@ -373,6 +352,26 @@ const ModalAddTaskSchedule = ({
             <span className="default_bold_label">Lịch</span>
           </div>
           <div className="default_modal_group_items">
+            <Space direction="vertical" style={{ flex: "none" }}>
+              <span className="default_bold_label">Loại lịch</span>
+              <Form.Item
+                style={{ flex: "none" }}
+                name="scheduleType"
+                rules={[{ required: true, message: "Chọn loại" }]}
+                initialValue={"0"}
+              >
+                <Select
+                  placeholder="Chọn loại"
+                  style={{ width: "210px" }}
+                  options={[
+                    { value: "0", label: "Một lần" },
+                    { value: "1", label: "Hàng ngày" },
+                    { value: "2", label: "Hàng tuần" },
+                    { value: "3", label: "Hàng tháng" },
+                  ]}
+                />
+              </Form.Item>
+            </Space>
             <Space direction="vertical">
               <span className="default_bold_label">Ngày định kỳ</span>
               <Form.Item name="periodicalDay">

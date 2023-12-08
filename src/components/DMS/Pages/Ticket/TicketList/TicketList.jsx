@@ -90,6 +90,27 @@ const TicketList = () => {
     setLoading(true);
     ApiGetTicketList({ ...tableParams, ...pagination }).then((res) => {
       let layout = renderColumns(res?.data?.reportLayoutModel);
+
+      //group table
+      // layout.map((item) => {
+      //   if (item.dataIndex == "ten_loai") {
+      //     item.onCell = (_, index) => {
+      //       if (index === 3) {
+      //         return {
+      //           rowSpan: 2,
+      //         };
+      //       }
+      //       if (index === 4) {
+      //         return {
+      //           rowSpan: 0,
+      //         };
+      //       }
+
+      //       return {};
+      //     };
+      //   }
+      // });
+
       layout.push({
         title: "Chức năng",
         dataIndex: "",

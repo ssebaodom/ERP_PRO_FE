@@ -7,7 +7,6 @@
     padding: 10px;
     background: #fff;
     color: black;
-    position: fixed;
     width: 100vw;
     z-index: 3;
 }
@@ -162,26 +161,38 @@
     cursor: pointer;
 }
 
-
 .modal_home_search .search_modal_search_bar {
     text-align: center;
     margin-bottom: 20px;
-    margin-right: 20px;
 }
 
 .modal_home_search .modal_search_results {
+    height: 300px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-auto-rows: max-content;
     justify-content: center;
-    align-items: center;
+    align-items: baseline;
     gap: 20px;
     transition: all ease 0.3s;
+    overflow-y: auto;
+    padding: 0px 6px;
+}
+
+.modal_search_results p {
+    text-align: center;
+    font-weight: bold;
+    color: rgba(22, 119, 255, 0.8);
+    font-size: 30px;
 }
 
 .modal_home_search .modal_search_results_item {
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     background-color: rgba(22, 119, 255, 0.1);
     border-radius: 10px;
-    min-height: 50px;
     padding: 10px 20px;
     transition: 0.2s all ease;
 }

@@ -9,6 +9,7 @@
   --success: #26C57F;
   --warnning: #F57A20;
   --info: #4779CF;
+  --primary_color: #F58220
 }
 
 @font-face {
@@ -68,6 +69,15 @@ body {
 .danger_text_color {
   color: red !important;
 }
+
+.success_text_color {
+  color: #26C57F !important;
+}
+
+.warnning_text_color {
+  color: var(--warnning) !important;
+}
+
 
 
 .default_header_label {
@@ -318,8 +328,9 @@ body {
   flex-direction: row;
   padding: 0px 10px;
   border-radius: 10px;
-  max-height: 88vh;
-  min-height: 88vh;
+  height: 100%;
+  padding-top: 10px;
+  padding-bottom: 20px;
 }
 
 .default_table_row td {
@@ -417,17 +428,19 @@ body {
 }
 
 .page_default {
+  height: calc(100vh - 50px);
   padding: 0 30px;
+  padding-top: 10px;
+  padding-bottom: 20px;
 }
 
 .default_list_layout {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  height: 88vh;
+  height: 100%;
   overflow-y: hidden;
 }
-
 
 .tools_bar_default {
   display: flex;
@@ -1050,10 +1063,21 @@ body {
   /* Safari and Chrome */
 }
 
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+.deselect_button {
+  cursor: pointer;
+}
 
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+  -webkit-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  border-radius: 2px;
+
+}
+
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 ::-webkit-scrollbar-track {
@@ -1061,6 +1085,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--light_blue);
-  border-radius: 50px;
+  width: 8px;
+  min-height: 15px;
+  background: rgba(50, 50, 50, 0.3) !important;
+  -webkit-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5) !important;
+
 }

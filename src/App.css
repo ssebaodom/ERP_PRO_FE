@@ -1,11 +1,10 @@
-.App {
-    height: 100vh;
-    overflow: auto;
+.app-container {
     background-color: #f4f5fa;
     scroll-behavior: smooth;
-    /* 
-    background-image: url('https://images-cdn.welcomesoftware.com/Zz03ZTY0Mzk3MDhlNDgxMWViYmRmNWY3MjZjM2QxZTdiZg==');
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover; */
+}
+
+.App {
+    height: calc(100vh - 50px);
+    overflow: auto;
+    scroll-behavior: smooth;
 }

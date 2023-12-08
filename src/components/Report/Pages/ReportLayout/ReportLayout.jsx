@@ -5,7 +5,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 const reportLayout = [
   {
     key: "0",
-    label: "Báo cáo",
+    label: "Checkin",
     data: "Báo cáo",
     icon: "pi pi-unlock",
     children: [
@@ -17,20 +17,20 @@ const reportLayout = [
       },
     ],
   },
-  {
-    key: "1",
-    label: "Tài khoản",
-    data: "Events Folder",
-    icon: "pi pi-id-card",
-    children: [
-      {
-        key: "1-0",
-        label: "Tạo tài khoản",
-        icon: "pi pi-user-plus",
-        data: "Accounts",
-      },
-    ],
-  },
+  // {
+  //   key: "1",
+  //   label: "Tài khoản",
+  //   data: "Events Folder",
+  //   icon: "pi pi-id-card",
+  //   children: [
+  //     {
+  //       key: "1-0",
+  //       label: "Tạo tài khoản",
+  //       icon: "pi pi-user-plus",
+  //       data: "Accounts",
+  //     },
+  //   ],
+  // },
 ];
 
 const ReportLayout = () => {

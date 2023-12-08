@@ -120,12 +120,12 @@ const ModalClassifyCustomer = (props) => {
             </span>
             <Form.Item
               name="classifyCode"
-              rules={[{ required: true, message: "Điền mã tuyến" }]}
+              rules={[{ required: true, message: "Điền mã loại" }]}
             >
               <Input
                 disabled={disableFields}
                 onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
-                placeholder="Nhập mã tuyến"
+                placeholder="Nhập mã loại"
               />
             </Form.Item>
           </div>
@@ -137,9 +137,9 @@ const ModalClassifyCustomer = (props) => {
             </span>
             <Form.Item
               name="classifyName"
-              rules={[{ required: true, message: "Điền tên tuyến" }]}
+              rules={[{ required: true, message: "Điền tên loại" }]}
             >
-              <Input placeholder="Nhập tên tuyến" />
+              <Input placeholder="Nhập tên loại" />
             </Form.Item>
           </div>
         </div>
