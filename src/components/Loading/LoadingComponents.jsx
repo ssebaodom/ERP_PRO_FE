@@ -1,4 +1,3 @@
-import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 import PropTypes from "prop-types";
 import React, { memo } from "react";
@@ -8,16 +7,8 @@ const LoadingComponents = ({ size, loading, text }) => {
   return (
     <div className="loading__component">
       {text ? <p>{text}</p> : <p>Không có dữ liệu</p>}
-      <Spin
-        indicator={
-          <LoadingOutlined
-            style={{
-              fontSize: size ? size : 30,
-            }}
-            spin
-          />
-        }
-      />
+
+      <Spin className="mt-2" size="default" />
     </div>
   );
 };

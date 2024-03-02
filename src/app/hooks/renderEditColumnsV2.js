@@ -34,7 +34,10 @@ const renderEditColumnsV2 = (columns, action) => {
         inputType: item.type,
         dataIndex: item.dataIndex,
         title: item.title,
-        editing: action == formStatus.VIEW ? false : true,
+        editing:
+          action == formStatus.VIEW || action == formStatus.SAVED
+            ? false
+            : true,
         controller: item?.controller,
         reference: item?.reference,
         required: item?.required,

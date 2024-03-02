@@ -81,16 +81,17 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }) => {
   ///////////////////////////////////////////////////////////////////////////////////////
 
   const scrollToField = (field, fieldName) => {
-    if (Action != formStatus.VIEW) {
+    if (Action !== formStatus.VIEW) {
       const allFields = detailForm.getFieldsValue(true);
-
       if (!fieldName) {
         const itemFocusName = Object.keys(allFields)
           .filter((item) => item.includes(field))
           .pop();
         document.getElementById(itemFocusName).focus();
+        document.getElementById(itemFocusName).scrollIntoView();
       } else {
         document.getElementById(fieldName).focus();
+        document.getElementById(fieldName).scrollIntoView();
       }
     }
   };
@@ -259,17 +260,16 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }) => {
     }
   }, [isChecked]);
 
-  useEffect(() => {
-    emitter.on("HANDLE_SAVE_SALE_OUT", async () => {
-      try {
-        await detailForm.validateFields();
-        await BtnSave();
-        setIsChecked(true);
-      } catch (error) {
-        emitter.emit("SET_SALE_ORDER_STEP", 1);
-      }
-    });
-  }, []);
+  emitter.on("HANDLE_SAVE_SALE_OUT", async () => {
+    try {
+      await detailForm.validateFields();
+      await BtnSave();
+      setIsChecked(true);
+    } catch (error) {
+      await emitter.emit("SET_SALE_ORDER_STEP", 1);
+      scrollToField("", error?.errorFields[0]?.name[0]);
+    }
+  });
 
   return (
     <div

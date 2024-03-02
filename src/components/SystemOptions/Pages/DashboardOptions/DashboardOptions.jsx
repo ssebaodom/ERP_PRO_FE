@@ -1,11 +1,18 @@
-import { Button, Checkbox, Divider, notification, Popover, Select } from "antd";
-import React, { useState } from "react";
-import SimpleCharts from "../../../../pages/Dashboard/Pages/SimpleCharts/SimpleCharts";
-import Statistics from "../../../../pages/Dashboard/Pages/Statistics/Statistics";
-import { SIMPLECHARTS, STATISTICS_ICONS } from "../../../../utils/constants";
+import { notification, Popover, Select } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  SIMPLECHARTS,
+  SIMPLECHARTS_LIMIT,
+  SIMPLECHARTS_MIN,
+  STATISTICS_ICONS,
+  STATISTICS_LIMIT,
+  STATISTICS_MIN,
+} from "../../../../utils/constants";
+import emitter from "../../../../utils/emitter";
 import jwt from "../../../../utils/jwt";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import "./DashboardOptions.css";
+import TransferForm from "./Transfer/TransferForm";
 
 const DashboardOptions = () => {
   const [statisticSelected, setstatisticSelected] = useState(
@@ -36,35 +43,28 @@ const DashboardOptions = () => {
     );
   };
 
-  const handleSelect = (checked, item) => {
-    if (checked) {
-      setstatisticSelected([...statisticSelected, item]);
-    } else {
-      setstatisticSelected(
-        statisticSelected.filter((selected) => selected !== item)
-      );
-    }
-  };
-
-  const handleSimpleChartSelect = (checked, item) => {
-    if (checked) {
-      setSimpleChartSelected([...simpleChartSelected, item]);
-    } else {
-      setSimpleChartSelected(
-        simpleChartSelected.filter((selected) => selected !== item)
-      );
-    }
-  };
-
   const handleSave = () => {
-    jwt.setStatisticboardSetting(statisticSelected);
-    jwt.setSimpleChartboardSetting(simpleChartSelected);
-    jwt.setDashboardReport(reportSelected);
+    // jwt.setStatisticboardSetting(statisticSelected);
+    // jwt.setSimpleChartboardSetting(simpleChartSelected);
+    // jwt.setDashboardReport(reportSelected);
 
     notification.success({
       message: `Thực hiện thành công`,
     });
   };
+
+  useEffect(() => {
+    emitter.on("SAVE_STATISTICS_LAYOUT", (data) => {
+      console.log("SAVE_STATISTICS_LAYOUT", data);
+      jwt.setStatisticboardSetting(data);
+    });
+
+    emitter.on("SAVE_SIMPLECHARTS_LAYOUT", (data) => {
+      console.log("SAVE_SIMPLECHARTS_LAYOUT", data);
+      jwt.setSimpleChartboardSetting(data);
+    });
+    return () => {};
+  }, []);
 
   return (
     <div>
@@ -78,46 +78,26 @@ const DashboardOptions = () => {
                 <span className="primary_bold_text">
                   {statisticSelected.length}
                 </span>
-                /4)
+                /{STATISTICS_LIMIT})
               </span>
             }
           />
         </div>
       </Popover>
 
-      <div className="Dashboard__statistics_list">
-        {Object.keys(STATISTICS_ICONS).map((item, index) => (
-          <div
-            key={index}
-            className={`p-2 Dashboard__statistics ${
-              statisticSelected.findIndex((arr) => item == arr) >= 0
-                ? "Dashboard__statistics__selected"
-                : ""
-            }`}
-          >
-            <div className="flex justify-content-between align-items-center">
-              <span className="primary_bold_text">
-                {STATISTICS_ICONS[item].title}
-              </span>
-              <Checkbox
-                defaultChecked={
-                  jwt
-                    .getStatistictboardSetting()
-                    .findIndex((arr) => item == arr) >= 0
-                }
-                disabled={
-                  statisticSelected.findIndex((arr) => item == arr) < 0 &&
-                  statisticSelected.length >= 4
-                }
-                onChange={(checkbox) => {
-                  handleSelect(checkbox.target.checked, item);
-                }}
-              ></Checkbox>
-            </div>
-            <Divider className="mb-2" style={{ margin: "5px 0px" }} />
-            <Statistics type={item} />
-          </div>
-        ))}
+      <div className="w-full">
+        <TransferForm
+          dataset={Object.keys(STATISTICS_ICONS).map((item, index) => {
+            return {
+              key: item,
+              title: STATISTICS_ICONS[item].title,
+            };
+          })}
+          eventId={"SAVE_STATISTICS_LAYOUT"}
+          limit={STATISTICS_LIMIT}
+          min={STATISTICS_MIN}
+          selectedKeys={jwt.getStatistictboardSetting()}
+        />
       </div>
 
       <Popover content={content("simpleChart")} trigger="hover">
@@ -137,43 +117,19 @@ const DashboardOptions = () => {
         </div>
       </Popover>
 
-      <div className="Dashboard__simple__chart__list">
-        {Object.keys(SIMPLECHARTS).map((item, index) => (
-          <div
-            key={index}
-            className={`p-2 Dashboard__statistics ${
-              simpleChartSelected.findIndex((arr) => item == arr) >= 0
-                ? "Dashboard__statistics__selected"
-                : ""
-            }`}
-          >
-            <div className="flex justify-content-between align-items-center">
-              <span className="primary_bold_text">
-                {SIMPLECHARTS[item].title}
-              </span>
-              <Checkbox
-                defaultChecked={
-                  jwt
-                    .getSimpleChartboardSetting()
-                    .findIndex((arr) => item == arr) >= 0
-                }
-                disabled={
-                  simpleChartSelected.findIndex((arr) => item == arr) < 0 &&
-                  simpleChartSelected.length >= 4
-                }
-                onChange={(checkbox) => {
-                  handleSimpleChartSelect(checkbox.target.checked, item);
-                }}
-              ></Checkbox>
-            </div>
-            <Divider className="mb-2" style={{ margin: "5px 0px" }} />
-            <SimpleCharts
-              type={SIMPLECHARTS[item].type}
-              title={SIMPLECHARTS[item].title}
-              key={SIMPLECHARTS[item].store}
-            />
-          </div>
-        ))}
+      <div className="w-full">
+        <TransferForm
+          dataset={Object.keys(SIMPLECHARTS).map((item, index) => {
+            return {
+              key: item,
+              title: SIMPLECHARTS[item].title,
+            };
+          })}
+          eventId={"SAVE_SIMPLECHARTS_LAYOUT"}
+          limit={SIMPLECHARTS_LIMIT}
+          min={SIMPLECHARTS_MIN}
+          selectedKeys={jwt.getSimpleChartboardSetting()}
+        />
       </div>
 
       <div className="w-fit mb-2">
@@ -211,12 +167,6 @@ const DashboardOptions = () => {
             ]}
           />
         </div>
-      </div>
-
-      <div className="w-full text-center">
-        <Button onClick={handleSave} className="mt-2" type={"primary"}>
-          Lưu
-        </Button>
       </div>
     </div>
   );

@@ -26,4 +26,13 @@ const addNewRow = (columns) => {
   return newRow;
 };
 
+const cloneRows = (columns, rows) => {
+  return rows.map((row) => {
+    row.key = uuidv4();
+    return row;
+  });
+};
+
+export { cloneRows };
+
 export default addNewRow;

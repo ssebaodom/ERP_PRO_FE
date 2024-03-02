@@ -7,6 +7,7 @@ import { approveItemsReducer } from "../components/Items/Store/Slices/ApproveIte
 import { itemsListReducer } from "../components/Items/Store/Slices/Item";
 import { KPIPerformReducer } from "../components/KPI/Store/Slices/KPIPerforms";
 import { KPIPlansReducer } from "../components/KPI/Store/Slices/KPIPlans";
+import { saleOrderReducer } from "../components/SaleOrder/Store/Slice/SaleOrderSlice";
 import { saleoutDetailsReducer } from "../components/SaleOrder/Store/Slice/SaleOutSlice";
 import { AccountsReducer } from "../components/SystemOptions/Store/Reducers/Reducers";
 import claimsReducer from "./reducers/claimsSlice";
@@ -29,6 +30,7 @@ const store = configureStore({
     itemsListReducer,
     KPIPerformReducer,
     KPIPlansReducer,
+    saleOrderReducer,
   },
 });
 

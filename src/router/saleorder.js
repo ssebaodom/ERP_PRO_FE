@@ -1,3 +1,4 @@
+import SaleOrder from "../components/SaleOrder/Pages/SaleOrder/SaleOrder";
 import SaleOut from "../components/SaleOrder/Pages/SaleOut/SaleOut";
 
 const SORoutes = [
@@ -14,6 +15,13 @@ const SORoutes = [
     parent: "SO",
     path: "SO/SaleOut",
     element: <SaleOut />,
+  },
+  {
+    label: "Đơn bán lẻ",
+    claims: "Permissions.SO.SaleOrder",
+    parent: "SO",
+    path: "SO/SaleOrder",
+    element: <SaleOrder />,
   },
 ];
 

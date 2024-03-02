@@ -49,6 +49,9 @@ const themeComponents = {
       colorPrimaryHover: "rgb(71, 121, 207)",
       colorPrimaryBorder: "rgb(71, 121, 207)",
     },
+    Transfer: {
+      listWidth: "100%",
+    },
   },
 };
 

@@ -93,17 +93,15 @@ const ProgessChart = () => {
             </React.Fragment>
           )}
         ></ProgressBar>
-        <div className="KPI__detail__container">
-          <p className="KPI__detail__label">Bạn đã hoàn thành</p>
-          <p className="KPI__detail__value primary_bold_text">
-            {item.thuc_hien}
-          </p>
+        <div className="clear-both">
+          <p className="text-float-left">Bạn đã hoàn thành</p>
+          <p className="text-float-right primary_bold_text">{item.thuc_hien}</p>
         </div>
-        <div className="KPI__detail__container">
-          <p className="KPI__detail__label">Tương ứng với</p>
-          <p className="KPI__detail__value primary_bold_text">{item.ty_le} %</p>
+        <div className="clear-both">
+          <p className="text-float-left">Tương ứng với</p>
+          <p className="text-float-right primary_bold_text">{item.ty_le} %</p>
         </div>
-        <div className="KPI__detail__container">
+        <div className="clear-both">
           <span className="dark_grey_text_color">
             Cuộc sống vốn là 1 cuộc thi chạy <br></br>
             Cụ thể đó là chạy{" "}

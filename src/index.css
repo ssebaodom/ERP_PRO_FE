@@ -70,6 +70,10 @@ body {
   color: red !important;
 }
 
+.warning_text_color {
+  color: var(--warnning) !important;
+}
+
 .success_text_color {
   color: #26C57F !important;
 }
@@ -585,7 +589,7 @@ body {
 
 .default_table_header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   border-bottom: 1.5px solid rgb(226, 228, 238);
   padding: 10px 0px;
@@ -647,6 +651,8 @@ body {
   user-select: none;
   white-space: nowrap;
 }
+
+
 
 /* .default_table table tr th {
   border: none !important;
@@ -723,7 +729,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .default_detail_table .ant-spin-nested-loading,
@@ -750,6 +756,11 @@ body {
 
 .default_detail_table .ant-table-content {
   background: var(--detail_bg_color);
+}
+
+.default_detail_table .ant-table-cell.ant-table-cell-scrollbar {
+  box-shadow: none !important;
+  background: inherit !important;
 }
 
 .default_pagination_bar {
@@ -1065,6 +1076,15 @@ body {
 
 .deselect_button {
   cursor: pointer;
+}
+
+
+.line-height-22 {
+  line-height: 22px !important;
+}
+
+.flex-wrap {
+  flex-wrap: wrap !important;
 }
 
 ::-webkit-scrollbar {

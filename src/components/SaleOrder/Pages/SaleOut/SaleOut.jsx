@@ -31,6 +31,7 @@ import { SoFuckingUltimateApi } from "../../API";
 import {
   fetchSaleOutDetail,
   fetchSaleOutMaster,
+  setFinalDetails,
 } from "../../Store/Sagas/Sagas";
 import {
   getCurrentSaleOutDetail,
@@ -177,12 +178,29 @@ const SaleOut = () => {
     console.log(items);
   };
 
+  const scrollToField = (field, fieldName) => {
+    if (action != formStatus.VIEW) {
+      const allFields = masterForm.getFieldsValue(true);
+      if (!fieldName) {
+        const itemFocusName = Object.keys(allFields)
+          .filter((item) => item.includes(field))
+          .pop();
+        document.getElementById(itemFocusName).focus();
+        document.getElementById(itemFocusName).scrollIntoView();
+      } else {
+        document.getElementById(fieldName).focus();
+        document.getElementById(fieldName).scrollIntoView();
+      }
+    }
+  };
+
   const handleSaveDetailForm = async (items) => {
     try {
       await masterForm.validateFields();
       emitter.emit("HANDLE_SAVE_SALE_OUT", {});
     } catch (error) {
       onStepsChange(0);
+      scrollToField("", error?.errorFields[0]?.name[0]);
       return;
     }
   };
@@ -296,6 +314,9 @@ const SaleOut = () => {
     if (finalDetails.length > 0) {
       onSubmitForm();
     }
+    return () => {
+      setFinalDetails([]);
+    };
   }, [finalDetails]);
 
   return (

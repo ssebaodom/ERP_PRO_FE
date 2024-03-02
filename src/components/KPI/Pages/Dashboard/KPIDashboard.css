@@ -102,15 +102,15 @@
     width: 350px;
 }
 
-.KPI__detail__container {
+.clear-both {
     clear: both;
 }
 
-.KPI__detail__label {
+.text-float-left {
     float: left;
     position: relative;
 }
 
-.KPI__detail__value {
+.text-float-right {
     float: right;
 }

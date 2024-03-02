@@ -44,7 +44,7 @@ const Filter = (props) => {
         onFinish={onSubmitForm}
         className="default_filter_form"
       >
-        <div className="default_modal_container" style={{ padding: "0" }}>
+        <div className="default_modal_container" style={{ overflowY: "auto" }}>
           <div className="default_modal_group_items">
             <FormSelectDetail
               width={100}

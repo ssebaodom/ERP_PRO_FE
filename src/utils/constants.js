@@ -12,6 +12,7 @@ export const formStatus = {
   ADD: "ADD",
   EDIT: "EDIT",
   VIEW: "VIEW",
+  SAVED: "SAVED",
 };
 
 export const FILE_EXTENSION = {
@@ -20,7 +21,8 @@ export const FILE_EXTENSION = {
   CSV: "CSV",
   OTHER: "OTHER",
 };
-
+export const STATISTICS_LIMIT = 4;
+export const STATISTICS_MIN = 4;
 export const STATISTICS_ICONS = {
   SO: {
     title: "Đơn hàng bán",
@@ -43,20 +45,21 @@ export const STATISTICS_ICONS = {
     icon: location,
   },
 };
-
+export const SIMPLECHARTS_LIMIT = 4;
+export const SIMPLECHARTS_MIN = 1;
 export const SIMPLECHARTS = {
   SO: {
     title: "Đơn hàng bán",
-    type: "column",
+    type: "bar",
     store: "",
   },
   FS: {
     title: "Doanh thu",
-    type: "column",
+    type: "bar",
   },
   NB: {
     title: "Khách hàng mới",
-    type: "column",
+    type: "bar",
     store: "",
   },
   MC: {
@@ -70,3 +73,18 @@ export const SIMPLECHARTS = {
     store: "",
   },
 };
+
+export const CHARTCOLORS = [
+  "#8BC1F7",
+  "#519DE9",
+  "#06C",
+  "#7CC674",
+  "#4CB140",
+  "#3ba272",
+  "#009596",
+  "#B2B0EA",
+  "#8481DD",
+  "#F6D173",
+  "#F0AB00",
+  "#C9190B",
+];

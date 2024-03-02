@@ -33,4 +33,12 @@ const getAllValueByRow = (rowKey, allColumns) => {
   return allValues;
 };
 
-export { getAllValueByColumn, getAllValueByRow };
+const getAllRowKeys = (allColumns) => {
+  const allKeys = Object.keys(allColumns).map((item) => {
+    return item.substring(0, item.indexOf("_"));
+  });
+
+  return _.union(allKeys);
+};
+
+export { getAllValueByColumn, getAllValueByRow, getAllRowKeys };

@@ -1,5 +1,3 @@
-import { Column } from "@ant-design/plots";
-import { Progress } from "antd";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -10,58 +8,10 @@ import dashboard__hi from "../../../Icons/dashboard__hi.svg";
 import location from "../../../Icons/location.svg";
 import { getUserInfo } from "../../../store/selectors/Selectors";
 import "./Dashboard.css";
+import SimpleCharts from "./SimpleCharts/SimpleCharts";
 
 const Dashboard = () => {
   const userInfo = useSelector(getUserInfo);
-
-  const color = ["#E2E4EE", "#D5D7E2", "#4779CF"];
-  const data = [
-    {
-      month: "1",
-      sales: 38,
-      index: 1,
-    },
-    {
-      month: "2",
-      sales: 48,
-      index: 2,
-    },
-    {
-      month: "3",
-      sales: 58,
-      index: 3,
-    },
-  ];
-
-  const config = {
-    data,
-    xField: "month",
-    yField: "sales",
-    columnStyle: {
-      radius: [10, 10, 0, 0],
-    },
-    color: ({ month }) => {
-      var curColor = "";
-      data.map((item, index) => {
-        if (item.month === month) {
-          return (curColor = color[index]);
-        }
-      });
-      return curColor;
-    },
-
-    tooltip: {
-      showTitle: false,
-      formatter: (data) => {
-        return { name: `Tháng: ${data.month}`, value: `${data.sales} đơn` };
-      },
-      domStyles: {
-        "g2-tooltip": {
-          width: "max-content",
-        },
-      },
-    },
-  };
 
   const navigate = useNavigate();
 
@@ -125,102 +75,8 @@ const Dashboard = () => {
         </div>
       </div>
       <div className="dashboard__simple__chart__container">
-        <span className="default_header_label">Số liệu chung</span>
-        <div className="dashboard__simple__chart__items__container">
-          <div className="dashboard__simple__chart__tag">
-            <div className="dashboard__simple__chart__tag__title">
-              Đơn hàng bán
-            </div>
-            <div className="dashboard__simple__chart__tag__details">
-              <div className="dashboard__simple__chart__tag__details__chart">
-                <Column className="dashboard__simple__chart" {...config} />
-              </div>
-              <div className="dashboard__simple__chart__tag__details__data">
-                <p>
-                  <span className="dashboard__general__statistic__data">
-                    100{" "}
-                  </span>{" "}
-                  Đơn
-                </p>
-                <p>
-                  <span>*</span> {-3.5} %
-                </p>
-                <p>Tháng trước {" 69,96 tỷ"}</p>
-              </div>
-            </div>
-          </div>
-          <div className="dashboard__simple__chart__tag">
-            <div className="dashboard__simple__chart__tag__title">
-              Doanh thu
-            </div>
-            <div className="dashboard__simple__chart__tag__details">
-              <div className="dashboard__simple__chart__tag__details__chart">
-                <Column className="dashboard__simple__chart" {...config} />
-              </div>
-              <div className="dashboard__simple__chart__tag__details__data">
-                <p>
-                  <span className="dashboard__general__statistic__data">
-                    100{" "}
-                  </span>{" "}
-                  Đơn
-                </p>
-                <p>
-                  <span>*</span> 3.5%
-                </p>
-                <p>Tháng trước {" 69,96 tỷ"}</p>
-              </div>
-            </div>
-          </div>
-          <div className="dashboard__simple__chart__tag">
-            <div className="dashboard__simple__chart__tag__title">
-              Khách hàng mới
-            </div>
-            <div className="dashboard__simple__chart__tag__details">
-              <div className="dashboard__simple__chart__tag__details__chart">
-                <Column className="dashboard__simple__chart" {...config} />
-              </div>
-              <div className="dashboard__simple__chart__tag__details__data">
-                <p>
-                  <span className="dashboard__general__statistic__data">
-                    100{" "}
-                  </span>{" "}
-                  Đơn
-                </p>
-                <p>
-                  <span>*</span> 3.5%
-                </p>
-                <p>Tháng trước {" 69,96 tỷ"}</p>
-              </div>
-            </div>
-          </div>
-          <div className="dashboard__simple__chart__tag">
-            <div className="dashboard__simple__chart__tag__title">Độ phủ</div>
-            <div className="dashboard__simple__chart__tag__details">
-              <div className="dashboard__simple__chart__tag__details__chart">
-                <Progress
-                  strokeLinecap="round"
-                  type="circle"
-                  size={100}
-                  strokeWidth={13}
-                  showInfo={false}
-                  percent={75}
-                />
-              </div>
-              <div className="dashboard__simple__chart__tag__details__data">
-                <p>
-                  <span className="dashboard__general__statistic__data">
-                    100{" "}
-                  </span>{" "}
-                  Đơn
-                </p>
-                <p>
-                  <span>*</span> 3.5%
-                </p>
-                <p>Tháng trước {" 69,96 tỷ"}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <span className="default_header_label">Báo cáo nhanh</span>
+        <SimpleCharts />
       </div>
       <div className="dashboard__simple__chart__container">
         <span className="default_header_label">Bán hàng</span>

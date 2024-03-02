@@ -138,7 +138,7 @@ const DashboardReport = () => {
         />
       </div>
       <Calendar
-        mode="month"
+        mode={"month"}
         style={{ width: "28rem", height: "max-content" }}
         fullscreen={false}
         onChange={(e) => console.log(dayjs(e).format("DD/MM/YYYY"))}

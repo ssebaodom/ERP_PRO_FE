@@ -42,22 +42,22 @@ const KPIPlans = () => {
               />
             </div>
             <div>
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Nhân viên: </p>
-                <p className="KPI__detail__value primary_bold_text">
+              <div className="clear-both">
+                <p className="text-float-left">Nhân viên: </p>
+                <p className="text-float-right primary_bold_text">
                   Mạch Hải Hưng
                 </p>
               </div>
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Đơn vị: </p>
-                <p className="KPI__detail__value primary_bold_text">
+              <div className="clear-both">
+                <p className="text-float-left">Đơn vị: </p>
+                <p className="text-float-right primary_bold_text">
                   Công ty SSE
                 </p>
               </div>
 
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Số kế hoạch: </p>
-                <p className="KPI__detail__value primary_bold_text">5</p>
+              <div className="clear-both">
+                <p className="text-float-left">Số kế hoạch: </p>
+                <p className="text-float-right primary_bold_text">5</p>
               </div>
             </div>
           </div>

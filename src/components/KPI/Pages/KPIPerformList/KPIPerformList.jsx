@@ -43,19 +43,19 @@ const KPIPerformList = () => {
                 }}
                 value={Math.floor(Math.random() * 1000000) + 100}
               />
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Nhân viên: </p>
-                <p className="KPI__detail__value primary_bold_text">
+              <div className="clear-both">
+                <p className="text-float-left">Nhân viên: </p>
+                <p className="text-float-right primary_bold_text">
                   Mạch Hải Hưng
                 </p>
               </div>
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Hiệu lực: </p>
-                <p className="KPI__detail__value primary_bold_text">10/2023</p>
+              <div className="clear-both">
+                <p className="text-float-left">Hiệu lực: </p>
+                <p className="text-float-right primary_bold_text">10/2023</p>
               </div>
-              <div className="KPI__detail__container">
-                <p className="KPI__detail__label">Kế hoạch :</p>
-                <p className="KPI__detail__value primary_bold_text">1000000</p>
+              <div className="clear-both">
+                <p className="text-float-left">Kế hoạch :</p>
+                <p className="text-float-right primary_bold_text">1000000</p>
               </div>
             </div>
             <div>

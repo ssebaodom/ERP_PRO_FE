@@ -101,7 +101,9 @@ const RenderEditCell = (cell, form, addRow) => {
       break;
 
     default:
-      inputNode = <Input className="default_input_detail" />;
+      inputNode = (
+        <Input onKeyDown={handleKeypress} className="default_input_detail" />
+      );
       break;
   }
 

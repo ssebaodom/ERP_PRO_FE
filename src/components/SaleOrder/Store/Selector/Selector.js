@@ -9,3 +9,7 @@ export const getCurrentSaleOutMaster = (state) => {
 export const getFinalDetail = (state) => {
   return state.saleoutDetailsReducer.finalDetails;
 };
+
+export const getSaleOrderInfo = (state) => {
+  return state.saleOrderReducer;
+};

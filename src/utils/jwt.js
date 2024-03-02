@@ -64,8 +64,11 @@ const setStatisticboardSetting = (settings) => {
 
 const getSimpleChartboardSetting = () => {
   return (
-    window.localStorage.getItem(SIMPLECHART_DARDBOARD_SETTINGS)?.split(",") ||
-    []
+    window.localStorage.getItem(SIMPLECHART_DARDBOARD_SETTINGS)?.split(",") || [
+      "SO",
+      "FS",
+      "NB",
+    ]
   );
 };
 
