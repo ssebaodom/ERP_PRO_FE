@@ -3,8 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { formStatus } from "../../../../../utils/constants";
 import emitter from "../../../../../utils/emitter";
-import { setActionSaleOrder } from "../../../Store/Sagas/SaleOrderActions";
+import {
+  addPromotionSaleOrderInfo,
+  resetSaleOrder,
+  setActionSaleOrder,
+  setPromotionSaleOrderInfo,
+} from "../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../Store/Selector/Selector";
+import AddSaleOrderPromotion from "./AddSaleOrderPromotion/AddSaleOrderPromotion";
 
 const PaymentSaleOrder = () => {
   const [promotionList, setPromotionList] = useState([]);
@@ -12,12 +18,20 @@ const PaymentSaleOrder = () => {
   const { action, promotionItemsInfo, loading } = useSelector(getSaleOrderInfo);
 
   const handleDeletePromotionItem = (key) => {
-    setPromotionList(promotionList.filter((item) => item.key !== key) || []);
+    setPromotionSaleOrderInfo(
+      promotionList.filter((item) => item.ma_vt !== key) || []
+    );
+    // setPromotionList(promotionList.filter((item) => item.ma_vt !== key) || []);
   };
 
-  const handleClickTest = async () => {
-    await emitter.emit("HANDLE_SALEORDER_SAVE");
-    await setActionSaleOrder(formStatus.SAVED);
+  const handleAddbutton = async () => {
+    await setActionSaleOrder(formStatus.ADD);
+  };
+
+  const handleSave = async () => {
+    await emitter.emit("HANDLE_SALE_ORDER_SAVE");
+
+    // await setActionSaleOrder(formStatus.SAVED);
   };
 
   useEffect(() => {
@@ -32,15 +46,30 @@ const PaymentSaleOrder = () => {
     return () => {
       setPromotionList([]);
     };
+  }, [promotionItemsInfo]);
+
+  useEffect(() => {
+    emitter.on("HANDLE_ADD_SALE_ORDER_PROMOTION", (item) => {
+      addPromotionSaleOrderInfo(item);
+    });
+    return () => {
+      emitter.removeAllListeners();
+      resetSaleOrder();
+    };
   }, []);
 
-  const promotionItems = () => {
+  const promotionItems = (item) => {
     return (
-      <div className="clear-both line-height-22">
-        <p className="text-float-left text-sm">
-          Kho: <span className="primary_bold_text text-sm"> Tiểu mạch</span>
+      <div>
+        <p>
+          Kho:{" "}
+          <span className="primary_bold_text text-sm">
+            {item?.ten_kho || ""}
+          </span>
         </p>
-        <p className="text-float-right primary_bold_text text-sm">100 thùng</p>
+        <p className=" primary_bold_text">
+          {item?.so_luong || 0} {item?.dvt || ""}
+        </p>
       </div>
     );
   };
@@ -51,7 +80,7 @@ const PaymentSaleOrder = () => {
         <Button
           className="default_button"
           danger
-          onClick={(event) => handleDeletePromotionItem(item?.key)}
+          onClick={(event) => handleDeletePromotionItem(item?.ma_vt)}
         >
           <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
         </Button>
@@ -65,7 +94,14 @@ const PaymentSaleOrder = () => {
         className="w-full h-full min-h-0 p-2 border-round-lg flex flex-column gap-2"
         style={{ background: "white" }}
       >
-        <span className="primary_bold_text">Hàng tặng</span>
+        <div className="flex w-full justify-content-between align-items-center">
+          <span className="primary_bold_text">Hàng tặng</span>
+
+          <AddSaleOrderPromotion
+            emitterEvent={"HANDLE_ADD_SALE_ORDER_PROMOTION"}
+          />
+        </div>
+
         <div className="h-full min-h-0 flex flex-column gap-2">
           <div className="h-full min-h-0 overflow-auto">
             <List
@@ -81,9 +117,9 @@ const PaymentSaleOrder = () => {
                   >
                     <List.Item.Meta
                       className="pr-1"
-                      avatar={<Avatar>{item?.title?.substr(0, 1)}</Avatar>}
-                      title={item.title}
-                      description={promotionItems()}
+                      avatar={<Avatar>{item?.ten_vt?.substr(0, 1)}</Avatar>}
+                      title={item?.ten_vt}
+                      description={promotionItems(item)}
                     />
                   </Popover>
                 </List.Item>
@@ -137,7 +173,7 @@ const PaymentSaleOrder = () => {
             type="primary"
             className="default_primary_button"
             className="default_button"
-            onClick={handleClickTest}
+            onClick={handleSave}
           >
             <i
               className="pi pi-check"
@@ -151,7 +187,7 @@ const PaymentSaleOrder = () => {
         )}
 
         {action !== formStatus.ADD && (
-          <Button className="default_button" onClick={handleClickTest}>
+          <Button className="default_button" onClick={handleAddbutton}>
             <i
               className="pi pi-plus sub_text_color"
               style={{ fontWeight: "bold" }}

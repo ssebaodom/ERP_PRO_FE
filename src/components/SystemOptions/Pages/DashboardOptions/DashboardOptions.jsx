@@ -63,7 +63,9 @@ const DashboardOptions = () => {
       console.log("SAVE_SIMPLECHARTS_LAYOUT", data);
       jwt.setSimpleChartboardSetting(data);
     });
-    return () => {};
+    return () => {
+      emitter.removeAllListeners();
+    };
   }, []);
 
   return (

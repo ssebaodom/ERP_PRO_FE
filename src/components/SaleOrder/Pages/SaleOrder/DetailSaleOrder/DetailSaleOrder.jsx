@@ -6,19 +6,21 @@ import { setSaleOrderCurrentStep } from "../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../Store/Selector/Selector";
 import DetailTableSaleOrder from "./DetailTableSaleOrder/DetailTableSaleOrder";
 import MasterSaleOrder from "./MasterSaleOrder/MasterSaleOrder";
+import ShippingAndPayment from "./ShippingAndPayment/ShippingAndPayment";
+
+const stepItems = [
+  {
+    key: 0,
+    title: "Thông tin đơn hàng",
+  },
+  {
+    key: 1,
+    title: "Thanh toán và vận chuyển",
+  },
+];
 
 const DetailSaleOrder = () => {
   const { loading, currentStep } = useSelector(getSaleOrderInfo);
-  const [stepItems, setstepItems] = useState([
-    {
-      key: 0,
-      title: "Thông tin đơn hàng",
-    },
-    {
-      key: 1,
-      title: "Thanh toán và vận chuyển",
-    },
-  ]);
 
   const [stepButtonDisable, setStepButtonDisable] = useState({
     nextDisabled: true,
@@ -98,13 +100,14 @@ const DetailSaleOrder = () => {
                 <DetailTableSaleOrder />
               </div>
               <div
+                className="h-full min-h-0"
                 style={{
                   display: `${
                     stepItems[currentStep].key == 1 ? "block" : "none"
                   }`,
                 }}
               >
-                step 2
+                <ShippingAndPayment />
               </div>
             </div>
           </>

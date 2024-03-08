@@ -1,32 +1,40 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const saleOrderInitial = {
+  isOpenFilter: false,
   loading: false,
   currentStep: 0,
-  action: "",
+  action: "ADD",
+  saleOrderList: { columns: [], dataSource: [], totalRecords: 0 },
   currentItemId: "",
-  masterInfo: { ma_kh: null, ten_kh: null },
-  detailInfo: [],
-  promotionItemsInfo: [
-    {
-      key: "1",
-      title: "Ant Design Title 1",
-    },
-    {
-      key: "2",
-      title: "Ant Design Title 2",
-    },
-    {
-      key: "3",
-
-      title: "Ant Design Title 3",
-    },
-    {
-      key: "4",
-      title: "Ant Design Title 4",
-    },
-  ],
-  paymentInfo: {},
+  masterInfo: { ma_kh: null, ten_kh: null, ghi_chu: null },
+  detailInfo: { columns: [], data: [] },
+  promotionItemsInfo: [],
+  paymentInfo: {
+    t_tt: 123456,
+    httt: null,
+    stk: null,
+    voucher: null,
+    MST: null,
+    ma_nt: null,
+    han_tt: null,
+    nguoi_nhan: null,
+    dien_thoai: null,
+    dia_chi: null,
+    htvc: null,
+    dv_vc: null,
+    phi_vc: null,
+    ngay_nhan: undefined,
+  },
+  filterInfo: {
+    ma_kh: null,
+    ten_kh: null,
+    dia_chi: null,
+    dien_thoai: null,
+    so_tu: null,
+    so_den: null,
+    searchKey: null,
+  },
 };
 
 const saleOrderSlice = createSlice({
@@ -36,11 +44,18 @@ const saleOrderSlice = createSlice({
     setLoading(state, action) {
       state.loading = action?.payload;
     },
+    setIsOpenFilter(state, action) {
+      state.isOpenFilter = action?.payload;
+    },
     setCurrentStep(state, action) {
       state.currentStep = action?.payload;
     },
     setAction(state, action) {
       state.action = action?.payload;
+    },
+
+    setSaleOrderList(state, action) {
+      state.saleOrderList = action?.payload;
     },
 
     setCurrentItemId(state, action) {
@@ -59,9 +74,11 @@ const saleOrderSlice = createSlice({
       state.promotionItemsInfo = action?.payload;
     },
 
-    setPaymentInfo(state, action) {
+    setPaymentSaleOrderInfo(state, action) {
       state.paymentInfo = action?.payload;
     },
+
+    resetSaleOrder: () => saleOrderInitial,
   },
 });
 

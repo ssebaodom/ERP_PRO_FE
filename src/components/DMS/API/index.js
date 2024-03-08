@@ -60,7 +60,7 @@ export const ApiCreateTaskSchedule = async (payload) => {
 };
 
 export const SoFuckingUltimateApi = async (payload) => {
-  return await https.post(`Selling/UltimateRequest`, payload).then((res) => {
+  return await https.post(`user/UltimateRequest`, payload).then((res) => {
     return res;
   });
 };
@@ -81,7 +81,7 @@ export const SoFuckingUltimateGetApi2 = async (payload) => {
 
 export const UltimatePutDataApi = async (payload) => {
   return await https
-    .post(`Selling/UltimateRequest_tables`, payload)
+    .post(`user/UltimateRequest_tables`, payload)
     .then((res) => {
       return res.data;
     });
@@ -89,7 +89,7 @@ export const UltimatePutDataApi = async (payload) => {
 
 export const UltimatePutDataApi2 = async (payload) => {
   return await https
-    .post(`Selling/UltimateRequest_tables2`, payload)
+    .post(`user/UltimateRequest_tables2`, payload)
     .then((res) => {
       return res.data;
     });

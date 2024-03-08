@@ -319,6 +319,12 @@ const SaleOut = () => {
     };
   }, [finalDetails]);
 
+  useEffect(() => {
+    return () => {
+      emitter.removeAllListeners();
+    };
+  }, []);
+
   return (
     <div
       className="default_list_layout page_default"

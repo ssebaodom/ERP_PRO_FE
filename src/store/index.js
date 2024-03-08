@@ -32,6 +32,10 @@ const store = configureStore({
     KPIPlansReducer,
     saleOrderReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export default store;

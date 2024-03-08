@@ -59,6 +59,10 @@ const FAQs = () => {
         style: panelStyle,
       },
     ]);
+
+    return () => {
+      emitter.removeAllListeners();
+    };
   }, []);
 
   return (

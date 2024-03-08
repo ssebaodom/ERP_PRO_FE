@@ -2,9 +2,14 @@ import { Button, Col, Input, Pagination, Table } from "antd";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import renderColumns from "../../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../../Context/TableLocale";
+import emitter from "../../../../../utils/emitter";
 import {
+  fetchSaleOrderInfo,
+  fetchSaleOrderList,
   setCurrentSaleOrder,
+  setOpenSaleOrderFilter,
   setSaleOrderCurrentStep,
   setSaleOrderLoading,
 } from "../../../Store/Sagas/SaleOrderActions";
@@ -12,85 +17,58 @@ import { getSaleOrderInfo } from "../../../Store/Selector/Selector";
 
 const ListSaleOrders = () => {
   const [selectedRowkeys, setselectedRowkeys] = useState([]);
-  const curentData = useSelector(getSaleOrderInfo);
-
-  const columns = [
-    {
-      dataIndex: "title",
-      title: "Name",
-      width: "10px",
-    },
-    {
-      dataIndex: "description",
-      title: "Description",
-    },
-  ];
-
-  const dataSource = [
-    {
-      key: 1,
-      title: `content 1`,
-      description: `Công ty TNHH Trùng Khánh`,
-    },
-    {
-      key: 2,
-      title: `content 2`,
-      description: `description of content 2`,
-    },
-    {
-      key: 3,
-      title: `content 3`,
-      description: `description of content 3`,
-    },
-    {
-      key: 4,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 5,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 6,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 7,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 8,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 9,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-    {
-      key: 10,
-      title: `content 4`,
-      description: `description of content 4`,
-    },
-  ];
+  const { filterInfo, saleOrderList } = useSelector(getSaleOrderInfo);
+  const [columns, setColumns] = useState([]);
+  const [dataSource, setDataSource] = useState([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 1,
+  });
+  const [totalRecords, setTotalRecords] = useState(1);
+  const [params, setParams] = useState({
+    ...filterInfo,
+  });
+  const [loading, setLoading] = useState(false);
 
   const handleRowSelect = (record) => {
     setselectedRowkeys([record?.key]);
   };
 
+  const handleOpenFilter = () => {
+    setOpenSaleOrderFilter(true);
+  };
+
+  const handlePaginationChange = (current) => {
+    setPagination({ ...pagination, pageIndex: current });
+  };
+
   useEffect(() => {
-    if (selectedRowkeys.length > 0) {
-      setSaleOrderLoading(true);
-      setSaleOrderCurrentStep(0);
-      setCurrentSaleOrder(_.first(selectedRowkeys));
-      let timer = setTimeout(() => setSaleOrderLoading(false), 1000);
-    }
+    setSaleOrderLoading(true);
+    setSaleOrderCurrentStep(0);
+    setCurrentSaleOrder(_.first(selectedRowkeys) || "");
+    fetchSaleOrderInfo(_.first(selectedRowkeys) || "");
   }, [JSON.stringify(selectedRowkeys)]);
+
+  useEffect(() => {
+    if (saleOrderList?.columns?.length > 0) {
+      setColumns(renderColumns(saleOrderList?.columns || []));
+      setDataSource(saleOrderList?.dataSource || []);
+      setTotalRecords(saleOrderList.totalRecords);
+      setLoading(false);
+    }
+    return () => {};
+  }, [saleOrderList]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchSaleOrderList({ ...params, pageIndex: pagination.pageIndex });
+  }, [JSON.stringify(params), pagination]);
+
+  useEffect(() => {
+    emitter.on("HANDLE_SALE_ORDER_FILTER", (filterData) => {
+      setParams(filterData);
+    });
+    return () => {};
+  }, []);
 
   return (
     <Col span={5} className="flex flex-column h-full min-h-0 gap-3">
@@ -100,7 +78,7 @@ const ListSaleOrders = () => {
       >
         <div className="flex gap-2">
           <Input placeholder="Tìm kiếm..." />
-          <Button className="default_button">
+          <Button className="default_button" onClick={handleOpenFilter}>
             <i
               className="pi pi-filter sub_text_color"
               style={{ fontWeight: "bold" }}
@@ -109,6 +87,7 @@ const ListSaleOrders = () => {
         </div>
         <div className="h-full overflow-auto">
           <Table
+            loading={loading}
             onRow={(record, rowIndex) => {
               return {
                 onClick: () => handleRowSelect(record),
@@ -137,10 +116,11 @@ const ListSaleOrders = () => {
         style={{ background: "white" }}
       >
         <Pagination
-          defaultCurrent={1}
-          total={100}
+          defaultCurrent={pagination.pageIndex}
+          total={totalRecords}
           simple
           showSizeChanger={false}
+          onChange={handlePaginationChange}
         />
       </div>
     </Col>

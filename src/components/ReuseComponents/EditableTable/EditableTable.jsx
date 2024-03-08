@@ -88,13 +88,15 @@ const EditableTable = ({ form, action, colData, rowData }) => {
   };
 
   useEffect(() => {
-    setColumns(colData || []);
-    setDataSource(rowData || []);
+    if (colData.length > 0) {
+      setColumns(colData);
+      setDataSource(rowData || []);
+    }
     return () => {
       setColumns([]);
       setDataSource([]);
     };
-  }, []);
+  }, [colData]);
 
   return (
     <div className="default_modal_details h-full min-h-0 flex flex-column gap-2 p-2">
@@ -163,7 +165,7 @@ const EditableTable = ({ form, action, colData, rowData }) => {
           },
         }}
         locale={TableLocale()}
-        columns={renderEditColumnsV2(columns, formStatus.EDIT)}
+        columns={renderEditColumnsV2(columns, action)}
         dataSource={dataSource}
         rowClassName="default_detail_table_row"
         className="default_detail_table sticky h-full"

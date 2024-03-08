@@ -17,6 +17,12 @@ const themeComponents = {
       colorTextDisabled: "rgb(101, 113, 148)",
       paddingSM: 8,
     },
+    InputNumber: {
+      borderRadius: 4,
+      colorBgContainerDisabled: "rgb(226, 228, 238)",
+      colorTextDisabled: "rgb(101, 113, 148)",
+      paddingSM: 8,
+    },
     Pagination: {
       borderRadius: 50,
       itemSize: 32,
@@ -51,6 +57,9 @@ const themeComponents = {
     },
     Transfer: {
       listWidth: "100%",
+    },
+    Drawer: {
+      paddingLG: 12,
     },
   },
 };

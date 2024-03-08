@@ -1,4 +1,5 @@
 import { Button, Form, Input, Modal, notification, Space } from "antd";
+import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
@@ -67,7 +68,7 @@ const ModalAddTour = (props) => {
       listData: detail,
     })
       .then((res) => {
-        if (res?.status === "200") {
+        if (_.first(res?.data)?.status === 200) {
           notification.success({
             message: `Thành công`,
           });
