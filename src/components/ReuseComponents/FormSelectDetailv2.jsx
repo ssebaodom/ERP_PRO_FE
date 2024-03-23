@@ -1,4 +1,5 @@
 import { Form, Input, Select } from "antd";
+import _ from "lodash";
 import React, { memo, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
@@ -19,6 +20,7 @@ const FormSelectDetailv2 = ({
   required,
   onChange,
   direction,
+  defaultOptions,
 }) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
@@ -50,6 +52,13 @@ const FormSelectDetailv2 = ({
   useEffect(() => {
     if (NameData) setDetailValue(NameData);
   }, [NameData]);
+
+  useEffect(() => {
+    if (!_.isEmpty(defaultOptions)) {
+      setSelectOptions(defaultOptions);
+    }
+    return () => {};
+  }, [defaultOptions]);
 
   return (
     <div className="split__view__detail__primary__items">
@@ -99,6 +108,10 @@ const FormSelectDetailv2 = ({
               onSearch={(e) => {
                 handleSelectionChange(controller, e);
               }}
+              onClick={() => {
+                handleSelectionChange(controller, "");
+              }}
+              allowClear
               onSelect={(key, item) => {
                 setDetailValue(item.label);
                 setSelectOptions([]);

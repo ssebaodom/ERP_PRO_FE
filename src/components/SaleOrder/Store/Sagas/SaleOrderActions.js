@@ -1,6 +1,8 @@
+import { notification } from "antd";
 import store from "../../../../store";
 import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
+import { multipleTablePutApi } from "../../API";
 import { saleOrderAction } from "../Slice/SaleOrderSlice";
 
 const setSaleOrderLoading = (data) => {
@@ -15,7 +17,7 @@ const setSaleOrderCurrentStep = (data) => {
   store.dispatch(saleOrderAction.setCurrentStep(data));
 };
 
-const setMasterSaleOrderInfo = (data) => {
+const setMasterSaleOrderInfo = (data = {}) => {
   store.dispatch(saleOrderAction.setMasterSaleOrderInfo(data));
 };
 
@@ -47,6 +49,10 @@ const setActionSaleOrder = async (data) => {
   store.dispatch(saleOrderAction.setAction(data));
 };
 
+const setSaleOrderInsertDetails = (data = []) => {
+  store.dispatch(saleOrderAction.setSaleOrderInsertDetails(data));
+};
+
 const fetchSaleOrderList = async (params = {}) => {
   setActionSaleOrder(formStatus.VIEW);
   const data = { columns: [], dataSource: [], totalRecords: 0 };
@@ -68,7 +74,7 @@ const fetchSaleOrderList = async (params = {}) => {
 };
 
 const fetchSaleOrderInfo = async (key = "") => {
-  await SoFuckingUltimateGetApi2({
+  SoFuckingUltimateGetApi2({
     store: "api_get_sale_order_info",
     data: {
       stt_rec: key,
@@ -78,15 +84,35 @@ const fetchSaleOrderInfo = async (key = "") => {
     const paymentInfo = {};
     const masterInfo = {};
     Object.keys(store.getState().saleOrderReducer.paymentInfo).map((item) => {
-      paymentInfo[`${item}`] = resData[`${item}`] || null;
+      paymentInfo[`${item}`] = resData[`${item}`];
     });
 
     Object.keys(store.getState().saleOrderReducer.masterInfo).map((item) => {
-      masterInfo[`${item}`] = resData[`${item}`] || null;
+      masterInfo[`${item}`] = resData[`${item}`];
     });
 
     setMasterSaleOrderInfo(masterInfo);
     setPaymentSaleOrderInfo(paymentInfo);
+  });
+
+  SoFuckingUltimateGetApi2({
+    store: "api_get_sale_order_promo",
+    data: {
+      stt_rec: key,
+    },
+  }).then((res) => {
+    var promos = res.data.map((item) => {
+      return {
+        ma_vt: item.ma_vt,
+        ten_vt: item.ten_vt,
+        ma_kho: item.ma_kho,
+        ten_kho: item.ten_kho,
+        so_luong: item.so_luong,
+        dvt: item.dvt,
+      };
+    });
+
+    setPromotionSaleOrderInfo([...promos]);
   });
 
   await SoFuckingUltimateGetApi2({
@@ -145,45 +171,89 @@ const fetchSaleOrderInfo = async (key = "") => {
     });
 
     setDetailSaleOrderInfo({ columns: layout || [], data });
-
     setSaleOrderLoading(false);
   });
+};
 
-  setPromotionSaleOrderInfo([
-    {
-      ma_vt: "1",
-      ten_vt: "Ant Design Title 1",
-      ma_kho: "test",
-      ten_kho: "Kho Nguyễn Khang",
-      so_luong: 123.99,
-      dvt: "Cái",
-    },
-    {
-      ma_vt: "2",
-      ten_vt: "Ant Design Title 2",
-      ten_kho: "Kho test 2",
-      so_luong: 123.01,
-      dvt: "Chiếc",
-    },
-    {
-      ma_vt: "3",
-      ten_vt: "Ant Design Title 3",
-      ten_kho: "Kho test 3",
-      so_luong: 123.02,
-      dvt: "Thùng",
-    },
-    {
-      ma_vt: "4",
-      ten_vt: "Ant Design Title 4",
-      ten_kho: "Kho test 4",
-      so_luong: 123.55,
-      dvt: "Chai",
-    },
-  ]);
+// Truyền về detail layout để không phải load lại
+const resetFormSaleOrder = async (data = []) => {
+  await store.dispatch(saleOrderAction.resetForm());
 };
 
 const resetSaleOrder = async (data) => {
-  store.dispatch(saleOrderAction.resetSaleOrder());
+  await store.dispatch(saleOrderAction.resetSaleOrder());
+};
+
+const saleOrderModify = async ({
+  master = {},
+  detail = [],
+  promos = [],
+  payment = {},
+}) => {
+  const { id, unitId } = store.getState().claimsReducer.userInfo;
+  const itemId = store.getState().saleOrderReducer.currentItemId;
+  await multipleTablePutApi({
+    store: "api_sale_order_modify",
+    param: {
+      VoucherId: itemId || "",
+      UserID: id,
+      UnitID: unitId,
+    },
+    data: {
+      detail,
+      promos: _.isEmpty(promos) ? undefined : promos,
+      master: [{ ...master, ...payment }],
+    },
+  })
+    .then((res) => {
+      if (res?.responseModel?.isSucceded) {
+        notification.success({
+          message: `Thực hiện thành công`,
+        });
+      } else {
+        notification.warning({
+          message: res?.message,
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+    .finally(() => {
+      setActionSaleOrder(formStatus.VIEW);
+    });
+};
+
+const saleOrderCancel = async (ID = "") => {
+  const { id, unitId } = store.getState().claimsReducer.userInfo;
+  if (!ID) return;
+
+  await multipleTablePutApi({
+    store: "api_sale_order_cancel",
+    param: {
+      VoucherId: ID,
+      UserID: id,
+      UnitID: unitId,
+    },
+    data: {},
+  })
+    .then((res) => {
+      if (res?.responseModel?.isSucceded) {
+        notification.success({
+          message: `Thực hiện thành công`,
+        });
+      } else {
+        notification.warning({
+          message: res?.message,
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    })
+    .finally(() => {
+      setActionSaleOrder(formStatus.VIEW);
+    });
 };
 
 export {
@@ -200,4 +270,8 @@ export {
   addPromotionSaleOrderInfo,
   setPaymentSaleOrderInfo,
   resetSaleOrder,
+  setSaleOrderInsertDetails,
+  resetFormSaleOrder,
+  saleOrderModify,
+  saleOrderCancel,
 };

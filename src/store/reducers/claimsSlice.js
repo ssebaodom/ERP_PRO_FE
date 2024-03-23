@@ -5,7 +5,15 @@ const claims = createSlice({
   initialState: {
     claims: [],
     textTest: "",
-    userInfo: {},
+    userInfo: {
+      userName: "",
+      role: "",
+      roleName: "",
+      unitId: "",
+      unitName: "",
+      isPremium: false,
+      id: 0,
+    },
     isBackgound: false,
   },
   reducers: {

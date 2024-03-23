@@ -13,6 +13,7 @@ export const formStatus = {
   EDIT: "EDIT",
   VIEW: "VIEW",
   SAVED: "SAVED",
+  DELETE: "DELETE",
 };
 
 export const FILE_EXTENSION = {
@@ -52,25 +53,30 @@ export const SIMPLECHARTS = {
     title: "Đơn hàng bán",
     type: "bar",
     store: "",
+    unit: "triệu",
   },
   FS: {
     title: "Doanh thu",
     type: "bar",
+    unit: "triệu",
   },
   NB: {
     title: "Khách hàng mới",
     type: "bar",
     store: "",
+    unit: "",
   },
   MC: {
     title: "Độ phủ",
     type: "circle",
     store: "",
+    unit: "%",
   },
   TEST: {
     title: "test",
     type: "circle",
     store: "",
+    unit: "%",
   },
 };
 

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import "./ModalViewItems.css";
 
 import { memo } from "react";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import { formStatus } from "../../../../utils/constants";
 
 import TabPane from "antd/es/tabs/TabPane";
@@ -142,7 +142,7 @@ const ModalViewItems = ({
             >
               <Input
                 disabled={openModalType == formStatus.VIEW ? true : false}
-                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
                 placeholder="Mã vật tư"
               />
             </Form.Item>

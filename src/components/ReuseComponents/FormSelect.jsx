@@ -1,5 +1,6 @@
 import { Form, Select } from "antd";
-import React, { memo, useState } from "react";
+import _ from "lodash";
+import React, { memo, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
@@ -18,12 +19,14 @@ const FormSelect = ({
   onChange,
   direction,
   multiple,
+  defaultOptions,
 }) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
-  const lookupData = (item) => {
-    setSelectLoading(true);
-    ApiWebLookup({
+  // const keyData = Form.useWatch(keyCode, form);
+
+  const lookupData = async (item) => {
+    await ApiWebLookup({
       userId: "1",
       controller: item.controller,
       pageIndex: 1,
@@ -41,8 +44,17 @@ const FormSelect = ({
   };
 
   const handleSelectionChange = useDebouncedCallback((actions, value) => {
+    setSelectLoading(true);
+    setSelectOptions([]);
     lookupData({ controller: actions, value: value });
   }, 600);
+
+  useEffect(() => {
+    if (!_.isEmpty(defaultOptions)) {
+      setSelectOptions(defaultOptions);
+    }
+    return () => {};
+  }, [defaultOptions]);
 
   return (
     <div
@@ -90,6 +102,10 @@ const FormSelect = ({
           onSearch={(e) => {
             handleSelectionChange(controller, e);
           }}
+          onClick={() => {
+            handleSelectionChange(controller, "");
+          }}
+          allowClear
           onSelect={(key, item) => {
             if (onChange) {
               onChange(key, item);

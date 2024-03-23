@@ -11,6 +11,6 @@ export const refreshToken = async () => {
       return res.data;
     })
     .catch((err) => {
-      return 500;
+      return null;
     });
 };

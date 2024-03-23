@@ -27,7 +27,7 @@ const formatData = (data, layout) => {
   return formatedData;
 };
 
-const dataProcessing = (data: {}, options: []) => {
+const deleteObjectItems = (data: {}, options: []) => {
   const rawData = { ...data };
   options.map((item) => {
     return delete rawData[item];
@@ -35,4 +35,12 @@ const dataProcessing = (data: {}, options: []) => {
   return rawData;
 };
 
-export { formatData, dataProcessing };
+const formatCurrency = (num = 0) => {
+  return num.toLocaleString("de-DE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+export { formatData, deleteObjectItems, formatCurrency };
+

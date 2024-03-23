@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
-import { dataProcessing } from "../../../../app/hooks/dataFormatHelper";
+import { deleteObjectItems } from "../../../../app/hooks/dataFormatHelper";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
@@ -139,7 +139,7 @@ const DMSCustomerList = () => {
 
   const onSubmitForm = (items) => {
     const data = {
-      ...dataProcessing(items, [
+      ...deleteObjectItems(items, [
         "areaName",
         "districtName",
         "employeeName",

@@ -4,10 +4,10 @@ import "./SaleEmployeeModal.css";
 
 import { useSelector } from "react-redux";
 import {
-  dataProcessing,
+  deleteObjectItems,
   formatData,
 } from "../../../../app/hooks/dataFormatHelper";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi } from "../../../DMS/API";
@@ -35,7 +35,10 @@ const SaleEmployeeModal = ({
 
   const onSubmitForm = () => {
     const master = {
-      ...dataProcessing(inputForm.getFieldsValue(), ["ten_nvql", "user_name"]),
+      ...deleteObjectItems(inputForm.getFieldsValue(), [
+        "ten_nvql",
+        "user_name",
+      ]),
       UserID: userInfo.id,
       action:
         openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
@@ -120,7 +123,7 @@ const SaleEmployeeModal = ({
             </span>
             <Form.Item
               name="ma_nvbh"
-              onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+              onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
               rules={[{ required: true, message: "Điền mã nhân viên" }]}
             >
               <Input

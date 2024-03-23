@@ -1,8 +1,12 @@
 import { Button, Table, Tooltip } from "antd";
 import _ from "lodash";
 import React, { memo, useEffect, useState } from "react";
-import { getAllValueByRow } from "../../../app/Functions/getTableValue";
+import {
+  getAllRowKeys,
+  getAllValueByRow,
+} from "../../../app/Functions/getTableValue";
 import addNewRow, { cloneRows } from "../../../app/hooks/addNewRow";
+import getChangedTableRow from "../../../app/hooks/getChangedTableRow";
 import RenderEditCell from "../../../app/hooks/RenderEditCell";
 import renderEditColumnsV2 from "../../../app/hooks/renderEditColumnsV2";
 import TableLocale from "../../../Context/TableLocale";
@@ -16,9 +20,10 @@ const EditableTable = ({ form, action, colData, rowData }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [dataSource, setDataSource] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [tableAction, setTableAction] = useState(action);
 
   const handleAddRow = async () => {
-    if (action != formStatus.VIEW) {
+    if (tableAction != formStatus.VIEW) {
       const newRow = await addNewRow(columns);
       await setDataSource([...dataSource, newRow]);
       await setSelectedRowKeys([...selectedRowKeys, newRow.key]);
@@ -50,7 +55,7 @@ const EditableTable = ({ form, action, colData, rowData }) => {
   };
 
   const scrollToField = (field, fieldName) => {
-    if (action !== formStatus.VIEW) {
+    if (tableAction !== formStatus.VIEW) {
       const allFields = form.getFieldsValue(true);
       if (!fieldName) {
         const itemFocusName = Object.keys(allFields)
@@ -87,6 +92,35 @@ const EditableTable = ({ form, action, colData, rowData }) => {
     onSelect,
   };
 
+  const handleSave = async () => {
+    const rawData = [...dataSource];
+    const newData = [];
+    const rows = await form.validateFields();
+    const keys = getAllRowKeys(rows);
+
+    await keys.map(async (key) => {
+      const changedData = await getChangedTableRow(key, rows, rawData);
+      newData.push(changedData);
+    });
+
+    await newData.map((item) => {
+      const index = rawData.findIndex((record) => item?.key === record?.key);
+      if (index > -1) {
+        rawData.splice(index, 1, item);
+      }
+    });
+
+    setDataSource([...rawData]);
+    setSelectedRowKeys([]);
+  };
+
+  useEffect(() => {
+    if (action == formStatus.SAVED) {
+      handleSave();
+    }
+    setTableAction(action);
+  }, [action]);
+
   useEffect(() => {
     if (colData.length > 0) {
       setColumns(colData);
@@ -96,7 +130,7 @@ const EditableTable = ({ form, action, colData, rowData }) => {
       setColumns([]);
       setDataSource([]);
     };
-  }, [colData]);
+  }, [JSON.stringify(colData), rowData]);
 
   return (
     <div className="default_modal_details h-full min-h-0 flex flex-column gap-2 p-2">
@@ -165,7 +199,7 @@ const EditableTable = ({ form, action, colData, rowData }) => {
           },
         }}
         locale={TableLocale()}
-        columns={renderEditColumnsV2(columns, action)}
+        columns={renderEditColumnsV2(columns, tableAction)}
         dataSource={dataSource}
         rowClassName="default_detail_table_row"
         className="default_detail_table sticky h-full"

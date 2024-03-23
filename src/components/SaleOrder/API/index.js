@@ -5,3 +5,9 @@ export const SoFuckingUltimateApi = async (payload) => {
     return res;
   });
 };
+
+export const multipleTablePutApi = async (payload) => {
+  return await https.post(`User/AddData`, payload).then((res) => {
+    return res?.data || [];
+  });
+};

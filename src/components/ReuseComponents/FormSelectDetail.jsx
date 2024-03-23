@@ -1,5 +1,6 @@
 import { Form, Input, Select } from "antd";
-import React, { memo, useState } from "react";
+import _ from "lodash";
+import React, { memo, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
@@ -19,6 +20,7 @@ const FormSelectDetail = ({
   required,
   onChange,
   direction,
+  defaultOptions,
 }) => {
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
@@ -45,6 +47,13 @@ const FormSelectDetail = ({
   const handleSelectionChange = useDebouncedCallback((actions, value) => {
     lookupData({ controller: actions, value: value });
   }, 600);
+
+  useEffect(() => {
+    if (!_.isEmpty(defaultOptions)) {
+      setSelectOptions(defaultOptions);
+    }
+    return () => {};
+  }, [defaultOptions]);
 
   return (
     <div className="split__view__detail__primary__items">
@@ -94,6 +103,10 @@ const FormSelectDetail = ({
               onSearch={(e) => {
                 handleSelectionChange(controller, e);
               }}
+              onClick={() => {
+                handleSelectionChange(controller, "");
+              }}
+              allowClear
               onSelect={(key, item) => {
                 form.setFieldValue(keyName, item.label);
                 setSelectOptions([]);

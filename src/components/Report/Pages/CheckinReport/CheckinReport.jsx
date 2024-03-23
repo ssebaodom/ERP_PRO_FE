@@ -7,24 +7,41 @@ import TableLocale from "../../../../Context/TableLocale";
 import { FILE_EXTENSION } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
-import { ApiGetPrintReportFile } from "../../API";
+import { ApiPrintReport } from "../../API";
 import Filter from "./Drawer/Filter";
 
 const printLayouts = [
   {
     key: "CheckinReportExcel",
     title: "Báo cáo checkin",
-    link: "File/get-file-pdf",
-    path: "File/Base.xlsx",
+    path: "File/get-file-pdf",
+    fileName: "File/Base.xlsx",
     store: "Get_Test_Data",
     type: FILE_EXTENSION.EXCEL,
   },
   {
     key: "CheckinReportPDF",
     title: "Báo cáo checkin",
-    link: "File/get-file-xml",
-    path: "File/Base.xlsx",
+    path: "File/get-file-xml",
+    fileName: "File/Base.xlsx",
     store: "Get_Test_Data",
+    type: FILE_EXTENSION.PDF,
+  },
+
+  {
+    key: "testReportExcel",
+    title: "Báo cáo test",
+    path: "File/Report3.repx",
+    fileName: "Testing.xlsx",
+    store: "dmkh_api",
+    type: FILE_EXTENSION.EXCEL,
+  },
+  {
+    key: "testReportPDF",
+    title: "Báo cáo test",
+    path: "File/Report3.repx",
+    fileName: "Testing.pdf",
+    store: "dmkh_api",
     type: FILE_EXTENSION.PDF,
   },
 ];
@@ -150,9 +167,9 @@ const CheckinReport = () => {
     [layoutSource]
   );
 
-  const handleOpenFilter = () => {
+  const handleOpenFilter = useCallback(() => {
     setFilterState(true);
-  };
+  }, []);
 
   const handleCloseFilter = useCallback(() => {
     setFilterState(false);
@@ -163,13 +180,27 @@ const CheckinReport = () => {
   }, []);
 
   const handlePrint = useCallback((item) => {
-    ApiGetPrintReportFile(item.link, {
+    // ApiGetPrintReportFile(item.link, {
+    //   store: item.store,
+    //   data: null,
+    //   path: item.path,
+    //   fileName: `test`,
+    // }).then((res) => {
+    //   FileSaver.saveAs(res, item.title);
+    // });
+
+    ApiPrintReport({
+      filePath: item.path,
+      fileName: item.fileName,
       store: item.store,
-      data: null,
-      path: item.path,
-      fileName: `test`,
+      param: {
+        stt: "",
+      },
     }).then((res) => {
-      FileSaver.saveAs(res, item.title);
+      console.log(res);
+      if (res.status === 200) {
+        FileSaver.saveAs(res.data, item.title);
+      }
     });
   }, []);
 

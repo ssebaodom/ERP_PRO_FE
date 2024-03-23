@@ -59,30 +59,34 @@
 .dashboard__simple__chart__tag {
     background-color: #fff;
     box-shadow: 0px 6px 20px rgba(126, 149, 190, 0.1);
-    border-radius: 20px;
-    overflow: hidden;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
 }
 
 .dashboard__simple__chart__tag__details {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px;
     height: 100%;
-    gap: 0px 10px;
+    gap: 10px 0px;
 }
 
 .dashboard__simple__chart__tag__details__chart {
     width: 100%;
+
 }
 
 .dashboard__simple__chart__tag__title {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--light_gray);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     font-weight: bold;
+    padding: 10px;
+}
+
+.dashboard__simple__chart__tag__details__data {
+    padding: 0px 10px;
 }
 
 .dashboard__simple__chart__tag__details__data p {

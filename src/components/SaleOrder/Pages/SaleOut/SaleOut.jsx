@@ -15,7 +15,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
 import { getIndexRow } from "../../../../app/Functions/getIndexRow";
 import {
-  dataProcessing,
+  deleteObjectItems,
   formatData,
 } from "../../../../app/hooks/dataFormatHelper";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
@@ -125,7 +125,7 @@ const SaleOut = () => {
 
   const onSubmitForm = () => {
     const master = {
-      ...dataProcessing(masterForm.getFieldsValue(), [
+      ...deleteObjectItems(masterForm.getFieldsValue(), [
         "cacel_reason",
         "t_so_luong",
         "t_tt_nt",

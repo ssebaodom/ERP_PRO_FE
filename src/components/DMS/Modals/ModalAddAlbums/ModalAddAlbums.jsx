@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import "./ModalAddAlbums.css";
 
 import { memo } from "react";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
@@ -127,7 +127,7 @@ const ModalAddAlbums = ({
             >
               <Input
                 disabled={disableFields}
-                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
                 placeholder="Mã album"
               />
             </Form.Item>

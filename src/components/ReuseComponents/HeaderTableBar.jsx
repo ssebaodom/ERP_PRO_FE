@@ -1,5 +1,5 @@
 import { SyncOutlined } from "@ant-design/icons";
-import { Button, Popover, Select, Tooltip } from "antd";
+import { Button, Input, Popover, Select, Tooltip } from "antd";
 import PropTypes from "prop-types";
 import React, { memo, useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -34,6 +34,7 @@ const HeaderTableBar = ({
     },
   ],
   printCallBack,
+  searchCallBack,
 }) => {
   const [uploadState, setUploadState] = useState(false);
   const [printState, setPrintState] = useState(false);
@@ -73,6 +74,10 @@ const HeaderTableBar = ({
     }
   };
 
+  const handleSearch = (e) => {
+    searchCallBack(e.target.value);
+  };
+
   useHotkeys("ctrl+i", () => {
     addEvent();
   });
@@ -82,7 +87,7 @@ const HeaderTableBar = ({
       {title && (
         <span className="default_header_label">
           {title}{" "}
-          {totalResults && (
+          {Number.isInteger(totalResults) && (
             <>
               (<span className="sub_text_color">{totalResults}</span>)
             </>
@@ -91,12 +96,29 @@ const HeaderTableBar = ({
       )}
 
       <div className="list__header__tools">
+        {searchCallBack && (
+          <>
+            <Tooltip placement="topLeft" title="Tìm kiếm">
+              <Input
+                style={{ width: "120px" }}
+                placeholder="Tìm kiếm"
+                prefix={
+                  <i
+                    className="pi pi-search sub_text_color"
+                    style={{ fontWeight: "bold" }}
+                  ></i>
+                }
+                onInput={handleSearch}
+              ></Input>
+            </Tooltip>
+          </>
+        )}
+
         {deleteEvent && (
           <Button className="default_button" danger onClick={deleteEvent}>
             <i className="pi pi-trash"></i>
           </Button>
         )}
-
         {deleteItems && deleteItems.count > 0 && (
           <Button
             className="default_button"
@@ -109,7 +131,6 @@ const HeaderTableBar = ({
             >{`Xoá ${deleteItems.count} ${name}`}</span>
           </Button>
         )}
-
         {addEvent && (
           <Tooltip placement="topLeft" title="Thêm mới">
             <Button className="default_button" onClick={addEvent}>
@@ -117,7 +138,6 @@ const HeaderTableBar = ({
             </Button>
           </Tooltip>
         )}
-
         {refreshEvent && (
           <Tooltip placement="topLeft" title="Làm tươi">
             <Button className="default_button" onClick={refreshEvent}>
@@ -128,7 +148,6 @@ const HeaderTableBar = ({
             </Button>
           </Tooltip>
         )}
-
         {changePaginations && (
           <Tooltip placement="topLeft" title="Số bản ghi trên trang">
             <Select
@@ -152,7 +171,6 @@ const HeaderTableBar = ({
             />
           </Tooltip>
         )}
-
         {advanceFilter && (
           <Tooltip placement="topLeft" title="Lọc">
             <Button className="default_button" onClick={advanceFilter}>
@@ -163,7 +181,6 @@ const HeaderTableBar = ({
             </Button>
           </Tooltip>
         )}
-
         {uploadFunction && (
           <>
             <Tooltip placement="topLeft" title="Import dữ liệu">
@@ -183,7 +200,6 @@ const HeaderTableBar = ({
             />
           </>
         )}
-
         {printCallBack && printList.length > 0 && (
           <>
             <Tooltip placement="topLeft" title="In dữ liệu">
@@ -203,7 +219,6 @@ const HeaderTableBar = ({
             />
           </>
         )}
-
         {ReportLayout.layoutCallBack && (
           <Tooltip placement="topLeft" title="Cấu trúc báo cáo">
             <Popover
@@ -252,6 +267,7 @@ const HeaderTableBar = ({
  * @param {String} printList.title - title của layout in.
  * @param {String} printList.type - Loại của layout in ví dụ (PDF, EXCEL ....).
  * @callback printCallBack - Function thực hiện chức năng, sẽ trả về 1 print item.
+ * @callback searchCallBack -- callback khi tìm kiếm, trả về input của người dùng
  */
 export default memo(HeaderTableBar);
 

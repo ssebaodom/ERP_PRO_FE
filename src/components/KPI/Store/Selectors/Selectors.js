@@ -5,3 +5,7 @@ export const getKPIPerformState = (store) => {
 export const getKPIPlansState = (store) => {
   return store.KPIPlansReducer;
 };
+
+export const getKPIListState = (store) => {
+  return store.KPIListReducer;
+};

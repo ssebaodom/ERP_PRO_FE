@@ -1,11 +1,15 @@
 import { Avatar, Button, Col, Divider, List, Popover } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import { formStatus } from "../../../../../utils/constants";
 import emitter from "../../../../../utils/emitter";
 import {
   addPromotionSaleOrderInfo,
+  resetFormSaleOrder,
   resetSaleOrder,
+  saleOrderCancel,
+  saleOrderModify,
   setActionSaleOrder,
   setPromotionSaleOrderInfo,
 } from "../../../Store/Sagas/SaleOrderActions";
@@ -15,31 +19,60 @@ import AddSaleOrderPromotion from "./AddSaleOrderPromotion/AddSaleOrderPromotion
 const PaymentSaleOrder = () => {
   const [promotionList, setPromotionList] = useState([]);
   const curentData = useSelector(getSaleOrderInfo);
-  const { action, promotionItemsInfo, loading } = useSelector(getSaleOrderInfo);
+  const {
+    currentItemId,
+    action,
+    promotionItemsInfo,
+    loading,
+    detailInfo,
+    insertDetails,
+    masterInfo,
+    paymentInfo,
+  } = useSelector(getSaleOrderInfo);
 
   const handleDeletePromotionItem = (key) => {
     setPromotionSaleOrderInfo(
       promotionList.filter((item) => item.ma_vt !== key) || []
     );
-    // setPromotionList(promotionList.filter((item) => item.ma_vt !== key) || []);
   };
 
   const handleAddbutton = async () => {
+    resetFormSaleOrder(detailInfo.columns);
     await setActionSaleOrder(formStatus.ADD);
   };
 
   const handleSave = async () => {
+    await setActionSaleOrder(formStatus.SAVED);
     await emitter.emit("HANDLE_SALE_ORDER_SAVE");
-
-    // await setActionSaleOrder(formStatus.SAVED);
   };
 
+  const handleEdit = async () => {
+    if (currentItemId) {
+      await setActionSaleOrder(formStatus.EDIT);
+    }
+  };
+
+  const handleDeleteSaleOrder = async () => {
+    if (currentItemId) {
+      await saleOrderCancel(currentItemId);
+    }
+  };
+
+  const handleAddPromos = useCallback((item) => {
+    addPromotionSaleOrderInfo(item);
+  }, []);
+
   useEffect(() => {
-    if (action === formStatus.SAVED) {
-      console.log(curentData);
+    if (insertDetails.length > 0 && action == formStatus.SAVED) {
+      saleOrderModify({
+        detail: insertDetails,
+        master: masterInfo,
+        payment: paymentInfo,
+        promos: promotionList,
+      });
     }
     return () => {};
-  }, [JSON.stringify(action)]);
+  }, [insertDetails, masterInfo, paymentInfo, promotionList]);
 
   useEffect(() => {
     setPromotionList(promotionItemsInfo || []);
@@ -49,9 +82,6 @@ const PaymentSaleOrder = () => {
   }, [promotionItemsInfo]);
 
   useEffect(() => {
-    emitter.on("HANDLE_ADD_SALE_ORDER_PROMOTION", (item) => {
-      addPromotionSaleOrderInfo(item);
-    });
     return () => {
       emitter.removeAllListeners();
       resetSaleOrder();
@@ -97,9 +127,7 @@ const PaymentSaleOrder = () => {
         <div className="flex w-full justify-content-between align-items-center">
           <span className="primary_bold_text">Hàng tặng</span>
 
-          <AddSaleOrderPromotion
-            emitterEvent={"HANDLE_ADD_SALE_ORDER_PROMOTION"}
-          />
+          <AddSaleOrderPromotion addEvent={handleAddPromos} />
         </div>
 
         <div className="h-full min-h-0 flex flex-column gap-2">
@@ -138,27 +166,33 @@ const PaymentSaleOrder = () => {
           <div>
             <div className="clear-both line-height-22">
               <p className="text-float-left">Tổng thành tiền:</p>
-              <p className="text-float-right primary_bold_text">100.000.000</p>
+              <p className="text-float-right primary_bold_text">
+                {formatCurrency(paymentInfo?.t_tien)}
+              </p>
             </div>
-
             <div className="clear-both line-height-22">
               <p className="text-float-left">Tổng số lượng:</p>
-              <p className="text-float-right primary_bold_text">10</p>
+              <p className="text-float-right primary_bold_text">
+                {paymentInfo?.t_so_luong || 0}
+              </p>
             </div>
-
             <div className="clear-both line-height-22">
               <p className="text-float-left">Tổng chiết khấu:</p>
-              <p className="text-float-right primary_bold_text">10.000.000</p>
+              <p className="text-float-right primary_bold_text">
+                {formatCurrency(paymentInfo?.t_ck)}
+              </p>
             </div>
-
             <div className="clear-both line-height-22">
               <p className="text-float-left">Tổng thuế:</p>
-              <p className="text-float-right primary_bold_text">10.000.000</p>
+              <p className="text-float-right primary_bold_text">
+                {formatCurrency(paymentInfo?.t_thue)}
+              </p>
             </div>
-
             <div className="clear-both line-height-22">
               <p className="text-float-left">Tổng thanh toán:</p>
-              <p className="text-float-right primary_bold_text">100.000.000</p>
+              <p className="text-float-right primary_bold_text">
+                {formatCurrency(paymentInfo?.t_tt)}
+              </p>
             </div>
           </div>
         </div>
@@ -168,7 +202,7 @@ const PaymentSaleOrder = () => {
         className="flex gap-2 p-2 border-round-lg justify-content-evenly flex-wrap"
         style={{ background: "white" }}
       >
-        {action === formStatus.ADD && (
+        {action !== formStatus.VIEW && action !== formStatus.SAVED && (
           <Button
             type="primary"
             className="default_primary_button"
@@ -186,7 +220,7 @@ const PaymentSaleOrder = () => {
           </Button>
         )}
 
-        {action !== formStatus.ADD && (
+        {action === formStatus.VIEW && (
           <Button className="default_button" onClick={handleAddbutton}>
             <i
               className="pi pi-plus sub_text_color"
@@ -195,15 +229,21 @@ const PaymentSaleOrder = () => {
           </Button>
         )}
 
-        <Button className="default_button">
+        <Button className="default_button" onClick={handleEdit}>
           <i
             className="pi pi-pencil warning_text_color"
             style={{ fontWeight: "bold" }}
           ></i>
         </Button>
-        <Button className="default_button" danger>
+
+        <Button
+          className="default_button"
+          danger
+          onClick={handleDeleteSaleOrder}
+        >
           <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
         </Button>
+
         <Button className="default_button">
           <i
             className="pi pi-print sub_text_color"
@@ -229,4 +269,4 @@ const PaymentSaleOrder = () => {
   );
 };
 
-export default PaymentSaleOrder;
+export default memo(PaymentSaleOrder);

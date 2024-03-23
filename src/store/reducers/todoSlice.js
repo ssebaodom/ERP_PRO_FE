@@ -1,4 +1,4 @@
-import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
 import axios from "axios";
 import HttpService from "../../utils/https";
 
@@ -45,40 +45,6 @@ const todoSlice = createSlice({
           return todo;
         });
       },
-    },
-  },
-  extraReducers: {
-    [getTodos.pending]: (state, action) => {
-      console.log("watting for request response...");
-    },
-    [getTodos.fulfilled]: (state, action) => {
-      console.log("done");
-      state.allTodos = action.payload;
-    },
-    [getTodos.rejected]: (state, action) => {
-      console.log("failed");
-    },
-    ///////////////////////////////
-    [addTodo.pending]: (state, action) => {
-      console.log("watting for request response...");
-    },
-    [addTodo.fulfilled]: (state, action) => {
-      state.allTodos.unshift(action.payload);
-    },
-    [addTodo.rejected]: (state, action) => {
-      console.log("failed");
-    },
-    ///////////////////////////////
-    [deleteTodo.pending]: (state, action) => {
-      console.log("watting for request response...");
-    },
-    [deleteTodo.fulfilled]: (state, action) => {
-      state.allTodos = state.allTodos.filter((todo) => {
-        return todo.id !== action.payload;
-      });
-    },
-    [deleteTodo.rejected]: (state, action) => {
-      console.log("failed");
     },
   },
 });

@@ -338,6 +338,7 @@ const Navbar = () => {
         <div className="search_modal_search_bar_container">
           <div className="search_modal_search_bar">
             <Input
+              id="navbar_input_search"
               className="navbar_input_search"
               placeholder="Tìm kiếm..."
               value={inputSearchModal}

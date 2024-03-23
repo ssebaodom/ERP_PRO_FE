@@ -5,11 +5,15 @@ import "./Loading.css";
 
 const LoadingComponents = ({ size, loading, text }) => {
   return (
-    <div className="loading__component">
-      {text ? <p>{text}</p> : <p>Không có dữ liệu</p>}
+    <>
+      {loading && (
+        <div className="loading__component">
+          {text ? <p>{text}</p> : <p>Không có dữ liệu</p>}
 
-      <Spin className="mt-2" size="default" />
-    </div>
+          <Spin className="mt-2" size="default" />
+        </div>
+      )}
+    </>
   );
 };
 

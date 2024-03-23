@@ -5,6 +5,7 @@ import { taskReducer } from "../components/DMS/Store/Reducers/Task";
 import { tourDetailsReducer } from "../components/DMS/Store/Reducers/TourDetail";
 import { approveItemsReducer } from "../components/Items/Store/Slices/ApproveItems";
 import { itemsListReducer } from "../components/Items/Store/Slices/Item";
+import { KPIListReducer } from "../components/KPI/Store/Slices/KPIList";
 import { KPIPerformReducer } from "../components/KPI/Store/Slices/KPIPerforms";
 import { KPIPlansReducer } from "../components/KPI/Store/Slices/KPIPlans";
 import { saleOrderReducer } from "../components/SaleOrder/Store/Slice/SaleOrderSlice";
@@ -31,6 +32,7 @@ const store = configureStore({
     KPIPerformReducer,
     KPIPlansReducer,
     saleOrderReducer,
+    KPIListReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

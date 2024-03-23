@@ -7,3 +7,7 @@
 .KPI__effectuate__rate__container .p-progressbar-label {
     flex: none;
 }
+
+.kpi_plans_detail_table .ant-table-content {
+    height: 295px;
+}

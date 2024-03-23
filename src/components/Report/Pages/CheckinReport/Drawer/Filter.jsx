@@ -1,14 +1,14 @@
 import { Button, DatePicker, Drawer, Form, Input, Space } from "antd";
 import dayjs from "dayjs";
 import React, { memo } from "react";
-import { dataProcessing } from "../../../../../app/hooks/dataFormatHelper";
+import { deleteObjectItems } from "../../../../../app/hooks/dataFormatHelper";
 import FormSelectDetail from "../../../../ReuseComponents/FormSelectDetail";
 
 const Filter = ({ openState, closeCallback, filterCallback }) => {
   const [filterForm] = Form.useForm();
 
   const handleFilter = (item) => {
-    const filterData = dataProcessing(item, [
+    const filterData = deleteObjectItems(item, [
       "ten_hinh_thuc",
       "ten_kh",
       "ten_nvbh",

@@ -1,12 +1,11 @@
 import { Button, Drawer, Form, Input, Space } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import emitter from "../../../../../utils/emitter";
 import FormSelectDetailv2 from "../../../../ReuseComponents/FormSelectDetailv2";
 import { setOpenSaleOrderFilter } from "../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../Store/Selector/Selector";
 
-const FilterSaleOrder = ({ eventId }) => {
+const FilterSaleOrder = ({ onFilter }) => {
   const [filterForm] = Form.useForm();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -16,9 +15,21 @@ const FilterSaleOrder = ({ eventId }) => {
     setOpenSaleOrderFilter(false);
   };
 
+  const handleCancelFilter = async () => {
+    const data = { ...filterInfo };
+    data.ma_kh = data.ma_kh_search;
+    delete data["ma_kh_search"];
+
+    filterForm.resetFields();
+    handleCloseFilter();
+    await onFilter(data);
+  };
+
   const handleFilter = async () => {
-    const data = await filterForm.getFieldsValue();
-    await emitter.emit(eventId, data);
+    const data = { ...(await filterForm.getFieldsValue()) };
+    data.ma_kh = data.ma_kh_search;
+    delete data["ma_kh_search"];
+    await onFilter(data);
     handleCloseFilter();
   };
 
@@ -111,7 +122,7 @@ const FilterSaleOrder = ({ eventId }) => {
         >
           <Button
             className="default_subsidiary_button"
-            onClick={handleCloseFilter}
+            onClick={handleCancelFilter}
           >
             Huỷ
           </Button>
@@ -127,4 +138,4 @@ const FilterSaleOrder = ({ eventId }) => {
   );
 };
 
-export default FilterSaleOrder;
+export default memo(FilterSaleOrder);

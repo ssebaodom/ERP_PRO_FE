@@ -20,12 +20,14 @@ const MasterSaleOrder = () => {
 
   useEffect(() => {
     setInitial(masterInfo);
+    return () => {};
+  }, [JSON.stringify(masterInfo)]);
 
+  useEffect(() => {
     emitter.on("HANDLE_SALE_ORDER_SAVE", async () => {
       try {
         await masterForm.validateFields();
-        console.log(masterForm.getFieldsValue());
-        await setMasterSaleOrderInfo(await masterForm.getFieldValue());
+        await setMasterSaleOrderInfo(masterForm.getFieldValue());
       } catch (error) {
         return;
       }

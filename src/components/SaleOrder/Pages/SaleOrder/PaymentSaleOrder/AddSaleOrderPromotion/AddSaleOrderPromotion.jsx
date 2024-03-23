@@ -9,12 +9,11 @@ import {
   Row,
 } from "antd";
 import _ from "lodash";
-import React from "react";
+import React, { memo } from "react";
 import { quantityFormat } from "../../../../../../app/Options/DataFomater";
-import emitter from "../../../../../../utils/emitter";
 import FormSelectDetail from "../../../../../ReuseComponents/FormSelectDetail";
 
-const AddSaleOrderPromotion = ({ emitterEvent }) => {
+const AddSaleOrderPromotion = ({ addEvent }) => {
   const [form] = Form.useForm();
 
   const handleAddPromotion = async (item) => {
@@ -22,7 +21,7 @@ const AddSaleOrderPromotion = ({ emitterEvent }) => {
     data.ma_vt = item.ma_vt_promo;
     data = _.omit(data, ["ma_vt_promo"]);
 
-    await emitter.emit(emitterEvent, data);
+    await addEvent(data);
 
     await form.resetFields();
     document.getElementById("ma_vt_promo").focus();
@@ -143,4 +142,4 @@ const AddSaleOrderPromotion = ({ emitterEvent }) => {
   );
 };
 
-export default AddSaleOrderPromotion;
+export default memo(AddSaleOrderPromotion);

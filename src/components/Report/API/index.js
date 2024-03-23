@@ -11,3 +11,14 @@ export const ApiGetPrintReportFile = async (
     return res.data;
   });
 };
+
+export const ApiPrintReport = async (
+  params,
+  setting = {
+    responseType: "blob",
+  }
+) => {
+  return await https.post(`User/LoadReport`, params, setting).then((res) => {
+    return res;
+  });
+};

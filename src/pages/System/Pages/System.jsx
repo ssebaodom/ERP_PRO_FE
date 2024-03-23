@@ -167,11 +167,9 @@ const System = () => {
 
     const node = { ...event.node };
     if (!node.children) {
-      console.log(node);
       setSelectedNodeKey(node.key);
       return node.data ? navigate(node.data) : "";
     } else {
-      console.log(node);
       setSelectedNodeKey("");
     }
   };

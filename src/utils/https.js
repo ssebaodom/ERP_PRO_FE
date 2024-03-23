@@ -26,8 +26,8 @@ class HttpService {
   post(apiEndpoint, payload, settings = {}) {
     return axios.post(apiEndpoint, payload, settings).then(
       (res) => {
-        if (res.data.errors) {
-          return this.handleErorr(res.data.errors);
+        if (res?.data?.errors) {
+          return this.handleErorr(res?.data?.errors);
         }
         return res;
       },
@@ -41,8 +41,8 @@ class HttpService {
   put(apiEndpoint, payload) {
     return axios.put(apiEndpoint, payload).then(
       (res) => {
-        if (res.data.errors) {
-          return this.handleErorr(res.data.errors);
+        if (res?.data?.errors) {
+          return this.handleErorr(res?.data?.errors);
         }
         return res;
       },
@@ -82,6 +82,9 @@ class HttpService {
           message: `Không tìm thấy API`,
           // description: `Quá thời gian thực hiện`,
         });
+        break;
+
+      case 401:
         break;
 
       default:

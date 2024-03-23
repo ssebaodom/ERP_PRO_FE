@@ -1,4 +1,4 @@
-function KeyFomarter(str) {
+export function KeyFormatter(str) {
   return str
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -7,5 +7,3 @@ function KeyFomarter(str) {
     .replace(" ", "")
     .toUpperCase();
 }
-
-export { KeyFomarter };

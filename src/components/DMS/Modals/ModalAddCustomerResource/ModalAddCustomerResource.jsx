@@ -6,7 +6,7 @@ import send_icon from "../../../../Icons/send_icon.svg";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 import { notification } from "antd";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 
 // bắt buộc khai báo bên ngoài
 
@@ -119,7 +119,7 @@ const ModalAddCustomerResource = (props) => {
             >
               <Input
                 disabled={disableFields}
-                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
                 placeholder="Nhập mã nguồn"
               />
             </Form.Item>

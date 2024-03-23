@@ -16,7 +16,7 @@ const getRefreshToken = () => {
 };
 
 const setAccessToken = (token) => {
-  return window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  return window.localStorage.setItem(ACCESS_TOKEN_KEY || "", token);
 };
 
 const resetAccessToken = (token) => {
@@ -26,7 +26,7 @@ const resetAccessToken = (token) => {
 };
 
 const setRefreshToken = (refreshToken) => {
-  return window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  return window.localStorage.setItem(REFRESH_TOKEN_KEY || "", refreshToken);
 };
 
 const claimNewToken = async () => {

@@ -20,7 +20,11 @@ const SimpleCharts = () => {
       {charts.map((item, index) => (
         <div key={index} className="dashboard__simple__chart__tag">
           <div className="dashboard__simple__chart__tag__title">
-            {SIMPLECHARTS[`${item}`]?.title}
+            <span>{SIMPLECHARTS[`${item}`]?.title}</span>
+
+            <span className="primary_color">
+              {SIMPLECHARTS[`${item}`]?.unit}
+            </span>
           </div>
           <SimpleChart
             numCharts={charts.length || 1}

@@ -1,4 +1,5 @@
 import KPIDashboard from "../components/KPI/Pages/Dashboard/KPIDashboard";
+import KPIList from "../components/KPI/Pages/KPIList/KPIList";
 import KPIPerformList from "../components/KPI/Pages/KPIPerformList/KPIPerformList";
 import KPIPlans from "../components/KPI/Pages/KPIPlans/KPIPlans";
 const kpiRoutes = [
@@ -7,6 +8,13 @@ const kpiRoutes = [
     claims: "Permissions.KPI",
     path: "KPI",
     children: [],
+  },
+  {
+    label: "Danh mục KPI",
+    claims: "Permissions.KPI.List",
+    path: "KPI/List",
+    parent: "KPI",
+    element: <KPIList />,
   },
   {
     label: "Tổng hợp KPI",

@@ -1,19 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { formStatus } from "../../../../utils/constants";
 
 const ItemsInitial = {
   currentItem: {},
   isOpenModal: false,
-  action: formStatus.VIEW,
 };
 
-const KPIPlans = createSlice({
-  name: "KPIPlans",
+const KPIList = createSlice({
+  name: "KPIList",
   initialState: { ...ItemsInitial },
   reducers: {
-    setCurrentAction(state, action) {
-      state.action = action?.payload;
-    },
     setCurrentItem(state, action) {
       state.currentItem = action?.payload;
     },
@@ -23,4 +18,4 @@ const KPIPlans = createSlice({
   },
 });
 
-export const { reducer: KPIPlansReducer, actions } = KPIPlans;
+export const { reducer: KPIListReducer, actions: KPIListActions } = KPIList;

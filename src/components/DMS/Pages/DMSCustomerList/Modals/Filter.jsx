@@ -1,6 +1,6 @@
 import { Button, Drawer, Form, Input, Space } from "antd";
 import React, { memo, useState } from "react";
-import { dataProcessing } from "../../../../../app/hooks/dataFormatHelper";
+import { deleteObjectItems } from "../../../../../app/hooks/dataFormatHelper";
 import send_icon from "../../../../../Icons/send_icon.svg";
 import FormSelectDetail from "../../../../ReuseComponents/FormSelectDetail";
 const Filter = (props) => {
@@ -16,7 +16,7 @@ const Filter = (props) => {
 
   const onSubmitForm = () => {
     const filterData = {
-      ...dataProcessing(filterForm.getFieldsValue(), [
+      ...deleteObjectItems(filterForm.getFieldsValue(), [
         "ten_kh",
         "ten_phan_loai",
         "ten_hinh_thuc",

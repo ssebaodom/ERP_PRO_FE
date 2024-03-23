@@ -18,6 +18,7 @@ import {
 import { formStatus } from "../../../../../../utils/constants";
 import emitter from "../../../../../../utils/emitter";
 import FormSelect from "../../../../../ReuseComponents/FormSelect";
+import { setPaymentSaleOrderInfo } from "../../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../../Store/Selector/Selector";
 
 const ShippingAndPayment = () => {
@@ -38,13 +39,19 @@ const ShippingAndPayment = () => {
     emitter.on("HANDLE_SALE_ORDER_SAVE", async () => {
       try {
         await shipNPay.validateFields();
-        console.log(shipNPay.getFieldsValue());
-        await setPaymentSaleOrderInfo(await shipNPay.getFieldsValue());
+        setPaymentSaleOrderInfo({
+          ...paymentInfo,
+          ...shipNPay.getFieldsValue(),
+        });
       } catch (error) {
         return;
       }
     });
 
+    return () => {};
+  }, [paymentInfo]);
+
+  useEffect(() => {
     return () => {
       setInitialValue({});
       emitter.removeAllListeners();
@@ -261,7 +268,7 @@ const ShippingAndPayment = () => {
                 </span>
                 <Form.Item
                   className="flex-1"
-                  name="htvc"
+                  name="ht_vc"
                   rules={[{ required: false, message: "" }]}
                 >
                   <Select

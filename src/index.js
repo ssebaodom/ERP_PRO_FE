@@ -10,6 +10,9 @@ import store from "./store";
 //primereact
 import { ConfigProvider } from "antd";
 import locale from "antd/locale/vi_VN";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+import updateLocale from "dayjs/plugin/updateLocale";
 import "primeflex/primeflex.css";
 import "primeicons/primeicons.css";
 import "primereact/resources/primereact.min.css";
@@ -18,6 +21,9 @@ import { Suspense } from "react";
 import App from "./App";
 import Loading from "./components/Loading/Loading";
 import themeComponents from "./utils/theme";
+
+dayjs.extend(updateLocale);
+dayjs.updateLocale("vi", {});
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

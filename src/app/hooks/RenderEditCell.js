@@ -92,6 +92,9 @@ const RenderEditCell = (cell, form, addRow) => {
             handleSelectionChange(cell.controller, e);
           }}
           optionLabelProp="value"
+          onClick={() => {
+            handleSelectionChange(cell.controller, "");
+          }}
           onSelect={onChangeSelection}
         >
           {SelectItemCode(selectOptions)}

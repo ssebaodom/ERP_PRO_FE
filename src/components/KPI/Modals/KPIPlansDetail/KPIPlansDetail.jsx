@@ -1,19 +1,37 @@
-import { Button, Divider, Form, InputNumber, Modal, Table } from "antd";
-import { ProgressBar } from "primereact/progressbar";
+import {
+  Button,
+  DatePicker,
+  Divider,
+  Form,
+  InputNumber,
+  Modal,
+  notification,
+  Table,
+} from "antd";
+import dayjs from "dayjs";
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { deleteObjectItems } from "../../../../app/hooks/dataFormatHelper";
 import OperationColumn from "../../../../app/hooks/operationColumn";
-import renderColumns from "../../../../app/hooks/renderColumns";
 import { quantityFormat } from "../../../../app/Options/DataFomater";
 import TableLocale from "../../../../Context/TableLocale";
-import { SoFuckingUltimateGetApi } from "../../../DMS/API";
+import { formStatus } from "../../../../utils/constants";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
-import { setIsOpenModal } from "../../Store/Actions/KPIPlans";
+import { setCurrentItem } from "../../Store/Actions/KPIPerforms";
+import {
+  fetchKPIPlansDetailData,
+  KPIPlanModify,
+  setCurrentKPIPlanAction,
+  setIsOpenModal,
+} from "../../Store/Actions/KPIPlans";
 import { getKPIPlansState } from "../../Store/Selectors/Selectors";
 import "./KPIPlansDetail.css";
 
-const KPIPlansDetail = () => {
-  const [inputForm] = Form.useForm();
+const { RangePicker } = DatePicker;
+
+const KPIPlansDetail = ({ refreshList }) => {
+  const [form] = Form.useForm();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
@@ -25,53 +43,46 @@ const KPIPlansDetail = () => {
     pageSize: 5,
   });
   const [totalResults, setTotalResults] = useState(0);
-  const [performRate, setPerformRate] = useState(0);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [initialValue, setInitialValue] = useState({});
+  const [initialValue, setInitialValue] = useState({
+    ke_hoach: 0,
+    ma_kpi: null,
+    ma_nvbh: null,
+    rangeTime: [],
+    ten_kpi: null,
+    ten_nvbh: null,
+    trong_so: 0,
+  });
 
-  const KPIPlanState = useSelector(getKPIPlansState);
+  const { isOpenModal, currentItem, action } = useSelector(getKPIPlansState);
+
+  const refreshData = () => {
+    setPagination({
+      ...pagination,
+      pageIndex: pagination.pageindex,
+      current: pagination.pageindex,
+    });
+  };
 
   const handleCloseModal = () => {
     setIsOpenModal(false);
   };
 
-  const getdata = () => {
-    SoFuckingUltimateGetApi({
-      store: "api_get_items_approve",
-      data: {
-        ...tableParams,
-        pageindex: pagination.pageindex,
-        pageSize: pagination.pageSize,
-      },
-    }).then((res) => {
-      let layout = renderColumns(res?.reportLayoutModel);
-      layout.push({
-        title: "Chức năng",
-        dataIndex: "",
-        editable: false,
-        dataType: "Operation",
-        align: "center",
-        fixed: "right",
-        render: (_, record) => {
-          return (
-            <OperationColumn
-              deleteFunction={() => {
-                console.log(record);
-              }}
-            />
-          );
-        },
-      });
-      setTableColumns(layout);
-      const data = res.data;
-      data.map((item, index) => {
-        item.key = item.Id;
-        return item;
-      });
-      setData(data);
-      setTotalResults(res?.pagegination?.totalRecord);
-      setLoading(false);
+  const handleResetForm = () => {
+    setInitialValue({
+      ke_hoach: 0,
+      ma_kpi: null,
+      rangeTime: [],
+      ten_kpi: null,
+      trong_so: 0,
+      ma_nvbh: currentItem?.ma_nvbh,
+      ten_nvbh: currentItem?.ten_nvbh,
     });
+    setSelectedRowKeys([]);
+  };
+
+  const handleDeletePlan = (record) => {
+    handleModifyPlan(record, formStatus.DELETE);
   };
 
   const handleTableChange = (paginationChanges, filters, sorter) => {
@@ -89,8 +100,7 @@ const KPIPlansDetail = () => {
 
   const onDeselect = async () => {
     await setSelectedRowKeys([]);
-    await setInitialValue({});
-    await inputForm.resetFields();
+    await handleResetForm();
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
@@ -104,22 +114,124 @@ const KPIPlansDetail = () => {
     type: "radio",
     selectedRowKeys,
     onChange: onSelectChange,
+    onSelect: (record) => {
+      setInitialValue({
+        ...record,
+        rangeTime: [dayjs(record?.ngay_bd), dayjs(record?.ngay_kt)],
+      });
+    },
+  };
+
+  const handleModifyPlan = async (data, formAction = formStatus.ADD) => {
+    var params = {
+      ...data,
+      ngay_bd: !data.ngay_bd
+        ? dayjs(data?.rangeTime[0]).format("YYYY/MM/DD")
+        : data?.ngay_bd,
+      ngay_kt: !data.ngay_kt
+        ? dayjs(data?.rangeTime[1]).format("YYYY/MM/DD")
+        : data?.ngay_kt,
+    };
+
+    params = await deleteObjectItems(params, [
+      "rangeTime",
+      "ten_kpi",
+      "ten_nvbh",
+      "ma_vt",
+      "ten_vt",
+      "key",
+    ]);
+
+    await KPIPlanModify({
+      ...params,
+      action: formAction,
+      id: !params?.id ? _.first(selectedRowKeys) : params?.id || null,
+    }).then((res) => {
+      if (res) {
+        notification.success({
+          message: `${
+            formAction === formStatus.EDIT ? "Xoá" : "Thực hiện "
+          } thành công`,
+        });
+
+        setCurrentItem({
+          ma_nvbh: data?.ma_nvbh,
+          ten_nvbh: data?.ten_nvbh,
+        });
+        setCurrentKPIPlanAction(formStatus.EDIT);
+        refreshData();
+        refreshList();
+      }
+    });
+  };
+
+  const getdata = async (key) => {
+    const result = await fetchKPIPlansDetailData({
+      id: key,
+      pageindex: pagination.pageindex,
+      pageSize: pagination.pageSize,
+    });
+
+    if (_.isEmpty(tableColumns)) {
+      result.layout.push({
+        title: "Chức năng",
+        dataIndex: "",
+        editable: false,
+        dataType: "Operation",
+        align: "center",
+        fixed: "right",
+        render: (_, record) => {
+          return (
+            <OperationColumn
+              deleteFunction={() => {
+                handleDeletePlan(record);
+              }}
+            />
+          );
+        },
+      });
+      setTableColumns(result.layout);
+    }
+    setData(result.data || []);
+    setTotalResults(result.totalCount || 0);
+    setLoading(false);
   };
 
   useEffect(() => {
-    setLoading(true);
-    getdata();
-  }, [JSON.stringify(tableParams), pagination]);
+    if (isOpenModal) {
+      setLoading(true);
+      getdata(currentItem?.ma_nvbh);
+      handleResetForm();
+    }
+    return () => {
+      handleResetForm();
+      setData([]);
+      setSelectedRowKeys([]);
+    };
+  }, [isOpenModal, JSON.stringify(tableParams), pagination]);
+
+  useEffect(() => {
+    if (!_.isEmpty(currentItem)) {
+      handleResetForm();
+    }
+  }, [currentItem]);
+
+  useEffect(() => {
+    if (isOpenModal) {
+      form.resetFields();
+    }
+  }, [initialValue]);
 
   return (
     <Modal
-      open={KPIPlanState.isOpenModal}
+      open={isOpenModal}
       onCancel={handleCloseModal}
+      onOk={handleCloseModal}
       okText="Hoàn thành"
       centered
       cancelButtonProps={{ style: { display: "none" } }}
       width={800}
-      destroyOnClose
+      destroyOnClose={true}
       title="Chi tiết KPI"
     >
       <div className="">
@@ -128,7 +240,7 @@ const KPIPlansDetail = () => {
           columns={tableColumns}
           dataSource={data}
           rowClassName={"default_table_row"}
-          className="default_table"
+          className="default_table kpi_plans_detail_table"
           locale={TableLocale()}
           scroll={{ x: "auto" }}
           pagination={{
@@ -147,40 +259,26 @@ const KPIPlansDetail = () => {
 
       <Form
         initialValues={initialValue}
-        form={inputForm}
+        form={form}
         className="default_modal_container"
+        preserve={false}
+        onFinish={handleModifyPlan}
       >
         <div className="default_modal_group_items">
           <div className="default_modal_group_items">
             <FormSelectDetail
               width={100}
               codeWidth={120}
-              controller={"dmkh_lookup"}
+              controller={"dmkpi_lookup"}
               keyCode="ma_kpi"
               keyName="ten_kpi"
               label="Mã KPI"
               placeHolderCode="KPI"
               placeHolderName="Tên KPI"
-              form={inputForm}
+              form={form}
               direction="column"
             />
           </div>
-          <div className="default_modal_group_items">
-            <FormSelectDetail
-              width={100}
-              codeWidth={120}
-              controller={"dmvt_lookup"}
-              keyCode="ma_vt"
-              keyName="ten_vt"
-              label="Sản phẩm"
-              placeHolderCode="Sản phẩm"
-              placeHolderName="Tên sản phẩm"
-              form={inputForm}
-              direction="column"
-            />
-          </div>
-        </div>
-        <div className="default_modal_group_items">
           <div className="default_modal_group_items">
             <div
               className="split__view__detail__primary__item"
@@ -189,9 +287,7 @@ const KPIPlansDetail = () => {
                 alignItems: "flex-start",
               }}
             >
-              <span className="default_bold_label" style={{ width: ` 100px` }}>
-                Kế hoạch
-              </span>
+              <span className="default_bold_label">Kế hoạch</span>
 
               <div className="flex w-full gap-2">
                 <Form.Item
@@ -202,7 +298,6 @@ const KPIPlansDetail = () => {
                       message: `Điền kế hoạch`,
                     },
                   ]}
-                  initialValue={0}
                 >
                   <InputNumber
                     style={{
@@ -223,9 +318,7 @@ const KPIPlansDetail = () => {
                 alignItems: "flex-start",
               }}
             >
-              <span className="default_bold_label" style={{ width: ` 100px` }}>
-                Trọng số
-              </span>
+              <span className="default_bold_label">Trọng số</span>
 
               <div className="flex w-full gap-2">
                 <Form.Item
@@ -236,7 +329,6 @@ const KPIPlansDetail = () => {
                       message: `Điền trọng số`,
                     },
                   ]}
-                  initialValue={0}
                 >
                   <InputNumber
                     style={{
@@ -250,21 +342,50 @@ const KPIPlansDetail = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="KPI__effectuate__rate__container">
-            <p className="default_bold_label">Thực hiện</p>
-            <ProgressBar
-              pt={{
-                value: {
-                  style: {
-                    background: "linear-gradient(to right, #657194, #4779CF)",
-                    flex: "none",
+        <div className="default_modal_group_items">
+          <div
+            className="split__view__detail__primary__item"
+            style={{
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <span className="default_bold_label">Ngày bắt đầu - kết thúc</span>
+
+            <div className="flex w-full gap-2">
+              <Form.Item
+                name="rangeTime"
+                rules={[
+                  {
+                    required: true,
+                    message: `chọn ngày`,
                   },
-                },
-              }}
-              value={performRate}
-            ></ProgressBar>
+                ]}
+              >
+                <RangePicker
+                  style={{
+                    width: `100%`,
+                  }}
+                />
+              </Form.Item>
+            </div>
           </div>
+
+          <FormSelectDetail
+            disable={action === formStatus.EDIT}
+            width={100}
+            codeWidth={120}
+            controller={"dmnvbh_lookup"}
+            keyCode="ma_nvbh"
+            keyName="ten_nvbh"
+            label="Mã nhân viên"
+            placeHolderCode="Nhân viên"
+            placeHolderName="Tên Nhân viên"
+            form={form}
+            direction="column"
+          />
         </div>
 
         <div
@@ -273,7 +394,10 @@ const KPIPlansDetail = () => {
             justifyContent: "center",
           }}
         >
-          <Button>{selectedRowKeys.length > 0 ? "Lưu" : "Thêm mới"}</Button>
+          <Button onClick={handleResetForm}>Huỷ</Button>
+          <Button type="primary" htmlType="submit">
+            {selectedRowKeys.length > 0 ? "Lưu" : "Thêm mới"}
+          </Button>
         </div>
       </Form>
       <Divider style={{ margin: "10px 0px" }} />

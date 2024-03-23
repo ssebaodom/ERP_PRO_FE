@@ -1,7 +1,6 @@
 import { Row } from "antd";
 import React from "react";
 import DetailSaleOrder from "./DetailSaleOrder/DetailSaleOrder";
-import FilterSaleOrder from "./FilterSaleOrder/FilterSaleOrder";
 import ListSaleOrders from "./ListSaleOrders/ListSaleOrders";
 import PaymentSaleOrder from "./PaymentSaleOrder/PaymentSaleOrder";
 import "./SaleOrder.css";
@@ -14,8 +13,6 @@ const SaleOrder = () => {
         <DetailSaleOrder />
         <PaymentSaleOrder />
       </Row>
-
-      <FilterSaleOrder eventId={"HANDLE_SALE_ORDER_FILTER"} />
     </div>
   );
 };

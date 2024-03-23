@@ -14,11 +14,12 @@ const getAllValueByColumn = (getColumn, allColumns) => {
 const getAllValueByRow = (rowKey, allColumns) => {
   const allKeys = Object.keys(allColumns);
   var allValues = {};
+
   allKeys
     .filter((item) => {
       const prefixItem = item.substring(0, item.indexOf("_"));
       if (prefixItem == rowKey) {
-        return allColumns[item];
+        return item;
       }
     })
     .map(
@@ -41,4 +42,18 @@ const getAllRowKeys = (allColumns) => {
   return _.union(allKeys);
 };
 
-export { getAllValueByColumn, getAllValueByRow, getAllRowKeys };
+const getRowKey = (key = "") => {
+  return key.substring(0, key.indexOf("_"));
+};
+
+const getCellName = (key = "") => {
+  return key.substring(key.indexOf("_") + 1, key.length);
+};
+
+export {
+  getAllValueByColumn,
+  getAllValueByRow,
+  getAllRowKeys,
+  getRowKey,
+  getCellName,
+};

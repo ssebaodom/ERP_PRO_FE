@@ -1,5 +1,5 @@
 import { Button, Modal, Space } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import send_icon from "../Icons/send_icon.svg";
 
 const ConfirmDialog = (props) => {
@@ -55,4 +55,4 @@ const ConfirmDialog = (props) => {
   );
 };
 
-export default ConfirmDialog;
+export default memo(ConfirmDialog);

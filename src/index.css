@@ -62,6 +62,10 @@ body {
   color: #657194 !important;
 }
 
+.primary_color {
+  color: #F58220 !important;
+}
+
 .sub_text_color {
   color: #1A4898 !important;
 }
@@ -999,7 +1003,6 @@ body {
 }
 
 .list__header__bar {
-  padding: 10px 0px 0px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerArea.css";
 
 import { useDebouncedCallback } from "use-debounce";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import SelectItemCode from "../../../../Context/SelectItemCode";
 import SelectNotFound from "../../../../Context/SelectNotFound";
 import send_icon from "../../../../Icons/send_icon.svg";
@@ -165,7 +165,7 @@ const ModalAddCustomerArea = (props) => {
             >
               <Input
                 disabled={disableFields}
-                onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+                onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
                 placeholder="Nhập mã khu vực"
               />
             </Form.Item>

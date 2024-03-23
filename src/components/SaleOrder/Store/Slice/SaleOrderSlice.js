@@ -9,31 +9,36 @@ const saleOrderInitial = {
   currentItemId: "",
   masterInfo: { ma_kh: null, ten_kh: null, ghi_chu: null },
   detailInfo: { columns: [], data: [] },
+  insertDetails: [],
   promotionItemsInfo: [],
   paymentInfo: {
-    t_tt: 123456,
-    httt: null,
-    stk: null,
-    voucher: null,
-    MST: null,
-    ma_nt: null,
-    han_tt: null,
-    nguoi_nhan: null,
-    dien_thoai: null,
-    dia_chi: null,
-    htvc: null,
-    dv_vc: null,
-    phi_vc: null,
+    t_so_luong: 0,
+    t_tt: 0,
+    t_tien: 0,
+    t_thue: 0,
+    t_ck: 0,
+    httt: "",
+    stk: "",
+    voucher: "",
+    MST: "",
+    ma_nt: "",
+    han_tt: "",
+    nguoi_nhan: "",
+    dien_thoai: "",
+    dia_chi: "",
+    ht_vc: "",
+    dv_vc: "",
+    phi_vc: "",
     ngay_nhan: undefined,
   },
   filterInfo: {
-    ma_kh: null,
-    ten_kh: null,
-    dia_chi: null,
-    dien_thoai: null,
-    so_tu: null,
-    so_den: null,
-    searchKey: null,
+    ma_kh: "",
+    ten_kh: "",
+    dia_chi: "",
+    dien_thoai: "",
+    so_tu: "",
+    so_den: "",
+    searchKey: "",
   },
 };
 
@@ -76,6 +81,14 @@ const saleOrderSlice = createSlice({
 
     setPaymentSaleOrderInfo(state, action) {
       state.paymentInfo = action?.payload;
+    },
+
+    setSaleOrderInsertDetails(state, action) {
+      state.insertDetails = action?.payload;
+    },
+
+    resetForm(state, action) {
+      state.currentItemId = saleOrderInitial.currentItemId;
     },
 
     resetSaleOrder: () => saleOrderInitial,

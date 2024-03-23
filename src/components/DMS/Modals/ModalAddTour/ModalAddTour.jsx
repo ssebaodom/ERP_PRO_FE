@@ -2,7 +2,7 @@ import { Button, Form, Input, Modal, notification, Space } from "antd";
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { KeyFomarter } from "../../../../app/Options/KeyFomarter";
+import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
@@ -194,7 +194,7 @@ const ModalAddTour = (props) => {
             <Form.Item
               name="tourCode"
               disabled={disableFields}
-              onInput={(e) => (e.target.value = KeyFomarter(e.target.value))}
+              onInput={(e) => (e.target.value = KeyFormatter(e.target.value))}
               rules={[{ required: true, message: "Điền mã tuyến" }]}
             >
               <Input placeholder="Nhập mã tuyến" />
