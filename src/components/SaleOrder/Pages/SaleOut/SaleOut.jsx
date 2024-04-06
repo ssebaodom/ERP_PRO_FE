@@ -3,6 +3,7 @@ import {
   Divider,
   Form,
   Input,
+  message,
   notification,
   Pagination,
   Space,
@@ -14,6 +15,10 @@ import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
 import { getIndexRow } from "../../../../app/Functions/getIndexRow";
+import {
+  getAllRowKeys,
+  getAllValueByRow,
+} from "../../../../app/Functions/getTableValue";
 import {
   deleteObjectItems,
   formatData,
@@ -31,12 +36,13 @@ import { SoFuckingUltimateApi } from "../../API";
 import {
   fetchSaleOutDetail,
   fetchSaleOutMaster,
-  setFinalDetails,
+  setCurrentDetailSaleOut,
+  setSaleOutAction,
 } from "../../Store/Sagas/Sagas";
 import {
   getCurrentSaleOutDetail,
   getCurrentSaleOutMaster,
-  getFinalDetail,
+  getSaleOutInfo,
 } from "../../Store/Selector/Selector";
 import SaleoutDetail from "./Detail/SaleoutDetail";
 import SaleOutMaster from "./Detail/SaleOutMaster";
@@ -46,8 +52,8 @@ import "./SaleOut.css";
 const SaleOut = () => {
   // initialize #########################################################################
   const [masterForm] = Form.useForm();
-  const [detailData, setDetailData] = useState([]);
-  const [detailColums, setDetailColums] = useState([]);
+  const [detailForm] = Form.useForm();
+
   const [loading, setLoading] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [tableParams, setTableParams] = useState({
@@ -69,13 +75,15 @@ const SaleOut = () => {
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
 
   const [customerList, setCustomerList] = useState([]);
-  const [action, setAction] = useState(formStatus.VIEW);
+
   const [initialCustomerValue, setInitialCustomerValue] = useState({});
   const [isSimpleFilter, setIsSimpleFilter] = useState(false);
 
   const currentSaleOutMaster = useSelector(getCurrentSaleOutMaster);
   const currentSaleOutDetail = useSelector(getCurrentSaleOutDetail);
-  const finalDetails = useSelector(getFinalDetail);
+
+  const { action } = useSelector(getSaleOutInfo);
+
   const userInfo = useSelector(getUserInfo);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -124,6 +132,12 @@ const SaleOut = () => {
   };
 
   const onSubmitForm = () => {
+    const finalDetails = getAllRowKeys(detailForm.getFieldsValue()).map(
+      (item) => {
+        return getAllValueByRow(item, detailForm.getFieldsValue());
+      }
+    );
+
     const master = {
       ...deleteObjectItems(masterForm.getFieldsValue(), [
         "cacel_reason",
@@ -146,6 +160,7 @@ const SaleOut = () => {
         ...item,
       };
     });
+
     UltimatePutDataApi({
       store: "app_create_sale_out",
       data: master,
@@ -157,7 +172,7 @@ const SaleOut = () => {
             message: `Thành công`,
           });
           refreshData();
-          setAction(formStatus.VIEW);
+          setSaleOutAction(formStatus.VIEW);
         } else {
           notification.warning({
             message: `Có lỗi xảy ra khi thực hiện`,
@@ -171,7 +186,7 @@ const SaleOut = () => {
 
   const handleSelectedMasterItem = (item) => {
     setCurrentRecord(item);
-    setAction(formStatus.VIEW);
+    setSaleOutAction(formStatus.VIEW);
   };
 
   const onFilter = (items) => {
@@ -179,8 +194,8 @@ const SaleOut = () => {
   };
 
   const scrollToField = (field, fieldName) => {
-    if (action != formStatus.VIEW) {
-      const allFields = masterForm.getFieldsValue(true);
+    if (action !== formStatus.VIEW) {
+      const allFields = detailForm.getFieldsValue(true);
       if (!fieldName) {
         const itemFocusName = Object.keys(allFields)
           .filter((item) => item.includes(field))
@@ -194,13 +209,53 @@ const SaleOut = () => {
     }
   };
 
-  const handleSaveDetailForm = async (items) => {
+  const handleDetailValidate = async () => {
+    try {
+      await detailForm.validateFields();
+      const detailData = [];
+
+      getAllRowKeys(detailForm.getFieldsValue()).map((item) => {
+        return detailData.push(
+          getAllValueByRow(item, detailForm.getFieldsValue())
+        );
+      });
+
+      if (_.isEmpty(detailData)) {
+        message.warning("Vui lòng thêm vật tư !");
+        onStepsChange(1);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.log(error);
+      await onStepsChange(1);
+      scrollToField("", error?.errorFields[0]?.name[0]);
+      return false;
+    }
+  };
+
+  const handleMasterValidate = async () => {
     try {
       await masterForm.validateFields();
-      emitter.emit("HANDLE_SAVE_SALE_OUT", {});
+      return true;
     } catch (error) {
       onStepsChange(0);
       scrollToField("", error?.errorFields[0]?.name[0]);
+      return false;
+    }
+  };
+
+  const handleSaveSaleOut = async (items) => {
+    try {
+      const masterValid = await handleMasterValidate();
+      if (!masterValid) return;
+      const detailValid = await handleDetailValidate();
+
+      if (masterValid && detailValid) {
+        setSaleOutAction(formStatus.SAVED);
+        onSubmitForm();
+      }
+    } catch (error) {
       return;
     }
   };
@@ -230,9 +285,10 @@ const SaleOut = () => {
   };
 
   const handleAddNew = () => {
-    setAction(formStatus.ADD);
+    setSaleOutAction(formStatus.ADD);
     setInitialCustomerValue({});
-    setDetailData([]);
+
+    setCurrentDetailSaleOut({ ...currentSaleOutDetail, data: [] });
   };
 
   const handleOpenDeleteDialog = () => {
@@ -259,7 +315,7 @@ const SaleOut = () => {
           message: `Thành công`,
         });
         refreshData();
-        setAction(formStatus.VIEW);
+        setSaleOutAction(formStatus.VIEW);
         handleCloseDeleteDialog();
       } else {
         notification.warning({
@@ -278,6 +334,7 @@ const SaleOut = () => {
   // Khi chọn khách sẽ load dữ liệu detail
   useEffect(() => {
     fetchSaleOutDetail(currentRecord);
+
     if (currentRecord) {
       setLoadingDetail(true);
       fetchSaleOutMaster(currentRecord);
@@ -298,26 +355,10 @@ const SaleOut = () => {
     setLoadingDetail(false);
   }, [JSON.stringify(currentSaleOutMaster)]);
 
-  useEffect(() => {
-    if (currentSaleOutDetail && currentRecord) {
-      setDetailData(currentSaleOutDetail.data);
-      setDetailColums(currentSaleOutDetail.reportLayoutModel);
-    }
-  }, [JSON.stringify(currentSaleOutDetail)]);
-
   // Refresh lại form để nhận dữ liệu
   useEffect(() => {
     masterForm.resetFields();
   }, [JSON.stringify(initialCustomerValue)]);
-
-  useEffect(() => {
-    if (finalDetails.length > 0) {
-      onSubmitForm();
-    }
-    return () => {
-      setFinalDetails([]);
-    };
-  }, [finalDetails]);
 
   useEffect(() => {
     return () => {
@@ -326,15 +367,9 @@ const SaleOut = () => {
   }, []);
 
   return (
-    <div
-      className="default_list_layout page_default"
-      style={{ height: "90vh", gap: "15px" }}
-    >
-      <div className="split__view__container" style={{ height: "96%" }}>
-        <div
-          className="split__view__header__bar"
-          style={{ padding: "0 12px 12px 12px" }}
-        >
+    <div className="default_list_layout page_default">
+      <div className="split__view__container">
+        <div className="split__view__header__bar">
           <HeaderTableBar
             name={"Saleout"}
             title={"Danh sách phiếu saleout"}
@@ -346,7 +381,7 @@ const SaleOut = () => {
           />
         </div>
         <div className="split__view__detail">
-          <div className="split__view__detail__left" style={{ flex: "0.28" }}>
+          <div className="split__view__detail__left">
             <div
               className={` ${
                 isSimpleFilter
@@ -423,9 +458,7 @@ const SaleOut = () => {
             </div>
           </div>
           <div className="split__view__detail__right">
-            <Form
-              initialValues={initialCustomerValue}
-              form={masterForm}
+            <div
               className="split__view__detail__primary relative w-full justify-content-between"
               style={{ flex: 1 }}
             >
@@ -438,14 +471,24 @@ const SaleOut = () => {
               ) : (
                 <>
                   <div className="flex flex-column h-full min-h-0">
-                    <Steps
-                      className="w-fit"
-                      style={{ marginBottom: "20px" }}
-                      current={currentStep}
-                      items={steps}
-                      onChange={onStepsChange}
-                    />
-                    <Divider style={{ margin: "10px 0px" }} />
+                    <div className="w-full flex gap-3 justify-content-between align-items-center">
+                      <Steps
+                        size="small"
+                        className="w-fit"
+                        current={currentStep}
+                        items={steps}
+                        onChange={onStepsChange}
+                      />
+
+                      <div className="text-left">
+                        <span>Số chứng từ: </span>
+                        <span className="primary_bold_text">
+                          {initialCustomerValue?.so_ct || "Tự động sinh"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Divider style={{ margin: "5px 0px" }} />
                     <div
                       className="h-full min-h-0"
                       style={{
@@ -454,7 +497,13 @@ const SaleOut = () => {
                         }`,
                       }}
                     >
-                      <SaleOutMaster action={action} form={masterForm} />
+                      <Form
+                        initialValues={initialCustomerValue}
+                        form={masterForm}
+                        component={false}
+                      >
+                        <SaleOutMaster action={action} form={masterForm} />
+                      </Form>
                     </div>
 
                     <div
@@ -467,23 +516,28 @@ const SaleOut = () => {
                     >
                       <SaleoutDetail
                         masterForm={masterForm}
-                        data={detailData}
-                        Action={action}
-                        Tablecolumns={detailColums}
+                        detailForm={detailForm}
+                        action={action}
                       />
                     </div>
                   </div>
 
                   <div className="split__view__detail__summary">
-                    <SummaryMaster action={action} />
+                    <Form
+                      initialValues={initialCustomerValue}
+                      form={masterForm}
+                      component={false}
+                    >
+                      <SummaryMaster action={action} />
+                    </Form>
 
                     <Space className="justify-content-end">
-                      {action !== "VIEW" ? (
+                      {action !== "VIEW" && action !== formStatus.SAVED ? (
                         <>
                           <Button
                             onClick={(e) => {
                               masterForm.resetFields();
-                              setAction(formStatus.VIEW);
+                              setSaleOutAction(formStatus.VIEW);
                             }}
                             className="default_subsidiary_button"
                           >
@@ -491,7 +545,7 @@ const SaleOut = () => {
                           </Button>
 
                           <Button
-                            onClick={handleSaveDetailForm}
+                            onClick={handleSaveSaleOut}
                             className="default_primary_button"
                           >
                             Lưu
@@ -500,7 +554,7 @@ const SaleOut = () => {
                       ) : (
                         <>
                           <Button
-                            onClick={(e) => setAction(formStatus.EDIT)}
+                            onClick={(e) => setSaleOutAction(formStatus.EDIT)}
                             className="default_warning_button"
                           >
                             Sửa
@@ -511,7 +565,7 @@ const SaleOut = () => {
                   </div>
                 </>
               )}
-            </Form>
+            </div>
           </div>
         </div>
       </div>

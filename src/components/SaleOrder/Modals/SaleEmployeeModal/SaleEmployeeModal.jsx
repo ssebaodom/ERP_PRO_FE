@@ -8,6 +8,7 @@ import {
   formatData,
 } from "../../../../app/hooks/dataFormatHelper";
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
+import { phoneNumberRegex } from "../../../../app/regex/regex";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi } from "../../../DMS/API";
@@ -176,7 +177,23 @@ const SaleEmployeeModal = ({
             <span className="default_bold_label" style={{ width: "100px" }}>
               Điện thoại
             </span>
-            <Form.Item name="dien_thoai">
+            <Form.Item
+              name="dien_thoai"
+              rules={[
+                { required: true, message: "Điền số điện thoại" },
+
+                {
+                  validator: async (_, value) => {
+                    return ((await phoneNumberRegex.test(value)) || !value) ==
+                      true
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Lỗi định dạng số điện thoại")
+                        );
+                  },
+                },
+              ]}
+            >
               <Input placeholder="Nhập điện thoại" />
             </Form.Item>
           </div>

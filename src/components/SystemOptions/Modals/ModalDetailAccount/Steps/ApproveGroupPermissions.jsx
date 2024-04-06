@@ -33,14 +33,14 @@ const ApproveGroupPermissions = () => {
       data: { ...params },
     }).then((res) => {
       setLoading(false);
-      setGroups(res.data);
+      setGroups(res?.data || []);
     });
   };
 
   const getUserGroup = () => {
     apiGetUserGroup({ UserId: UserId }).then((res) => {
-      setSelectedItems(res?.data);
-      setCurrentGroupPermission(res?.data);
+      setSelectedItems(res?.data || []);
+      setCurrentGroupPermission(res?.data || []);
 
       // setCurrentGroupPermission(
       //   res?.data.map((item) => {

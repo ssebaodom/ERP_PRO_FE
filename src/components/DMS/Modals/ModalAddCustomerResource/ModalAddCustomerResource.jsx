@@ -7,6 +7,7 @@ import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 import { notification } from "antd";
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 
 // bắt buộc khai báo bên ngoài
 
@@ -16,6 +17,7 @@ const ModalAddCustomerResource = (props) => {
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
   const [disableFields, setDisableFields] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   ////////////////////////////////////////-Functions-//////////////////////////////////////////
 
@@ -74,6 +76,7 @@ const ModalAddCustomerResource = (props) => {
       inputForm.setFieldValue(`status`, res.data[0]?.status);
 
       setDisableFields(true);
+      setLoading(false);
     });
   };
 
@@ -82,7 +85,8 @@ const ModalAddCustomerResource = (props) => {
   useEffect(() => {
     setOpenModal(props.openModalState);
     if (props.openModalState && props.openModalType === "EDIT") {
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      setLoading(true);
+      getDataEdit(props.currentRecord || 0);
     }
   }, [JSON.stringify(props)]);
 
@@ -108,6 +112,7 @@ const ModalAddCustomerResource = (props) => {
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>

@@ -4,6 +4,7 @@ import "./ModalAddTicketType.css";
 
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
@@ -19,6 +20,7 @@ const ModalAddTicketType = ({
   const [initialValues, setInitialValues] = useState({});
   const [selectOptions, setSelectOptions] = useState([]);
   const [selectLoading, setSelectLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
@@ -82,6 +84,8 @@ const ModalAddTicketType = ({
         res.data[0]?.ten_loai_cha?.trim()
       );
       inputForm.setFieldValue(`status`, res.data[0]?.status?.trim());
+
+      setLoading(false);
     });
   };
 
@@ -89,7 +93,9 @@ const ModalAddTicketType = ({
     setOpenModal(openModalState);
     if (openModalState && openModalType === formStatus.EDIT) {
       setInitialValues({});
-      getDataEdit(currentRecord ? currentRecord : 0);
+      setLoading(true);
+
+      getDataEdit(currentRecord || 0);
     }
   }, [JSON.stringify(openModalState)]);
 
@@ -115,6 +121,7 @@ const ModalAddTicketType = ({
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>

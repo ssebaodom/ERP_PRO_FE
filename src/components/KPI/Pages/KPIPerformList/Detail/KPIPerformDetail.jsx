@@ -1,22 +1,51 @@
-import { Line } from "@ant-design/plots";
 import { Modal } from "antd";
+import dayjs from "dayjs";
+import ReactECharts from "echarts-for-react";
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { setIsOpenModal } from "../../../Store/Actions/KPIPerforms";
+import {
+  fetchKPIPerformDetailData,
+  setIsOpenModal,
+} from "../../../Store/Actions/KPIPerforms";
 import { getKPIPerformState } from "../../../Store/Selectors/Selectors";
 import "./../KPIPerformList.css";
+import { KPIPerformChartConfig } from "./ChartConfig";
 
 const KPIPerformDetail = () => {
   const [data, setData] = useState([]);
-  const KPIPerformState = useSelector(getKPIPerformState);
+  const [detailData, setDetailData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [options, setOptions] = useState({});
+  const [pageLoaded, setPageLoaded] = useState(false);
+  const { currentItem, isOpenModal } = useSelector(getKPIPerformState);
 
   const handleCloseModal = () => {
     setIsOpenModal(false);
   };
 
+  const fetchData = async () => {
+    const result = await fetchKPIPerformDetailData({
+      id: currentItem.id,
+    });
+
+    const data = result.data.map((item) => item.thuc_hien);
+    const columns = result.data.map((item) =>
+      dayjs(item.ngay_ct).format("DD/MM/YYYY")
+    );
+
+    setDetailData(result.detailData);
+    setOptions(KPIPerformChartConfig(data, columns) || {});
+    setLoading(false);
+  };
+
   useEffect(() => {
-    asyncFetch();
-  }, []);
+    if (isOpenModal) {
+      setLoading(true);
+      asyncFetch();
+      fetchData();
+      setPageLoaded(true);
+    }
+  }, [isOpenModal]);
 
   const asyncFetch = () => {
     fetch(
@@ -42,33 +71,46 @@ const KPIPerformDetail = () => {
 
   return (
     <Modal
-      open={KPIPerformState.isOpenModal}
+      open={isOpenModal}
       onCancel={handleCloseModal}
       centered
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
       width={800}
-      destroyOnClose
       title="Chi tiết "
     >
-      <Line {...config} />
+      {pageLoaded && (
+        <ReactECharts
+          style={{ width: "100%" }}
+          showLoading={loading}
+          option={options}
+        />
+      )}
+
       <div className="KPI__modal__detail__container">
         <div>
           <span className="primary_bold_text">Thông tin KPI</span>
           <div className="clear-both">
             <p className="text-float-left">Nhân viên</p>
-            <p className="text-float-right primary_bold_text">Mạch Hải Hưng</p>
+            <p className="text-float-right primary_bold_text">
+              {detailData?.ma_nvbh || "Không có dữ liệu"} -{" "}
+              {detailData?.ten_nvbh || "Không có dữ liệu"}
+            </p>
           </div>
           <div className="clear-both">
             <p className="text-float-left">Ngày bắt đầu</p>
             <p className="text-float-right primary_bold_text">
-              1/1/2023 - 30/1/2023
+              {dayjs(detailData?.ngay_bd).format("DD/MM/YYYY") ||
+                "Không có dữ liệu"}{" "}
+              -{" "}
+              {dayjs(detailData?.ngay_kt).format("DD/MM/YYYY") ||
+                "Không có dữ liệu"}
             </p>
           </div>
           <div className="clear-both">
             <p className="text-float-left">Nhóm KPI</p>
             <p className="text-float-right primary_bold_text">
-              KPI trọng tâm doanh thu
+              {detailData?.ten_kpi || "Không có dữ liệu"}
             </p>
           </div>
           <div className="clear-both">
@@ -78,7 +120,7 @@ const KPIPerformDetail = () => {
           <div className="clear-both">
             <p className="text-float-left">Diễn giải</p>
             <p className="text-float-right primary_bold_text">
-              Tính doanh thu dựa trên đơn hàng bán
+              {detailData?.ghi_chu || "Không có dữ liệu"}
             </p>
           </div>
         </div>
@@ -86,37 +128,58 @@ const KPIPerformDetail = () => {
           <span className="primary_bold_text">Chi tiết hoạt động</span>
           <div className="clear-both">
             <p className="text-float-left">Tình trạng</p>
-            <p className="text-float-right primary_bold_text success_text_color">
-              Vượt chỉ tiêu 🙌🙌🙌
-            </p>
+
+            {detailData?.total < detailData?.ke_hoach ? (
+              <p className="text-float-right primary_bold_text warning_text_color">
+                Chưa hoàn thành chỉ tiêu
+              </p>
+            ) : detailData?.total === detailData?.ke_hoach ? (
+              <p className="text-float-right primary_bold_text success_text_color">
+                Hoàn thành chỉ tiêu
+              </p>
+            ) : (
+              <p className="text-float-right primary_bold_text success_text_color">
+                Vượt chỉ tiêu 🙌🙌🙌
+              </p>
+            )}
           </div>
           <div className="clear-both">
             <p className="text-float-left">Kế hoạch</p>
-            <p className="text-float-right primary_bold_text">1000000000</p>
+            <p className="text-float-right primary_bold_text">
+              {detailData?.ke_hoach || "Không có dữ liệu"}
+            </p>
           </div>
           <div className="clear-both">
             <p className="text-float-left">Thực hiện</p>
-            <p className="text-float-right primary_bold_text">500000000</p>
-          </div>
-          <div className="clear-both">
-            <p className="text-float-left">Ngày thực hiện tốt nhất</p>
             <p className="text-float-right primary_bold_text">
-              15/01/2023 - 2000000
+              {detailData?.total || "Không có dữ liệu"}
             </p>
           </div>
           <div className="clear-both">
-            <p className="text-float-left">Ngày thực hiện thấp nhất</p>
+            <p className="text-float-left">Thực hiện tốt nhất</p>
             <p className="text-float-right primary_bold_text">
-              02/01/2023 - 200000
+              {dayjs(detailData?.max_day).format("DD/MM/YYYY")} -{" "}
+              {detailData?.max_result || "Không có dữ liệu"}
             </p>
           </div>
           <div className="clear-both">
-            <p className="text-float-left">Ngày hoàn thành KPI</p>
-            <p className="text-float-right primary_bold_text">29/01/2023</p>
+            <p className="text-float-left">Thực hiện thấp nhất</p>
+            <p className="text-float-right primary_bold_text">
+              {dayjs(detailData?.min_day).format("DD/MM/YYYY")} -{" "}
+              {detailData?.min_result || "Không có dữ liệu"}
+            </p>
           </div>
           <div className="clear-both">
             <p className="text-float-left">Vượt chỉ tiêu</p>
-            <p className="text-float-right primary_bold_text">1000000 - 10%</p>
+            <p className="text-float-right primary_bold_text">
+              {detailData?.total < detailData?.ke_hoach
+                ? "Chưa hoàn thành"
+                : `${detailData?.total - detailData?.ke_hoach} - ${
+                    ((detailData?.total - detailData?.ke_hoach) /
+                      detailData?.ke_hoach) *
+                    100
+                  } %`}
+            </p>
           </div>
         </div>
       </div>

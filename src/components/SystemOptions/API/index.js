@@ -22,7 +22,7 @@ export const apiGetUserGroup = async (payload) => {
   return await https
     .post(`Authentication/GetUserGroup`, payload)
     .then((res) => {
-      return res;
+      return res.data;
     });
 };
 
@@ -44,7 +44,7 @@ export const apiGetGroupClaims = async (payload) => {
   return await https
     .post(`Authentication/GetGroupClaim`, payload)
     .then((res) => {
-      return res;
+      return res.data;
     });
 };
 
@@ -62,7 +62,7 @@ export const apiCreategroup = async (payload) => {
 
 export const apiGetUnitClaims = async (payload) => {
   return await https.post(`Authentication/DVCSClaim`, payload).then((res) => {
-    return res;
+    return res.data;
   });
 };
 
@@ -70,4 +70,12 @@ export const apiAlterUnitClaims = async (payload) => {
   return await https.post(`Authentication/AlterDVCS`, payload).then((res) => {
     return res.data;
   });
+};
+
+export const apiAlterUserGroup = async (payload) => {
+  return await https
+    .post(`Authentication/AlterUserGroup`, payload)
+    .then((res) => {
+      return res.data;
+    });
 };

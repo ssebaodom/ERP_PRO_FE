@@ -236,6 +236,7 @@ const CheckinReport = () => {
           rowClassName={"default_table_row"}
           className="default_table"
           locale={TableLocale()}
+          scroll={{ x: "auto" }}
           pagination={{
             ...pagination,
             total: totalResults,

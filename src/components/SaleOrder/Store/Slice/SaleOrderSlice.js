@@ -4,7 +4,7 @@ const saleOrderInitial = {
   isOpenFilter: false,
   loading: false,
   currentStep: 0,
-  action: "ADD",
+  action: "VIEW",
   saleOrderList: { columns: [], dataSource: [], totalRecords: 0 },
   currentItemId: "",
   masterInfo: { ma_kh: null, ten_kh: null, ghi_chu: null },
@@ -89,6 +89,8 @@ const saleOrderSlice = createSlice({
 
     resetForm(state, action) {
       state.currentItemId = saleOrderInitial.currentItemId;
+      state.paymentInfo = saleOrderInitial.paymentInfo;
+      state.masterInfo = saleOrderInitial.masterInfo;
     },
 
     resetSaleOrder: () => saleOrderInitial,

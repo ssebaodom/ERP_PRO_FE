@@ -58,7 +58,12 @@ const RenderCells = (cell, form, addRow) => {
   switch (cell.inputType) {
     case "Numeric":
       inputNode = (
-        <InputNumber onKeyDown={handleKeypress} step={quantityFormat} />
+        <InputNumber
+          controls={false}
+          min="0"
+          onKeyDown={handleKeypress}
+          step={quantityFormat}
+        />
       );
       break;
     case "Text":
@@ -74,6 +79,7 @@ const RenderCells = (cell, form, addRow) => {
     case "AutoComplete":
       inputNode = (
         <Select
+          popupMatchSelectWidth={false}
           showSearch
           placeholder={`Vui lòng nhập ${cell.title}`}
           style={{
@@ -82,7 +88,6 @@ const RenderCells = (cell, form, addRow) => {
           onKeyDown={handleKeypress}
           defaultActiveFirstOption={false}
           showArrow={false}
-          dropdownStyle={{ minWidth: "30%" }}
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           filterOption={false}
           onSearch={(e) => {

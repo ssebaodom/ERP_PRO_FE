@@ -17,6 +17,25 @@ export const fetchDMSCustomers = async (payload) => {
   }
 };
 
+export const fetchCustomerGeographi = async (payload) => {
+  try {
+    var result = [];
+
+    const params = {
+      store: "api_Get_Geographical_Location",
+      data: { ...payload },
+    };
+
+    await SoFuckingUltimateGetApi(params).then(async (res) => {
+      result = res?.data || [];
+    });
+
+    return result;
+  } catch (error) {
+    return [];
+  }
+};
+
 export const fetchDMSCustomersDetail = async (payload) => {
   try {
     const params = {
@@ -34,6 +53,14 @@ export const fetchDMSCustomersDetail = async (payload) => {
   } catch (error) {
     console.error(error);
     return false;
+  }
+};
+
+export const setCurrentDMSCustomer = async (payload) => {
+  try {
+    store.dispatch(DMSCustomer.setCurrentDMSCustomer(payload));
+  } catch (error) {
+    console.error(error);
   }
 };
 

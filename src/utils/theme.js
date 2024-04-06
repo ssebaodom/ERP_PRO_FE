@@ -5,6 +5,14 @@ const themeComponents = {
     borderRadius: 4,
   },
   components: {
+    Segmented: {
+      // itemActiveBg: "rgba(71, 121, 207, 0.2)",
+      // colorText: "rgba(71, 121, 207, 0.88)",
+      colorText: "rgba(71, 121, 207, 0.88)",
+      // colorText: "rgba(202, 48, 48, 0.88)",
+      // itemHoverColor: "rgba(0, 0, 0, 0.88)",
+    },
+
     Select: {
       borderRadius: 4,
       colorBgContainerDisabled: "rgb(226, 228, 238)",

@@ -56,6 +56,7 @@ const SOHistory = () => {
         className="default_table_none_pagination"
         locale={TableLocale()}
         loading={loading}
+        scroll={{ x: "auto" }}
         pagination={{
           defaultPageSize: 999,
           position: ["none"],

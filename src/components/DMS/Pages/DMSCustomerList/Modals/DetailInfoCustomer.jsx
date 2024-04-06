@@ -1,8 +1,56 @@
-import React, { memo } from "react";
+import { Form, Input, Select } from "antd";
+import React, { memo, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useDebouncedCallback } from "use-debounce";
+import SelectNotFound from "../../../../../Context/SelectNotFound";
 import { formStatus } from "../../../../../utils/constants";
 import FormSelectDetail from "../../../../ReuseComponents/FormSelectDetail";
+import { fetchCustomerGeographi } from "../../../Store/Sagas/Sagas";
+import { getcurrentDMSCustomer } from "../../../Store/Selector/Selectors";
 
 const DetailInfoCustomer = ({ form, action }) => {
+  const currentCustomer = useSelector(getcurrentDMSCustomer);
+  const [selectLoading, setSelectLoading] = useState(false);
+  const [provinceOptions, setProvinceOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
+  const [communeOptions, setCommuneOptions] = useState([]);
+
+  const [params, setParams] = useState({
+    Province: form.getFieldValue("city") || null,
+    District: form.getFieldValue("district") || null,
+  });
+
+  const lookupData = async (payload) => {
+    setSelectLoading(true);
+    const data = await fetchCustomerGeographi({ ...payload });
+    if (!payload.Province) {
+      setProvinceOptions(data);
+    }
+    if (payload.Province && !payload.District) {
+      setDistrictOptions(data);
+    }
+
+    if (payload.Province && payload.District) {
+      setCommuneOptions(data);
+    }
+
+    setSelectLoading(false);
+  };
+
+  const handleSelectionChange = useDebouncedCallback((actions, value) => {
+    lookupData(params);
+  }, 600);
+
+  useEffect(() => {
+    lookupData({ Province: "", District: "" });
+    lookupData({ Province: currentCustomer?.nh_kh2, District: "" });
+    setParams({
+      Province: currentCustomer?.nh_kh2 || null,
+      District: currentCustomer?.nh_kh3 || null,
+    });
+    return () => {};
+  }, [currentCustomer]);
+
   return (
     <div className="split__view__detail__group">
       <FormSelectDetail
@@ -15,26 +63,165 @@ const DetailInfoCustomer = ({ form, action }) => {
         placeHolderCode="Khu vực"
         placeHolderName="Tên khu vực"
       />
-      <FormSelectDetail
-        disable={action == formStatus.VIEW ? true : false}
-        label="Tỉnh"
-        keyCode="city"
-        keyName="cityName"
-        controller="dmtinh_lookup"
-        form={form}
-        placeHolderCode="Tỉnh"
-        placeHolderName="Tên tỉnh"
-      />
-      <FormSelectDetail
-        disable={action == formStatus.VIEW ? true : false}
-        label="Quận"
-        keyCode="district"
-        keyName="districtName"
-        controller="dmquan_lookup"
-        form={form}
-        placeHolderCode="Quận"
-        placeHolderName="Tên quận"
-      />
+
+      <div className="default_modal_group_items">
+        <div className="split__view__detail__primary__item">
+          <span className="default_bold_label" style={{ width: "100px" }}>
+            Tỉnh thành
+          </span>
+          <Form.Item
+            name="city"
+            rules={[{ required: true, message: "Điền tỉnh thành" }]}
+            style={{
+              width: 150,
+              flex: "none",
+            }}
+          >
+            <Select
+              disabled={action == formStatus.VIEW ? true : false}
+              showSearch
+              popupMatchSelectWidth={false}
+              placeholder={`Tỉnh thành`}
+              style={{
+                width: "100%",
+                flex: "none",
+              }}
+              defaultActiveFirstOption={false}
+              showArrow={false}
+              filterOption={false}
+              notFoundContent={SelectNotFound(selectLoading, provinceOptions)}
+              onSearch={(e) => {
+                handleSelectionChange("province", e);
+              }}
+              onClick={() => {
+                if (_.isEmpty(provinceOptions)) lookupData(params);
+              }}
+              onSelect={(key, item) => {
+                form.setFieldValue("cityName", item.label);
+                form.setFieldValue("district", null);
+                form.setFieldValue("districtName", null);
+                form.setFieldValue("commune", null);
+                form.setFieldValue("communeName", null);
+                setParams({ ...params, Province: item.value, District: null });
+                setDistrictOptions([]);
+              }}
+              options={provinceOptions}
+            />
+          </Form.Item>
+          <Form.Item name={"cityName"} className="flex-1">
+            <Input
+              disabled={true}
+              className="default_disable_input"
+              placeholder={"Tên tỉnh thành"}
+            />
+          </Form.Item>
+        </div>
+      </div>
+
+      <div className="default_modal_group_items">
+        <div className="split__view__detail__primary__item">
+          <span className="default_bold_label" style={{ width: "100px" }}>
+            Quận huyện
+          </span>
+          <Form.Item
+            name="district"
+            rules={[{ required: true, message: "Điền quận huyện" }]}
+            style={{
+              width: 150,
+              flex: "none",
+            }}
+          >
+            <Select
+              disabled={
+                action == formStatus.VIEW || !params.Province ? true : false
+              }
+              showSearch
+              popupMatchSelectWidth={false}
+              placeholder={`Quận huyện`}
+              style={{
+                width: "100%",
+                flex: "none",
+              }}
+              defaultActiveFirstOption={false}
+              showArrow={false}
+              filterOption={false}
+              notFoundContent={SelectNotFound(selectLoading, districtOptions)}
+              onSearch={(e) => {
+                handleSelectionChange("province", e);
+              }}
+              onClick={() => {
+                if (_.isEmpty(districtOptions)) lookupData(params);
+              }}
+              onSelect={(key, item) => {
+                form.setFieldValue("districtName", item.label);
+                form.setFieldValue("commune", null);
+                form.setFieldValue("communeName", null);
+                setParams({ ...params, District: item.value });
+                setCommuneOptions([]);
+              }}
+              options={districtOptions}
+            />
+          </Form.Item>
+          <Form.Item name={"districtName"} className="flex-1">
+            <Input
+              disabled={true}
+              className="default_disable_input"
+              placeholder={"Tên quận huyện"}
+            />
+          </Form.Item>
+        </div>
+      </div>
+
+      <div className="default_modal_group_items">
+        <div className="split__view__detail__primary__item">
+          <span className="default_bold_label" style={{ width: "100px" }}>
+            Xã phường
+          </span>
+          <Form.Item
+            name="commune"
+            rules={[{ required: true, message: "Điền xã phường" }]}
+            style={{
+              width: 150,
+              flex: "none",
+            }}
+          >
+            <Select
+              disabled={
+                action == formStatus.VIEW || !params.District ? true : false
+              }
+              showSearch
+              popupMatchSelectWidth={false}
+              placeholder={`Xã phường`}
+              style={{
+                width: "100%",
+                flex: "none",
+              }}
+              defaultActiveFirstOption={false}
+              showArrow={false}
+              filterOption={false}
+              notFoundContent={SelectNotFound(selectLoading, communeOptions)}
+              onSearch={(e) => {
+                handleSelectionChange("commune", e);
+              }}
+              onClick={() => {
+                if (_.isEmpty(communeOptions)) lookupData(params);
+              }}
+              onSelect={(key, item) => {
+                form.setFieldValue("communeName", item.label);
+              }}
+              options={communeOptions}
+            />
+          </Form.Item>
+          <Form.Item name={"communeName"} className="flex-1">
+            <Input
+              disabled={true}
+              className="default_disable_input"
+              placeholder={"Tên quận huyện"}
+            />
+          </Form.Item>
+        </div>
+      </div>
+
       <FormSelectDetail
         disable={action == formStatus.VIEW ? true : false}
         label="Xã/phường"

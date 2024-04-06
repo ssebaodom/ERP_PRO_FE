@@ -14,3 +14,21 @@ export const refreshToken = async () => {
       return null;
     });
 };
+
+export const apiCreateAccount = async ({ name, userName, password, email }) => {
+  return await https
+    .post(`User/CreateUser`, {
+      roleId: 2,
+      isDisable: false,
+      name,
+      userName,
+      password,
+      email,
+    })
+    .then(async (res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      return null;
+    });
+};

@@ -5,11 +5,12 @@
     overflow-x: hidden;
 }
 
-.user__item {
+.item_in_list {
     transition: 0.3s all ease-in-out;
+    cursor: pointer;
 }
 
-.user__item:hover {
+.item_in_list:hover {
     background: rgba(255, 255, 255, 0.7);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }

@@ -44,7 +44,7 @@ const UserPermission = ({ userClaims }) => {
       .map((claim) => {
         return {
           key: claim.claimValue,
-          title: claim.Description,
+          title: claim.description,
           parent: claim.claimUpper,
         };
       })
@@ -79,7 +79,7 @@ const UserPermission = ({ userClaims }) => {
       const processedClaims = allClaims.map((claim) => {
         return {
           key: claim.claimValue,
-          title: claim.Description,
+          title: claim.description,
           parent: claim.claimUpper,
         };
       });

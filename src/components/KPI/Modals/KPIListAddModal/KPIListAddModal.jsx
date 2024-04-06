@@ -3,6 +3,7 @@ import _ from "lodash";
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
+import { formStatus } from "../../../../utils/constants";
 import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelect from "../../../ReuseComponents/FormSelect";
 import { multipleTablePutApi } from "../../../SaleOrder/API";
@@ -53,16 +54,24 @@ const KPIListAddModal = ({ refreshFunction }) => {
   const onSubmitForm = async () => {
     try {
       await form.validateFields();
-      const isSuccess = await putKpilist(form.getFieldsValue());
-      if (isSuccess) {
+      const result = await putKpilist({
+        action: _.isEmpty(currentItem) ? formStatus.ADD : formStatus.EDIT,
+        ...form.getFieldsValue(),
+      });
+      if (result?.isSucceded) {
         form.resetFields();
         handleCloseModal();
         notification.success({
           message: `Thực hiện thành công`,
         });
         refreshFunction();
+      } else {
+        notification.warning({
+          message: result.message,
+        });
       }
     } catch (error) {
+      console.log(error);
       scrollToField(error?.errorFields[0]?.name[0]);
     }
   };
@@ -256,7 +265,10 @@ const KPIListAddModal = ({ refreshFunction }) => {
               placeHolderCode="Chọn vật tư"
               required={mavtRequire}
               defaultOptions={[
-                { value: initial.ma_vt || "", label: initial?.ten_vt },
+                {
+                  value: initial?.ma_vt || null,
+                  label: initial?.ten_vt || null,
+                },
               ]}
             />
           </div>

@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import React, { memo, useEffect, useState } from "react";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelect from "../../../ReuseComponents/FormSelect";
 import { ApiGetTaskSchedule, SoFuckingUltimateApi } from "../../API";
 import "./ModalAddTaskSchedule.css";
@@ -32,11 +33,23 @@ const ModalAddTaskSchedule = ({
   const [selectOptions, setSelectOptions] = useState([]);
   const [selectLoading, setSelectLoading] = useState(false);
   const [currentItem, setCurrentItem] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
     handleCloseModal();
     inputForm.resetFields();
+  };
+
+  const checkValidDate = async () => {
+    const dateStart = inputForm.getFieldValue("startDate");
+    const dateEnd = inputForm.getFieldValue("endDate");
+    if (!dateStart || !dateEnd) return true;
+    return dateStart <= dateEnd;
+  };
+
+  const handleChangeValues = () => {
+    inputForm.validateFields(["startDate", "endDate"]);
   };
 
   const onSubmitForm = () => {
@@ -154,6 +167,7 @@ const ModalAddTaskSchedule = ({
       inputForm.setFieldValue(`t6`, res.data.data[0]?.t6);
       inputForm.setFieldValue(`t7`, res.data.data[0]?.t7);
       setCurrentItem(res.data.data[0]?.id);
+      setLoading(false);
     });
   };
 
@@ -161,7 +175,8 @@ const ModalAddTaskSchedule = ({
     setOpenModal(openModalState);
     if (openModalState && openModalType === formStatus.EDIT) {
       setInitialValues({});
-      getDataEdit(currentRecord ? currentRecord : 0);
+      setLoading(true);
+      getDataEdit(currentRecord || 0);
     }
   }, [JSON.stringify(openModalState)]);
 
@@ -186,7 +201,9 @@ const ModalAddTaskSchedule = ({
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
+        onValuesChange={handleChangeValues}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <Space direction="vertical">
             <span className="default_bold_label">Tên công việc</span>
@@ -251,6 +268,13 @@ const ModalAddTaskSchedule = ({
                       required: true,
                       message: "Hãy chọn ngày bắt đầu",
                     },
+                    {
+                      validator: async (_, value) => {
+                        return (await checkValidDate(value)) == true
+                          ? Promise.resolve()
+                          : Promise.reject(new Error("Lỗi định dạng ngày"));
+                      },
+                    },
                   ]}
                 >
                   <DatePicker
@@ -281,6 +305,14 @@ const ModalAddTaskSchedule = ({
                     {
                       required: true,
                       message: "Hãy chọn ngày kết thúc",
+                    },
+
+                    {
+                      validator: async (_, value) => {
+                        return (await checkValidDate(value)) == true
+                          ? Promise.resolve()
+                          : Promise.reject(new Error("Lỗi định dạng ngày"));
+                      },
                     },
                   ]}
                 >
@@ -374,23 +406,26 @@ const ModalAddTaskSchedule = ({
             </Space>
             <Space direction="vertical">
               <span className="default_bold_label">Ngày định kỳ</span>
+
+              <Form.Item name="DayInMonth">
+                <InputNumber
+                  controls={false}
+                  min="0"
+                  style={{ width: "100%" }}
+                  min={1}
+                  max={31}
+                  placeholder="Ngày"
+                ></InputNumber>
+              </Form.Item>
+            </Space>
+            <Space direction="vertical">
+              <span className="default_bold_label">Ngày trong tháng</span>
               <Form.Item name="periodicalDay">
                 <DatePicker
                   style={{ width: "100%" }}
                   format={"DD/MM/YYYY"}
                   placeholder="Chọn ngày"
                 />
-              </Form.Item>
-            </Space>
-            <Space direction="vertical">
-              <span className="default_bold_label">Ngày trong tháng</span>
-              <Form.Item name="DayInMonth">
-                <InputNumber
-                  style={{ width: "100%" }}
-                  min={1}
-                  max={31}
-                  placeholder="Ngày"
-                ></InputNumber>
               </Form.Item>
             </Space>
             <Space direction="vertical">

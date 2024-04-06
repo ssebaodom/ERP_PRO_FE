@@ -100,7 +100,7 @@ const FinishCreateAccount = () => {
             <p style={infoStyle}>
               Nhóm :{" "}
               <span className="primary_bold_text">
-                {UserInfo.currentGroupsPermission.map((item, index) => (
+                {UserInfo?.currentGroupsPermission?.map((item, index) => (
                   <Tag
                     key={index}
                     color={color[Math.floor(Math.random() * 12)]}
@@ -113,7 +113,7 @@ const FinishCreateAccount = () => {
             <p style={infoStyle}>
               Đơn vị :{" "}
               <span className="primary_bold_text">
-                {UserInfo.currentUnitsPermission.map((item, index) => (
+                {UserInfo?.currentUnitsPermission?.map((item, index) => (
                   <Tag
                     key={index}
                     color={color[Math.floor(Math.random() * 12)]}

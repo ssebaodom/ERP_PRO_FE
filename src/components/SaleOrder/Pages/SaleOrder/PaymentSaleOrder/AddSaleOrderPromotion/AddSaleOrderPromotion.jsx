@@ -87,6 +87,8 @@ const AddSaleOrderPromotion = ({ addEvent }) => {
                   rules={[{ required: true, message: "Nhập số lượng" }]}
                 >
                   <InputNumber
+                    min="0"
+                    controls={false}
                     className="w-full"
                     step={quantityFormat}
                     placeholder="Nhập số lượng"

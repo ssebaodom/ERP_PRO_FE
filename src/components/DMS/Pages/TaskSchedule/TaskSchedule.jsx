@@ -17,7 +17,7 @@ const TaskSchedule = () => {
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
     keywords: "",
-    orderby: "id",
+    orderby: "id desc",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
@@ -184,6 +184,7 @@ const TaskSchedule = () => {
         name={"lịch"}
         title={"Danh sách lịch công việc"}
         changePaginations={changePaginations}
+        scroll={{ x: "auto", y: "100%" }}
         totalResults={totalResults}
         addEvent={openModalAddTask}
         refreshEvent={refreshData}

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { encrypted } from "../../../app/hooks/enCrypted";
 import https from "../../../utils/https";
 
@@ -92,5 +93,19 @@ export const UltimatePutDataApi2 = async (payload) => {
     .post(`user/UltimateRequest_tables2`, payload)
     .then((res) => {
       return res.data;
+    });
+};
+
+export const apiGetImagesByCode = async (payload) => {
+  return await https
+    .post(`User/AddData`, {
+      store: "api_get_image_by_code",
+      param: {
+        keys: payload,
+      },
+      data: {},
+    })
+    .then((res) => {
+      return _.first(res?.data?.listObject) || [];
     });
 };

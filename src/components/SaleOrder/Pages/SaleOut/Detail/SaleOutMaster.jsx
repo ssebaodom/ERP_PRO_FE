@@ -10,6 +10,7 @@ const SaleOutMaster = ({ action, form }) => {
       <Row gutter={25}>
         <Col span={16}>
           <FormSelectDetail
+            required={true}
             disable={action == formStatus.VIEW ? true : false}
             label="NPP"
             keyCode="ma_kh"
@@ -18,39 +19,6 @@ const SaleOutMaster = ({ action, form }) => {
             form={form}
             placeHolderCode="Nhà phân phối"
             placeHolderName="Tên nhà phân phối"
-          />
-        </Col>
-
-        <Col span={8}>
-          <div className="default_modal_1_row_items">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Số chứng từ
-            </span>
-            <Form.Item
-              className="flex-1"
-              name="so_ct"
-              rules={[{ required: false, message: "Số chứng từ" }]}
-            >
-              <Input
-                disabled={action === "VIEW" ? true : false}
-                placeholder="Nhập số chứng từ"
-              />
-            </Form.Item>
-          </div>
-        </Col>
-      </Row>
-
-      <Row gutter={25}>
-        <Col span={16}>
-          <FormSelectDetail
-            disable={action == formStatus.VIEW ? true : false}
-            label="Khách hàng"
-            keyCode="ong_ba"
-            keyName="ten_kh2"
-            controller="dmkh_lookup"
-            form={form}
-            placeHolderCode="Khách hàng"
-            placeHolderName="Tên khách hàng"
           />
         </Col>
 
@@ -70,17 +38,18 @@ const SaleOutMaster = ({ action, form }) => {
       <Row gutter={25}>
         <Col span={16}>
           <FormSelectDetail
-            disable={action == formStatus.VIEW ? true : false}
-            label="Nhân viên"
-            keyCode="ma_nvbh"
-            keyName="ten_nvbh"
-            controller="dmnvbh_lookup"
-            form={form}
             required={true}
-            placeHolderCode="Nhân viên"
-            placeHolderName="Tên nhân viên"
+            disable={action == formStatus.VIEW ? true : false}
+            label="Khách hàng"
+            keyCode="ong_ba"
+            keyName="ten_kh2"
+            controller="dmkh_lookup"
+            form={form}
+            placeHolderCode="Khách hàng"
+            placeHolderName="Tên khách hàng"
           />
         </Col>
+
         <Col span={8}>
           <div className="split__view__detail__primary__item">
             <span className="default_bold_label" style={{ width: "100px" }}>
@@ -105,18 +74,19 @@ const SaleOutMaster = ({ action, form }) => {
 
       <Row gutter={25}>
         <Col span={16}>
-          <div className="split__view__detail__primary__item">
-            <span className="default_bold_label" style={{ width: "100px" }}>
-              Ghi chú
-            </span>
-            <Form.Item className="flex-1" name="dien_giai">
-              <Input
-                disabled={action === "VIEW" ? true : false}
-                placeholder="Nhập ghi chú"
-              />
-            </Form.Item>
-          </div>
+          <FormSelectDetail
+            disable={action == formStatus.VIEW ? true : false}
+            label="Nhân viên"
+            keyCode="ma_nvbh"
+            keyName="ten_nvbh"
+            controller="dmnvbh_lookup"
+            form={form}
+            required={true}
+            placeHolderCode="Nhân viên"
+            placeHolderName="Tên nhân viên"
+          />
         </Col>
+
         <Col span={8}>
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
@@ -139,16 +109,14 @@ const SaleOutMaster = ({ action, form }) => {
 
       <Row gutter={25}>
         <Col span={16}>
-          <div className="default_modal_1_row_items">
+          <div className="split__view__detail__primary__item">
             <span className="default_bold_label" style={{ width: "100px" }}>
-              Lý do huỷ
+              Ghi chú
             </span>
-
-            <Form.Item className="flex-1" name="cacel_reason">
+            <Form.Item className="flex-1" name="dien_giai">
               <Input
-                className={action === "VIEW" ? "default_disable_input" : ""}
                 disabled={action === "VIEW" ? true : false}
-                placeholder="Nhập lý do"
+                placeholder="Nhập ghi chú"
               />
             </Form.Item>
           </div>
@@ -170,6 +138,24 @@ const SaleOutMaster = ({ action, form }) => {
                 format={"DD/MM/YYYY"}
                 style={{ width: "100%" }}
                 placeholder="Chọn ngày"
+              />
+            </Form.Item>
+          </div>
+        </Col>
+      </Row>
+
+      <Row gutter={25}>
+        <Col span={24}>
+          <div className="default_modal_1_row_items w-full">
+            <span className="default_bold_label" style={{ width: "100px" }}>
+              Lý do huỷ
+            </span>
+
+            <Form.Item className="flex-1" name="cacel_reason">
+              <Input
+                className={action === "VIEW" ? "default_disable_input" : ""}
+                disabled={action === "VIEW" ? true : false}
+                placeholder="Nhập lý do"
               />
             </Form.Item>
           </div>

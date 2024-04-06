@@ -51,7 +51,7 @@ export const setChangedPermissions = async (payload) => {
 
 export const setCurrentGroupPermission = async (payload) => {
   try {
-    store.dispatch(CreateAccount.setCurrentGroupPermission(payload));
+    store.dispatch(CreateAccount.setCurrentGroupPermission(payload || []));
   } catch (error) {
     console.error(error);
   }

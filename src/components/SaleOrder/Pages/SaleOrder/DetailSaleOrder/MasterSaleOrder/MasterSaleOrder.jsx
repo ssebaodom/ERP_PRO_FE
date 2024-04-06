@@ -1,16 +1,12 @@
 import { Col, Form, Input, Row } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { formStatus } from "../../../../../../utils/constants";
-import emitter from "../../../../../../utils/emitter";
 import FormSelectDetail from "../../../../../ReuseComponents/FormSelectDetail";
-import { setMasterSaleOrderInfo } from "../../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../../Store/Selector/Selector";
 
-const MasterSaleOrder = () => {
-  const [initial, setInitial] = useState({});
-  const { action, masterInfo } = useSelector(getSaleOrderInfo);
-  const [masterForm] = Form.useForm();
+const MasterSaleOrder = ({ masterForm, init }) => {
+  const { action } = useSelector(getSaleOrderInfo);
 
   const handleChange = (key, item) => {
     console.log("data", masterForm.getFieldValue());
@@ -19,32 +15,12 @@ const MasterSaleOrder = () => {
   };
 
   useEffect(() => {
-    setInitial(masterInfo);
-    return () => {};
-  }, [JSON.stringify(masterInfo)]);
-
-  useEffect(() => {
-    emitter.on("HANDLE_SALE_ORDER_SAVE", async () => {
-      try {
-        await masterForm.validateFields();
-        await setMasterSaleOrderInfo(masterForm.getFieldValue());
-      } catch (error) {
-        return;
-      }
-    });
-    return () => {};
-  }, []);
-
-  useEffect(() => {
     masterForm.resetFields();
-  }, [JSON.stringify(initial)]);
+    return () => {};
+  }, [init]);
 
   return (
-    <Form
-      initialValues={initial}
-      form={masterForm}
-      className="relative flex flex-column gap-2"
-    >
+    <>
       <Row gutter={25}>
         <Col span={24} className="w-full min-w-0">
           <FormSelectDetail
@@ -57,6 +33,7 @@ const MasterSaleOrder = () => {
             placeHolderCode="Mã khách"
             placeHolderName="Tên khách hàng"
             onChange={handleChange}
+            required={true}
           />
         </Col>
       </Row>
@@ -79,7 +56,7 @@ const MasterSaleOrder = () => {
           </div>
         </Col>
       </Row>
-    </Form>
+    </>
   );
 };
 

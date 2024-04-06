@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
 import { formStatus } from "../../../../utils/constants";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
 import PremiumLock from "../../../ReuseComponents/PremiumLock";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
@@ -29,6 +30,7 @@ const ModalAddTicket = ({
   const [selectLoading, setSelectLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const isPremium = useSelector(getUserInfo).isPremium;
+  const [loading, setLoading] = useState(false);
 
   const onChange = ({ fileList }) => {
     setFileList(fileList);
@@ -69,7 +71,6 @@ const ModalAddTicket = ({
         loai_tk: a.ticketTypeCode,
         taskid: a.taskCode,
         status: a.status,
-        user: 0,
       },
     })
       .then((res) => {
@@ -113,13 +114,15 @@ const ModalAddTicket = ({
       inputForm.setFieldValue(`taskName`, res.data[0]?.ten_cv?.trim());
       inputForm.setFieldValue(`description`, res.data[0]?.dien_giai?.trim());
       inputForm.setFieldValue(`status`, String(res.data[0]?.status));
+      setLoading(false);
     });
   };
 
   useEffect(() => {
     setOpenModal(openModalState);
     if (openModalState && openModalType === formStatus.EDIT) {
-      getDataEdit(currentRecord ? currentRecord : "0");
+      setLoading(true);
+      getDataEdit(currentRecord || "0");
     }
   }, [JSON.stringify(openModalState)]);
 
@@ -145,6 +148,7 @@ const ModalAddTicket = ({
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <FormSelectDetail
             disable={openModalState == formStatus.VIEW ? true : false}

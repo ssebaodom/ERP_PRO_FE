@@ -48,6 +48,10 @@ const FormSelectDetail = ({
     lookupData({ controller: actions, value: value });
   }, 600);
 
+  const handleClick = (actions, value) => {
+    lookupData({ controller: actions, value: value });
+  };
+
   useEffect(() => {
     if (!_.isEmpty(defaultOptions)) {
       setSelectOptions(defaultOptions);
@@ -98,13 +102,15 @@ const FormSelectDetail = ({
               showArrow={false}
               filterOption={false}
               optionLabelProp="value"
-              dropdownStyle={{ minWidth: "20%" }}
+              popupMatchSelectWidth={false}
               notFoundContent={SelectNotFound(selectLoading, selectOptions)}
               onSearch={(e) => {
                 handleSelectionChange(controller, e);
               }}
               onClick={() => {
-                handleSelectionChange(controller, "");
+                if (_.isEmpty(selectOptions)) {
+                  handleClick(controller, "");
+                }
               }}
               allowClear
               onSelect={(key, item) => {

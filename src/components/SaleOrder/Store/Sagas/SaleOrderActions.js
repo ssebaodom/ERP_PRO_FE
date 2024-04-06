@@ -1,6 +1,7 @@
 import { notification } from "antd";
 import store from "../../../../store";
 import { formStatus } from "../../../../utils/constants";
+import emitter from "../../../../utils/emitter";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
 import { multipleTablePutApi } from "../../API";
 import { saleOrderAction } from "../Slice/SaleOrderSlice";
@@ -54,7 +55,6 @@ const setSaleOrderInsertDetails = (data = []) => {
 };
 
 const fetchSaleOrderList = async (params = {}) => {
-  setActionSaleOrder(formStatus.VIEW);
   const data = { columns: [], dataSource: [], totalRecords: 0 };
   await SoFuckingUltimateGetApi2({
     store: "api_sale_order_list",
@@ -74,26 +74,31 @@ const fetchSaleOrderList = async (params = {}) => {
 };
 
 const fetchSaleOrderInfo = async (key = "") => {
-  SoFuckingUltimateGetApi2({
-    store: "api_get_sale_order_info",
-    data: {
-      stt_rec: key,
-    },
-  }).then((res) => {
-    const resData = _.first(res?.data) || {};
-    const paymentInfo = {};
-    const masterInfo = {};
-    Object.keys(store.getState().saleOrderReducer.paymentInfo).map((item) => {
-      paymentInfo[`${item}`] = resData[`${item}`];
-    });
+  setSaleOrderLoading(true);
+  if (key) {
+    setActionSaleOrder(formStatus.VIEW);
 
-    Object.keys(store.getState().saleOrderReducer.masterInfo).map((item) => {
-      masterInfo[`${item}`] = resData[`${item}`];
-    });
+    SoFuckingUltimateGetApi2({
+      store: "api_get_sale_order_info",
+      data: {
+        stt_rec: key,
+      },
+    }).then((res) => {
+      const resData = _.first(res?.data) || {};
+      const paymentInfo = {};
+      const masterInfo = {};
+      Object.keys(store.getState().saleOrderReducer.paymentInfo).map((item) => {
+        paymentInfo[`${item}`] = resData[`${item}`];
+      });
 
-    setMasterSaleOrderInfo(masterInfo);
-    setPaymentSaleOrderInfo(paymentInfo);
-  });
+      Object.keys(store.getState().saleOrderReducer.masterInfo).map((item) => {
+        masterInfo[`${item}`] = resData[`${item}`];
+      });
+
+      setMasterSaleOrderInfo(masterInfo);
+      setPaymentSaleOrderInfo(paymentInfo);
+    });
+  }
 
   SoFuckingUltimateGetApi2({
     store: "api_get_sale_order_promo",
@@ -212,7 +217,7 @@ const saleOrderModify = async ({
         });
       } else {
         notification.warning({
-          message: res?.message,
+          message: res?.responseModel?.message,
         });
       }
     })
@@ -221,6 +226,7 @@ const saleOrderModify = async ({
     })
     .finally(() => {
       setActionSaleOrder(formStatus.VIEW);
+      emitter.emit("HANLDE_REFRESH_LIST_SALE_ORDER");
     });
 };
 

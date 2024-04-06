@@ -118,9 +118,18 @@ const GroupPermissionsDrawer = ({
       setLoading(false);
       apiGetGroupClaims({ GroupId: currentItem?.value })
         .then((res) => {
-          const selected = res.data.map((item) => {
-            return item.claimValue;
+          console.log(res);
+          const fetchClaims = res.data.map((item) => {
+            return item.value;
           });
+
+          const allClaimsValues = allClaims.map((claim) => {
+            return claim.claimValue;
+          });
+
+          const selected = fetchClaims.filter((item) =>
+            _.includes(allClaimsValues, item)
+          );
           setClaimsSelected(selected);
           setExpandedKeys(selected);
           setLoading(false);
@@ -136,7 +145,7 @@ const GroupPermissionsDrawer = ({
       const processedClaims = allClaims.map((claim) => {
         return {
           key: claim.claimValue,
-          title: claim.Description,
+          title: claim.description,
           parent: claim.claimUpper,
         };
       });
@@ -159,7 +168,7 @@ const GroupPermissionsDrawer = ({
   useEffect(() => {
     if (allClaims.length == 0) {
       apiGetAllClaims({}).then((res) => {
-        const allClaims = [...res?.data];
+        const allClaims = [...res];
         allClaims.map((claim) => {
           if (!claim.claimUpper) {
             delete claim.claimUpper;

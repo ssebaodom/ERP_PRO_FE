@@ -49,8 +49,14 @@ const FormSelect = ({
     lookupData({ controller: actions, value: value });
   }, 600);
 
+  const handleClick = (actions, value) => {
+    setSelectLoading(true);
+    setSelectOptions([]);
+    lookupData({ controller: actions, value: value });
+  };
+
   useEffect(() => {
-    if (!_.isEmpty(defaultOptions)) {
+    if (!_.isEmpty(defaultOptions) && _.first(defaultOptions)?.value) {
       setSelectOptions(defaultOptions);
     }
     return () => {};
@@ -88,6 +94,7 @@ const FormSelect = ({
         ]}
       >
         <Select
+          popupMatchSelectWidth={false}
           mode={multiple ? "multiple" : ""}
           disabled={disable}
           className={disable ? "default_disable_select" : "default_select"}
@@ -97,13 +104,14 @@ const FormSelect = ({
           showArrow={false}
           filterOption={false}
           optionLabelProp="label"
-          dropdownStyle={{ minWidth: "20%" }}
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           onSearch={(e) => {
             handleSelectionChange(controller, e);
           }}
-          onClick={() => {
-            handleSelectionChange(controller, "");
+          onClick={(e) => {
+            if (_.isEmpty(selectOptions)) {
+              handleClick(controller, "");
+            }
           }}
           allowClear
           onSelect={(key, item) => {

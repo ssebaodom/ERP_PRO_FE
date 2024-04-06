@@ -1,6 +1,6 @@
 import { Button, Form, notification, Pagination, Space, Tabs } from "antd";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
@@ -17,6 +17,7 @@ import {
 } from "../../API";
 import {
   fetchDMSCustomersDetail,
+  setCurrentDMSCustomer,
   setCurrentTab,
 } from "../../Store/Sagas/Sagas";
 import { getcurrentDMSCustomer } from "../../Store/Selector/Selectors";
@@ -202,10 +203,15 @@ const DMSCustomerList = () => {
     setPagination({ ...pagination, pageIndex: 1 });
   }, 800);
 
+  const handleEdit = useCallback(() => {
+    if (currentRecord) setAction(formStatus.EDIT);
+  }, []);
+
   const handleAddNew = () => {
     setAction(formStatus.ADD);
     setInitialCustomerValue({});
     setCurrentRecord({});
+    setCurrentDMSCustomer({});
   };
 
   const handleOpenDeleteDialog = () => {
@@ -319,11 +325,8 @@ const DMSCustomerList = () => {
   }, [JSON.stringify(initialCustomerValue)]);
 
   return (
-    <div
-      className="default_list_layout page_default"
-      style={{ height: "90vh", gap: "15px" }}
-    >
-      <div className="split__view__container" style={{ height: "97%" }}>
+    <div className="default_list_layout page_default">
+      <div className="split__view__container">
         <div className="split__view__header__bar">
           <HeaderTableBar
             name={"khách hàng DMS"}
@@ -332,6 +335,7 @@ const DMSCustomerList = () => {
             advanceFilter={openAdvanceFilter}
             refreshEvent={refreshData}
             addEvent={handleAddNew}
+            editEvent={handleEdit}
             deleteEvent={handleOpenDeleteDialog}
             uploadFunction={handleExcelData}
           />
@@ -378,7 +382,7 @@ const DMSCustomerList = () => {
                       handleSelectedCustomer(item);
                     }}
                   >
-                    <span>{index}</span>
+                    <span>{index + 1}</span>
                     <span>{item.ten_kh.trim()}</span>
                     <span>{item.dien_thoai.trim()}</span>
                   </div>
@@ -433,7 +437,7 @@ const DMSCustomerList = () => {
                   </div>
 
                   <Space className="justify-content-end pr-3">
-                    {action !== formStatus.VIEW ? (
+                    {action !== formStatus.VIEW && (
                       <>
                         <Button
                           onClick={(e) => {
@@ -453,13 +457,6 @@ const DMSCustomerList = () => {
                           Lưu
                         </Button>
                       </>
-                    ) : (
-                      <Button
-                        onClick={(e) => setAction(formStatus.EDIT)}
-                        className="default_warning_button"
-                      >
-                        Sửa
-                      </Button>
                     )}
                   </Space>
                 </>

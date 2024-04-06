@@ -1,8 +1,15 @@
 import { Button, Modal, Steps } from "antd";
+import _ from "lodash";
 import React, { memo, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { apiCreateAccount } from "../../../../api";
 import { formStatus } from "../../../../utils/constants";
-import { apiGetAllClaims, apiGetUserClaims } from "../../API";
+import {
+  apiAlterUserClaims,
+  apiAlterUserGroup,
+  apiGetAllClaims,
+  apiGetUserClaims,
+} from "../../API";
 import {
   setAllClaims,
   setChangedPermissions,
@@ -25,18 +32,80 @@ const ModalDetailAccount = ({ record, action }) => {
   const childRef = useRef();
   const createInfo = useSelector(getCreateAccInfo);
   const allClaims = useSelector(getAllClaims);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const nextStep = () => {
     if (current < createInfo.totalSteps) {
       childRef.current.nextStep();
     } else {
-      console.log("Thông tin tạo tài khoản", createInfo);
+      handleAddAccount(createInfo);
     }
   };
 
   const backStep = () => {
     if (!current - 1 < 0) {
       setCurrentStep(current - 1);
+    }
+  };
+
+  const handleAddAccount = async (data) => {
+    setSaveLoading(true);
+    const {
+      currentAccount: accountInfo,
+      currentAvatar: avatar,
+      currentGroupsPermission: groupsPermission,
+      currentPermissions: permissions,
+    } = data;
+
+    const claimsSelected = allClaims
+      .filter((item) => permissions.includes(item.claimValue))
+      .map((item) => item.id);
+
+    const groupSelected = groupsPermission.map((item) => parseInt(item.key));
+
+    console.log("record", record);
+    console.log("claimsSelected", claimsSelected);
+    console.log("groupSelected", groupSelected);
+
+    if (_.isEmpty(record)) {
+      const {
+        full_name: name,
+        user_name: userName,
+        password,
+        e_mail: email,
+      } = accountInfo;
+
+      await apiCreateAccount({ name, userName, password, email }).then(
+        async (res) => {
+          console.log("Tạo tài khoản", res);
+
+          await apiAlterUserGroup({
+            userid: res?.userId,
+            groups: groupSelected,
+          });
+
+          apiAlterUserClaims({
+            userid: res?.userId,
+            Claims: claimsSelected,
+          });
+
+          setSaveLoading(false);
+          handleCloseModal();
+        }
+      );
+    } else {
+      await apiAlterUserGroup({
+        userid: record?.user_id,
+        groups: groupSelected,
+      });
+
+      apiAlterUserClaims({
+        userid: record?.user_id,
+        Claims: claimsSelected,
+      });
+
+      setSaveLoading(false);
+      handleCloseModal();
     }
   };
 
@@ -50,6 +119,8 @@ const ModalDetailAccount = ({ record, action }) => {
     setChangedPermissions(false);
     setCurrentGroupPermission([]);
     setCurrentUnitsPermission([]);
+    setUserClaims([]);
+    setSaveLoading(false);
   };
 
   useEffect(() => {
@@ -59,7 +130,9 @@ const ModalDetailAccount = ({ record, action }) => {
         apiGetUserClaims({ userId: record.user_id })
           .then((res) => {
             setUserClaims((claims) => {
-              return (claims = res?.data?.map((item) => {
+              const fetchResult = res?.data || [];
+
+              return (claims = fetchResult.map((item) => {
                 return {
                   key: item.value,
                 };
@@ -76,7 +149,7 @@ const ModalDetailAccount = ({ record, action }) => {
   useEffect(() => {
     if (allClaims.length == 0) {
       apiGetAllClaims({}).then((res) => {
-        const allClaims = [...res?.data];
+        const allClaims = [...res];
         allClaims.map((claim) => {
           if (!claim.claimUpper) {
             delete claim.claimUpper;
@@ -94,24 +167,32 @@ const ModalDetailAccount = ({ record, action }) => {
     setCurrent(createInfo.currentSteps);
   }, [createInfo.currentSteps]);
 
+  useEffect(() => {
+    if (!openState) {
+      setCurrent(0);
+      setCurrentAccount({});
+    }
+  }, [openState]);
+
   return (
     <Modal
       open={openState}
       width={"65%"}
       className="no-scroll-modal"
       centered
-      title="Tạo tài khoản"
+      title={`${_.isEmpty(record) ? "Tạo" : "Sửa"} tài khoản`}
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
       onCancel={handleCloseModal}
       footer={[
-        <Button key={1} onClick={backStep}>
+        <Button disabled={saveLoading} key={1} onClick={backStep}>
           Quay lại
         </Button>,
         <Button
           key={2}
           onClick={nextStep}
           style={{ background: "var(--light_blue)", color: "white" }}
+          loading={saveLoading}
         >
           {current == 2 ? "Hoàn thành" : "Tiếp tục"}
         </Button>,

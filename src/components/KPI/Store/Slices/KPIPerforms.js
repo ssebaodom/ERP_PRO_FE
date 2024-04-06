@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const ItemsInitial = {
   currentItem: {},
   isOpenModal: false,
+  isOpenFilterModal: false,
 };
 
 const KPIPerform = createSlice({
@@ -14,6 +15,9 @@ const KPIPerform = createSlice({
     },
     setIsOpenModal(state, action) {
       state.isOpenModal = action?.payload;
+    },
+    setIsOpenFilterModal(state, action) {
+      state.isOpenFilterModal = action?.payload;
     },
   },
 });

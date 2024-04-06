@@ -11,6 +11,7 @@ const HeaderTableBar = ({
   name,
   totalResults,
   addEvent,
+  editEvent,
   refreshEvent,
   title,
   deleteItems = {
@@ -131,13 +132,29 @@ const HeaderTableBar = ({
             >{`Xoá ${deleteItems.count} ${name}`}</span>
           </Button>
         )}
-        {addEvent && (
-          <Tooltip placement="topLeft" title="Thêm mới">
-            <Button className="default_button" onClick={addEvent}>
-              <i className="pi pi-plus sub_text_color"></i>
+
+        {editEvent && (
+          <Tooltip placement="topLeft" title="Sửa">
+            <Button className="default_button" onClick={editEvent}>
+              <i
+                className="pi pi-pencil sub_text_color"
+                style={{ fontWeight: "bold" }}
+              ></i>
             </Button>
           </Tooltip>
         )}
+
+        {addEvent && (
+          <Tooltip placement="topLeft" title="Thêm mới">
+            <Button className="default_button" onClick={addEvent}>
+              <i
+                className="pi pi-plus sub_text_color"
+                style={{ fontWeight: "bold" }}
+              ></i>
+            </Button>
+          </Tooltip>
+        )}
+
         {refreshEvent && (
           <Tooltip placement="topLeft" title="Làm tươi">
             <Button className="default_button" onClick={refreshEvent}>

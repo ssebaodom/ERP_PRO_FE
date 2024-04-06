@@ -214,10 +214,18 @@ const CustomerClassify = () => {
         handleCloseModal={setOpenModalAddTaskState}
         refreshData={refreshData}
       />
+
       <ConfirmDialog
         state={isOpenModalDeleteTask}
         title="Xoá"
-        description={`Xoá mã : ${currentItemSelected.ma_loai}, tên loại: ${currentItemSelected.ten_loai}`}
+        description={`Xoá  ${
+          currentItemSelected.ma_loai
+            ? "phân loại : " +
+              currentItemSelected.ma_loai +
+              " - " +
+              currentItemSelected.ten_loai
+            : `${selectedRowKeys.length || 0} phân loại`
+        }`}
         handleOkModal={handleDelete}
         handleCloseModal={handleCloseDeleteDialog}
         keys={

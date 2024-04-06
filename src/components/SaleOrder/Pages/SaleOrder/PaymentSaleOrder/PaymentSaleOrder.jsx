@@ -37,12 +37,11 @@ const PaymentSaleOrder = () => {
   };
 
   const handleAddbutton = async () => {
-    resetFormSaleOrder(detailInfo.columns);
-    await setActionSaleOrder(formStatus.ADD);
+    resetFormSaleOrder();
+    setActionSaleOrder(formStatus.ADD);
   };
 
   const handleSave = async () => {
-    await setActionSaleOrder(formStatus.SAVED);
     await emitter.emit("HANDLE_SALE_ORDER_SAVE");
   };
 
@@ -72,7 +71,7 @@ const PaymentSaleOrder = () => {
       });
     }
     return () => {};
-  }, [insertDetails, masterInfo, paymentInfo, promotionList]);
+  }, [action]);
 
   useEffect(() => {
     setPromotionList(promotionItemsInfo || []);
@@ -137,7 +136,7 @@ const PaymentSaleOrder = () => {
               itemLayout="horizontal"
               dataSource={promotionList}
               renderItem={(item, index) => (
-                <List.Item className="user__item">
+                <List.Item className="item_in_list">
                   <Popover
                     placement="bottomLeft"
                     content={popoverContent(item)}

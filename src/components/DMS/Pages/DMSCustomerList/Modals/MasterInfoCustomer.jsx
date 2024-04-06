@@ -1,8 +1,14 @@
 import { DatePicker, Form, Input } from "antd";
+import dayjs from "dayjs";
 import React, { memo } from "react";
+import { phoneNumberRegex } from "../../../../../app/regex/regex";
 import { formStatus } from "../../../../../utils/constants";
 
 const MasterInfoCustomer = ({ action }) => {
+  const checkValidDate = (value) => {
+    return phoneNumberRegex.test(value);
+  };
+
   return (
     <div className="split__view__detail__group">
       <div className="split__view__detail__primary__items">
@@ -31,7 +37,17 @@ const MasterInfoCustomer = ({ action }) => {
           <Form.Item
             className="flex-1"
             name="contactPhone"
-            rules={[{ required: true, message: "Điền số điện thoại" }]}
+            rules={[
+              { required: true, message: "Điền số điện thoại" },
+
+              {
+                validator: async (_, value) => {
+                  return ((await checkValidDate(value)) || !value) == true
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Lỗi định dạng số điện thoại"));
+                },
+              },
+            ]}
           >
             <Input
               className={
@@ -76,7 +92,17 @@ const MasterInfoCustomer = ({ action }) => {
           <Form.Item
             className="flex-1"
             name="birthDay"
-            rules={[{ required: true, message: "Điền ngày sinh" }]}
+            rules={[
+              { required: true, message: "Điền ngày sinh" },
+              {
+                validator(_, value) {
+                  if (value <= dayjs() || !value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Bạn sinh quá muộn rồi :>"));
+                },
+              },
+            ]}
           >
             <DatePicker
               disabled={action === formStatus.VIEW ? true : false}

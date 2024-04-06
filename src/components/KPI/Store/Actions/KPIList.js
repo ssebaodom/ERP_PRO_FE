@@ -29,7 +29,7 @@ export const putKpilist = async (payload) => {
       param: { ...payload, UserID: id },
       data: {},
     });
-    return result.responseModel?.isSucceded;
+    return result?.responseModel;
   } catch (error) {
     console.error(error);
   }

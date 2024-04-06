@@ -1,0 +1,9 @@
+.Performance_table_span {
+    color: rgba(0, 0, 0, 0.88) !important;
+    cursor: text !important;
+
+}
+
+.performance_table_header {
+    background: white;
+}

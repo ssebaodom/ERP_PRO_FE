@@ -12,6 +12,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { formStatus } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi, UltimatePutDataApi } from "../../../DMS/API";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelectDetail from "../../../ReuseComponents/FormSelectDetail";
 import { getApproveItemDetail } from "../../Store/Selectors/Selectors";
 import TableDetail from "./Details/TableDetail";
@@ -23,10 +24,11 @@ const ModalApproveItems = ({
   openModalType,
   refreshData,
 }) => {
-  const [dataForm] = Form.useForm();
+  const [inputForm] = Form.useForm();
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
   const [selectLoading, setSelectLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [detailData, setDetailData] = useState([]);
   const [detaiLayout, setDetaiLayout] = useState([]);
@@ -37,7 +39,18 @@ const ModalApproveItems = ({
     setOpenModal(false);
     setDetailData([]);
     handleCloseModal();
-    dataForm.resetFields();
+    inputForm.resetFields();
+  };
+
+  const checkValidDate = () => {
+    const dateStart = inputForm.getFieldValue("date_from");
+    const dateEnd = inputForm.getFieldValue("date_to");
+    if (!dateStart || !dateEnd) return true;
+    return dateStart <= dateEnd;
+  };
+
+  const handleChangeValues = () => {
+    inputForm.validateFields(["date_from", "date_to"]);
   };
 
   const onSubmitForm = async () => {
@@ -46,7 +59,7 @@ const ModalApproveItems = ({
       action:
         openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
       UserId: 0,
-      ...dataForm.getFieldsValue(),
+      ...inputForm.getFieldsValue(),
     };
     delete master.ten_nvbh;
 
@@ -84,15 +97,15 @@ const ModalApproveItems = ({
         pageSize: 10,
       },
     }).then((res) => {
-      const keys = Object.keys(dataForm.getFieldsValue());
+      const keys = Object.keys(inputForm.getFieldsValue());
       if (res.data.length > 0)
         keys.map((item) => {
           const field = res?.reportLayoutModel?.find(
             (layout) => layout?.field == item
           );
           return field?.type == "Datetime"
-            ? dataForm.setFieldValue(item, dayjs(res?.data[0][item]))
-            : dataForm.setFieldValue(item, res?.data[0][item]);
+            ? inputForm.setFieldValue(item, dayjs(res?.data[0][item]))
+            : inputForm.setFieldValue(item, res?.data[0][item]);
         });
     });
 
@@ -104,12 +117,13 @@ const ModalApproveItems = ({
     }).then((res) => {
       setDetailData(res?.data);
       setDetaiLayout(res?.reportLayoutModel);
+      setLoading(false);
     });
   };
 
   const checkingData = async () => {
     try {
-      await dataForm.validateFields();
+      await inputForm.validateFields();
       detailTable.current.getData();
     } catch (error) {
       console.log(error);
@@ -122,6 +136,7 @@ const ModalApproveItems = ({
   useEffect(() => {
     setOpenModal(openModalState);
     if (openModalState) {
+      setLoading(true);
       getDataEdit(currentRecord ? currentRecord : 0);
     }
   }, [JSON.stringify(openModalState)]);
@@ -149,18 +164,21 @@ const ModalApproveItems = ({
         } phân quyền sản phẩm`}</span>
       </div>
       <Form
-        form={dataForm}
+        form={inputForm}
         className="default_modal_container"
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
+        onValuesChange={handleChangeValues}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
+
         <FormSelectDetail
           disable={openModalType == formStatus.VIEW ? true : false}
           label="Nhân viên"
           keyCode="ma_nvbh"
           keyName="ten_nvbh"
           controller="dmnvbh_lookup"
-          form={dataForm}
+          form={inputForm}
           placeHolderCode="Nhân viên"
           placeHolderName="Tên nhân viên"
           required={true}
@@ -173,9 +191,19 @@ const ModalApproveItems = ({
             </span>
 
             <Form.Item
+              initialValue={dayjs()}
               className="flex-1"
               name="date_from"
-              rules={[{ required: true, message: "Điền ngày bắt đầu" }]}
+              rules={[
+                { required: true, message: "Điền ngày bắt đầu" },
+                {
+                  validator: async (_, value) => {
+                    return (await checkValidDate(value)) == true
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("Lỗi định dạng ngày"));
+                  },
+                },
+              ]}
             >
               <DatePicker
                 disabled={openModalType === "VIEW" ? true : false}
@@ -192,9 +220,19 @@ const ModalApproveItems = ({
             </span>
 
             <Form.Item
+              initialValue={dayjs()}
               className="flex-1"
               name="date_to"
-              rules={[{ required: true, message: "Điền ngày kết thúc" }]}
+              rules={[
+                { required: true, message: "Điền ngày kết thúc" },
+                {
+                  validator: async (_, value) => {
+                    return (await checkValidDate(value)) == true
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("Lỗi định dạng ngày"));
+                  },
+                },
+              ]}
             >
               <DatePicker
                 disabled={openModalType === "VIEW" ? true : false}
@@ -229,7 +267,7 @@ const ModalApproveItems = ({
         <TableDetail
           Tablecolumns={detaiLayout}
           data={detailData}
-          masterForm={dataForm}
+          masterForm={inputForm}
           Action={openModalType}
           ref={detailTable}
         />

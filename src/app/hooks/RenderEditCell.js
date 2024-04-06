@@ -1,4 +1,5 @@
 import { Checkbox, DatePicker, Form, Input, InputNumber, Select } from "antd";
+import _ from "lodash";
 import React, { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApiWebLookup } from "../../components/DMS/API";
@@ -58,7 +59,12 @@ const RenderEditCell = (cell, form, addRow) => {
   switch (cell.inputType) {
     case "Numeric":
       inputNode = (
-        <InputNumber onKeyDown={handleKeypress} step={quantityFormat} />
+        <InputNumber
+          controls={false}
+          min="0"
+          onKeyDown={handleKeypress}
+          step={quantityFormat}
+        />
       );
       break;
     case "Boolean":
@@ -77,6 +83,7 @@ const RenderEditCell = (cell, form, addRow) => {
     case "AutoComplete":
       inputNode = (
         <Select
+          popupMatchSelectWidth={false}
           showSearch
           placeholder={`Vui lòng nhập ${cell.title}`}
           style={{
@@ -85,7 +92,6 @@ const RenderEditCell = (cell, form, addRow) => {
           onKeyDown={handleKeypress}
           defaultActiveFirstOption={false}
           showArrow={false}
-          dropdownStyle={{ minWidth: "30%" }}
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           filterOption={false}
           onSearch={(e) => {
@@ -93,7 +99,8 @@ const RenderEditCell = (cell, form, addRow) => {
           }}
           optionLabelProp="value"
           onClick={() => {
-            handleSelectionChange(cell.controller, "");
+            if (_.isEmpty(selectOptions))
+              lookupData({ controller: cell.controller, value: "" });
           }}
           onSelect={onChangeSelection}
         >

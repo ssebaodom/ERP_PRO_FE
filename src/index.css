@@ -9,7 +9,7 @@
   --success: #26C57F;
   --warnning: #F57A20;
   --info: #4779CF;
-  --primary_color: #F58220
+  --primary_color: #F58220;
 }
 
 @font-face {
@@ -52,6 +52,10 @@ body {
 .primary_bold_text {
   color: var(--light_blue);
   font-weight: bold;
+}
+
+.primary_text_color {
+  color: var(--light_blue);
 }
 
 .main_text_color {
@@ -300,10 +304,14 @@ body {
   text-align: center;
 }
 
+.ant-image-mask {
+  display: none !important;
+}
+
 .ant-select-dropdown {
-  /* min-width: 250px !important; */
+  /* min-width: 250px !important;
   max-width: max-content !important;
-  width: max-content !important;
+  width: max-content !important; */
 }
 
 .ant-select-selection-selected-value {
@@ -545,7 +553,7 @@ body {
   padding: 8px 15px;
   display: flex;
   flex-direction: column;
-  gap: 20px 0px;
+  gap: 12px 0px;
 }
 
 .default_modal_group_items {
@@ -822,7 +830,7 @@ body {
 .split__view__container {
   background: var(--light_gray);
   border-radius: 4px;
-  height: 90%;
+  height: 100%;
   overflow: hidden;
   display: inline-flex;
   flex-direction: column;
@@ -847,7 +855,8 @@ body {
 }
 
 .split__view__detail__left {
-  flex: 0.25;
+  width: 21rem;
+  flex-shrink: 0;
   padding: 12px 4px;
   display: flex;
   flex-direction: column;
@@ -923,7 +932,7 @@ body {
 
 
 .split__view__detail__right {
-  flex: 0.75;
+  width: 100%;
   background: #fff;
   padding: 12px;
   display: flex;
@@ -932,7 +941,7 @@ body {
 }
 
 .split__view__detail__primary {
-  flex: 0.7;
+  width: 100%;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -974,7 +983,7 @@ body {
 }
 
 .split__view__detail__substation {
-  flex: 0.3;
+  width: 20rem;
   flex-shrink: 0;
   border-left: 1px solid var(--lighter_gray);
   padding: 0px 0px 0px 12px;
@@ -1056,6 +1065,10 @@ body {
   top: 35%;
 }
 
+.performance-row-selected {
+  background-color: #e3e3e3 !important;
+}
+
 .operation_column_container {
   display: flex;
   gap: 15px;
@@ -1087,9 +1100,27 @@ body {
   line-height: 22px !important;
 }
 
+.line-height-23 {
+  line-height: 23px !important;
+}
+
+.line-height-24 {
+  line-height: 24px !important;
+}
+
 .flex-wrap {
   flex-wrap: wrap !important;
 }
+
+.object_fit_cover {
+  object-fit: cover;
+}
+
+.image_list_column_item {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
 
 ::-webkit-scrollbar {
   height: 8px;

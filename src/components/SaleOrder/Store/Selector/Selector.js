@@ -13,3 +13,7 @@ export const getFinalDetail = (state) => {
 export const getSaleOrderInfo = (state) => {
   return state.saleOrderReducer;
 };
+
+export const getSaleOutInfo = (state) => {
+  return state.saleoutDetailsReducer;
+};

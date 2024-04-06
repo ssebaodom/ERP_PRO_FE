@@ -85,11 +85,19 @@ const GroupPermissionsDrawer = ({
   useEffect(() => {
     if (Object.keys(currentItem).length > 0 && actions === formStatus.EDIT) {
       setLoading(true);
-      apiGetUnitClaims({ Code: currentItem?.ma_dvcs })
+      apiGetUnitClaims({ DVCSCode: currentItem?.ma_dvcs })
         .then((res) => {
-          const selected = res.data.map((item) => {
-            return item.claimValue;
+          const fetchClaims = res.data.map((item) => {
+            return item.value;
           });
+
+          const allClaimsValues = allClaims.map((claim) => {
+            return claim.claimValue;
+          });
+
+          const selected = fetchClaims.filter((item) =>
+            _.includes(allClaimsValues, item)
+          );
           setClaimsSelected(selected);
           setExpandedKeys(selected);
           setLoading(false);
@@ -105,7 +113,7 @@ const GroupPermissionsDrawer = ({
       const processedClaims = allClaims.map((claim) => {
         return {
           key: claim.claimValue,
-          title: claim.Description,
+          title: claim.description,
           parent: claim.claimUpper,
         };
       });
@@ -124,7 +132,7 @@ const GroupPermissionsDrawer = ({
   useEffect(() => {
     if (allClaims.length == 0) {
       apiGetAllClaims({}).then((res) => {
-        const allClaims = [...res?.data];
+        const allClaims = [...res];
         allClaims.map((claim) => {
           if (!claim.claimUpper) {
             delete claim.claimUpper;

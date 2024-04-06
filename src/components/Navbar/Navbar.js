@@ -11,6 +11,7 @@ import sse__logo from "../../Icons/sse__logo.svg";
 import router, { routes } from "../../router/routes";
 import { setClaims, setIsBackgrouds } from "../../store/reducers/claimsSlice";
 import jwt from "../../utils/jwt";
+import Notify from "./Notify/Notify.jsx";
 
 const Navbar = () => {
   const [resultsSearchModal, setResultsSearchModal] = useState([]);
@@ -127,52 +128,6 @@ const Navbar = () => {
     fetchData();
   }, []);
 
-  const a = [
-    {
-      key: "Thông báo 1",
-    },
-    {
-      key: "Thông báo 2",
-    },
-    {
-      key: "Thông báo 3",
-    },
-    {
-      key: "Thông báo 4",
-    },
-    {
-      key: "Thông báo 5",
-    },
-  ];
-
-  const notifications = [
-    {
-      key: "1",
-      label: (
-        <div className="navbar_notification_dropdown">
-          {a.map((item, index) => {
-            return (
-              <a
-                key={index}
-                className="navbar_notification_dropdown_item"
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://www.youtube.com/watch?v=kdVeYgGtO3Q&ab_channel=Tr%C3%BAcNh%C3%A2n"
-              >
-                <h1 className="navbar_notification_dropdown_item_title">
-                  {item.key}
-                </h1>
-                <span className="navbar_notification_dropdown_item_content">
-                  {item.key}
-                </span>
-              </a>
-            );
-          })}
-        </div>
-      ),
-    },
-  ];
-
   const items = [
     {
       key: "1",
@@ -282,7 +237,8 @@ const Navbar = () => {
             height: "30px",
             lineHeight: "30px",
             border: "none",
-            width: "85%",
+            width: "100%",
+            minWidth: "0",
             userSelect: "none",
           }}
           overflowedIndicator={
@@ -309,17 +265,7 @@ const Navbar = () => {
             </div>
           </li>
           <li>
-            <Dropdown
-              menu={{ items: notifications }}
-              overlayClassName="navbar_notification_dropdown_container"
-              placement="bottomRight"
-              trigger={["click"]}
-            >
-              <i
-                className="pi pi-bell"
-                style={{ fontSize: "22px", fontWeight: "bold" }}
-              ></i>
-            </Dropdown>
+            <Notify />
           </li>
         </ul>
       </div>

@@ -3,6 +3,7 @@ import {
   DatePicker,
   Form,
   Input,
+  message,
   Modal,
   notification,
   Select,
@@ -10,14 +11,20 @@ import {
   TimePicker,
 } from "antd";
 import dayjs from "dayjs";
-import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import _ from "lodash";
+import React, { useEffect, useState } from "react";
+import {
+  getAllRowKeys,
+  getAllValueByRow,
+} from "../../../../app/Functions/getTableValue";
+import { GetUniqueArray } from "../../../../app/Options/GetUniqueArray";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import FormSelect from "../../../ReuseComponents/FormSelect";
+import { multipleTablePutApi } from "../../../SaleOrder/API";
 import { ApiGetTaskDetail, ApiGetTaskMaster } from "../../API";
-import { createUltimate, setTaskDetail } from "../../Store/Sagas/Sagas";
-import { getTaskDetail } from "../../Store/Selector/Selectors";
+import { setTaskDetail } from "../../Store/Sagas/Sagas";
 import TableDetail from "./Detail/TableDetail";
 import "./ModalAddTask.css";
 
@@ -36,8 +43,8 @@ const ModalAddTask = ({
   const [dataSource, setDataSource] = useState([]);
   const [columns, setColumns] = useState([]);
   const [disableFields, setDisableFields] = useState(false);
-  const detailTable = useRef();
-  const detailData = useSelector(getTaskDetail);
+
+  const [loading, setLoading] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
@@ -49,12 +56,32 @@ const ModalAddTask = ({
     setTaskDetail([]);
   };
 
+  const checkValidDate = () => {
+    const dateStart = inputForm.getFieldValue("startDate");
+    const dateEnd = inputForm.getFieldValue("endDate");
+    if (!dateStart || !dateEnd) return true;
+    return dateStart <= dateEnd;
+  };
+
+  const handleChangeValues = () => {
+    inputForm.validateFields(["startDate", "endDate"]);
+  };
+
   const onSubmitForm = async () => {
-    const master = { ...inputForm.getFieldsValue() };
-    const detail = [...(await detailDataProcess(detailData))];
-    createUltimate({
+    const masterData = inputForm.getFieldsValue();
+    const rawDetailData = detailForm.getFieldsValue();
+    const detailData = await getAllRowKeys(rawDetailData).map((item) => {
+      return getAllValueByRow(item, rawDetailData);
+    });
+
+    const master = { ...masterData };
+    const detail = [
+      ...GetUniqueArray(await detailDataProcess(detailData), "ma_kh"),
+    ];
+
+    multipleTablePutApi({
       store: "api_create_task",
-      data: {
+      param: {
         action: openModalType,
         ten_cv: master.taskName,
         id: currentRecord ? currentRecord : null,
@@ -64,23 +91,24 @@ const ModalAddTask = ({
         event_yn: master.taskType,
         assigned_name: master.assignedName,
         muc_do: master.priority,
-        end_date: dayjs(master.endDate).format("DD/MM/YYYY"),
-        start_date: dayjs(master.startDate).format("DD/MM/YYYY"),
+        end_date: dayjs(master.endDate).format("MM/DD/YYYY"),
+        start_date: dayjs(master.startDate).format("MM/DD/YYYY"),
         ma_dvcs: master.unitCode,
         ma_bp: master.deptName,
         ma_tuyen: master.tourName,
       },
-      listData: detail,
+      data: { temp: _.isEmpty(detail) ? undefined : detail },
     }).then((res) => {
-      if (res === 200) {
+      if (res?.responseModel?.isSucceded) {
         notification.success({
-          message: `Thành công`,
+          message: `Thực hiện thành công`,
         });
+
         handleCancelModal();
         refreshData();
       } else {
         notification.warning({
-          message: `Lỗi: ${res?.message}`,
+          message: res?.responseModel?.message,
         });
       }
     });
@@ -110,6 +138,7 @@ const ModalAddTask = ({
             editable: true,
             key: item.field,
             reference: "ten_kh",
+            required: true,
             controller: "dmkh_lookup",
           };
         }
@@ -130,6 +159,7 @@ const ModalAddTask = ({
       });
 
       setDataSource(data);
+      setLoading(false);
     });
 
     ApiGetTaskMaster({ id: id, orderby: "id" }).then((res) => {
@@ -148,8 +178,41 @@ const ModalAddTask = ({
     });
   };
 
+  const scrollToField = (field, fieldName) => {
+    const allFields = detailForm.getFieldsValue(true);
+    if (!fieldName) {
+      const itemFocusName = Object.keys(allFields)
+        .filter((item) => item.includes(field))
+        .pop();
+      document.getElementById(itemFocusName).focus();
+      document.getElementById(itemFocusName).scrollIntoView();
+    } else {
+      document.getElementById(fieldName).focus();
+      document.getElementById(fieldName).scrollIntoView();
+    }
+  };
+
+  const handleDetailValidate = async () => {
+    try {
+      await detailForm.validateFields();
+
+      if (_.isEmpty(detailForm.getFieldsValue())) {
+        message.warning("Vui lòng thêm khách hàng vào công việc !");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      scrollToField("", error?.errorFields[0]?.name[0]);
+      return false;
+    }
+  };
+
   const checkingData = async () => {
-    detailTable.current.getData();
+    console.log("checking");
+    await inputForm.validateFields();
+    const detailValid = await handleDetailValidate();
+    if (detailValid) onSubmitForm();
   };
 
   ///////////////////////effects/////////////////////////
@@ -158,15 +221,10 @@ const ModalAddTask = ({
     setOpenModal(openModalState);
     if (openModalState) {
       setInitialValues({});
-      getDataEdit(currentRecord ? currentRecord : 0);
+      setLoading(true);
+      getDataEdit(currentRecord || 0);
     }
   }, [JSON.stringify(openModalState)]);
-
-  useEffect(() => {
-    if (detailData && detailData.length > 0) {
-      onSubmitForm();
-    }
-  }, [detailData]);
 
   return (
     <Modal
@@ -184,173 +242,195 @@ const ModalAddTask = ({
           openModalType == formStatus.EDIT ? "Sửa" : "Thêm mới"
         } công việc`}</span>
       </div>
-      <Form
-        form={inputForm}
-        className="default_modal_container"
-        onFinishFailed={onSubmitFormFail}
-        onFinish={checkingData}
-      >
-        <div className="default_modal_group_items">
-          <Space direction="vertical">
-            <span className="default_bold_label">Tên công việc</span>
-            <Form.Item
-              name="taskName"
-              rules={[
-                { required: true, message: "Vui lòng điền tên công việc" },
-              ]}
-            >
-              <Input placeholder="Nhập tên công việc" />
-            </Form.Item>
-          </Space>
-        </div>
 
-        <div className="default_modal_group_items">
-          <Space direction="horizontal">
+      <div className="default_modal_container">
+        <Form
+          form={inputForm}
+          component={false}
+          onFinishFailed={onSubmitFormFail}
+          onValuesChange={handleChangeValues}
+        >
+          <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
+          <div className="default_modal_group_items">
+            <Space direction="vertical">
+              <span className="default_bold_label">Tên công việc</span>
+              <Form.Item
+                name="taskName"
+                rules={[
+                  { required: true, message: "Vui lòng điền tên công việc" },
+                ]}
+              >
+                <Input placeholder="Nhập tên công việc" />
+              </Form.Item>
+            </Space>
+          </div>
+
+          <div className="default_modal_group_items">
+            <Space direction="horizontal">
+              <FormSelect
+                direction={"COLUMN"}
+                disable={openModalState == formStatus.VIEW ? true : false}
+                controller={"dmloaicv_lookup"}
+                form={inputForm}
+                keyCode="taskType"
+                label="Loại công việc"
+                placeHolderCode={`Chọn loại công việc`}
+                required={true}
+              />
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <span className="default_bold_label">Mức độ ưu tiên</span>
+                <Form.Item
+                  name="priority"
+                  rules={[
+                    { required: true, message: "Vui lòng mức độ ưu tiên" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Chọn mức độ"
+                    style={{ width: "100%" }}
+                    options={[
+                      { value: 1, label: "Thấp" },
+                      { value: 2, label: "Trung bình" },
+                      { value: 3, label: "Cao" },
+                    ]}
+                  />
+                </Form.Item>
+              </Space>
+              <Space direction="vertical">
+                <span className="default_bold_label">Bắt đầu</span>
+                <Space className="modal__time__picker">
+                  <Form.Item
+                    name="startTime"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng chọn giờ bắt đầu",
+                      },
+                    ]}
+                  >
+                    <TimePicker placeholder="Giờ" format={"HH:mm"} />
+                  </Form.Item>
+                  <Form.Item
+                    name="startDate"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng chọn ngày bắt đầu",
+                      },
+                      {
+                        validator: async (_, value) => {
+                          return (await checkValidDate(value)) == true
+                            ? Promise.resolve()
+                            : Promise.reject(new Error("Lỗi định dạng ngày"));
+                        },
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      format={"DD/MM/YYYY"}
+                      style={{ width: "100%" }}
+                      placeholder="Chọn ngày"
+                    />
+                  </Form.Item>
+                </Space>
+              </Space>
+              <Space direction="vertical">
+                <span className="default_bold_label">Kết thúc</span>
+                <Space className="modal__time__picker">
+                  <Form.Item
+                    name="endTime"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng chọn ngày kết thúc",
+                      },
+                    ]}
+                  >
+                    <TimePicker placeholder="Giờ" format={"HH:mm"} />
+                  </Form.Item>
+                  <Form.Item
+                    name="endDate"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng chọn ngày kết thúc",
+                      },
+                      {
+                        validator: async (_, value) => {
+                          return (await checkValidDate(value)) == true
+                            ? Promise.resolve()
+                            : Promise.reject(new Error("Lỗi định dạng ngày"));
+                        },
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      format={"DD/MM/YYYY"}
+                      style={{ width: "100%" }}
+                      placeholder="Chọn ngày"
+                    />
+                  </Form.Item>
+                </Space>
+              </Space>
+            </Space>
+          </div>
+
+          <div className="default_modal_group_items">
             <FormSelect
               direction={"COLUMN"}
               disable={openModalState == formStatus.VIEW ? true : false}
-              controller={"dmloaicv_lookup"}
+              controller={"user_lookup"}
               form={inputForm}
-              keyCode="taskType"
-              label="Loại công việc"
-              placeHolderCode={`Chọn loại công việc`}
+              keyCode="assignedName"
+              label="Người nhận việc"
+              placeHolderCode={`Nhập người nhận việc`}
               required={true}
             />
-            <Space direction="vertical" style={{ width: "100%" }}>
-              <span className="default_bold_label">Mức độ ưu tiên</span>
-              <Form.Item
-                name="priority"
-                rules={[{ required: true, message: "Vui lòng mức độ ưu tiên" }]}
-              >
-                <Select
-                  placeholder="Chọn mức độ"
-                  style={{ width: "100%" }}
-                  options={[
-                    { value: 1, label: "Thấp" },
-                    { value: 2, label: "Trung bình" },
-                    { value: 3, label: "Cao" },
-                  ]}
-                />
-              </Form.Item>
-            </Space>
-            <Space direction="vertical">
-              <span className="default_bold_label">Bắt đầu</span>
-              <Space className="modal__time__picker">
-                <Form.Item
-                  name="startTime"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng chọn giờ bắt đầu",
-                    },
-                  ]}
-                >
-                  <TimePicker placeholder="Giờ" format={"HH:mm"} />
-                </Form.Item>
-                <Form.Item
-                  name="startDate"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng chọn ngày bắt đầu",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    format={"DD/MM/YYYY"}
-                    style={{ width: "100%" }}
-                    placeholder="Chọn ngày"
-                  />
-                </Form.Item>
-              </Space>
-            </Space>
-            <Space direction="vertical">
-              <span className="default_bold_label">Kết thúc</span>
-              <Space className="modal__time__picker">
-                <Form.Item
-                  name="endTime"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng chọn ngày kết thúc",
-                    },
-                  ]}
-                >
-                  <TimePicker placeholder="Giờ" format={"HH:mm"} />
-                </Form.Item>
-                <Form.Item
-                  name="endDate"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng chọn ngày kết thúc",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    format={"DD/MM/YYYY"}
-                    style={{ width: "100%" }}
-                    placeholder="Chọn ngày"
-                  />
-                </Form.Item>
-              </Space>
-            </Space>
-          </Space>
-        </div>
+            <FormSelect
+              direction={"COLUMN"}
+              disable={openModalState == formStatus.VIEW ? true : false}
+              controller={"dmbp_lookup"}
+              form={inputForm}
+              keyCode="deptName"
+              label="Bộ phận"
+              placeHolderCode={`Nhập bộ phận`}
+              required={true}
+            />
+            <FormSelect
+              direction={"COLUMN"}
+              disable={openModalState == formStatus.VIEW ? true : false}
+              controller={"dmtuyen_lookup"}
+              form={inputForm}
+              keyCode="tourName"
+              label="Tuyến"
+              placeHolderCode={`Nhập tuyến`}
+              required={true}
+            />
+          </div>
 
-        <div className="default_modal_group_items">
-          <FormSelect
-            direction={"COLUMN"}
-            disable={openModalState == formStatus.VIEW ? true : false}
-            controller={"user_lookup"}
-            form={inputForm}
-            keyCode="assignedName"
-            label="Người nhận việc"
-            placeHolderCode={`Nhập người nhận việc`}
-            required={true}
-          />
-          <FormSelect
-            direction={"COLUMN"}
-            disable={openModalState == formStatus.VIEW ? true : false}
-            controller={"dmbp_lookup"}
-            form={inputForm}
-            keyCode="deptName"
-            label="Bộ phận"
-            placeHolderCode={`Nhập bộ phận`}
-            required={true}
-          />
-          <FormSelect
-            direction={"COLUMN"}
-            disable={openModalState == formStatus.VIEW ? true : false}
-            controller={"dmtuyen_lookup"}
-            form={inputForm}
-            keyCode="tourName"
-            label="Tuyến"
-            placeHolderCode={`Nhập tuyến`}
-            required={true}
+          <div className="default_modal_group_items">
+            <FormSelect
+              direction={"COLUMN"}
+              disable={openModalState == formStatus.VIEW ? true : false}
+              codeWidth={315}
+              controller={"dmdvcs_lookup"}
+              form={inputForm}
+              keyCode="unitCode"
+              label="Đơn vị"
+              placeHolderCode={`Chọn đơn vị`}
+              required={true}
+            />
+          </div>
+        </Form>
+
+        <div style={{ height: 270 }}>
+          <TableDetail
+            detailForm={detailForm}
+            columns={columns}
+            data={dataSource}
+            action={openModalType}
           />
         </div>
-
-        <div className="default_modal_group_items">
-          <FormSelect
-            direction={"COLUMN"}
-            disable={openModalState == formStatus.VIEW ? true : false}
-            codeWidth={315}
-            controller={"dmdvcs_lookup"}
-            form={inputForm}
-            keyCode="unitCode"
-            label="Đơn vị"
-            placeHolderCode={`Chọn đơn vị`}
-            required={true}
-          />
-        </div>
-
-        <TableDetail
-          form={detailForm}
-          Tablecolumns={columns}
-          data={dataSource}
-          ref={detailTable}
-        />
 
         <Space style={{ justifyContent: "center", alignItems: "center" }}>
           <Button
@@ -370,7 +450,7 @@ const ModalAddTask = ({
             </Button>
           </Form.Item>
         </Space>
-      </Form>
+      </div>
     </Modal>
   );
 };

@@ -3,24 +3,17 @@ import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
-  getAllRowKeys,
   getAllValueByColumn,
   getAllValueByRow,
   getCellName,
   getRowKey,
 } from "../../../../../../app/Functions/getTableValue";
 import { formStatus } from "../../../../../../utils/constants";
-import emitter from "../../../../../../utils/emitter";
 import EditableTable from "../../../../../ReuseComponents/EditableTable/EditableTable";
-import {
-  setPaymentSaleOrderInfo,
-  setSaleOrderCurrentStep,
-  setSaleOrderInsertDetails,
-} from "../../../../Store/Sagas/SaleOrderActions";
+import { setPaymentSaleOrderInfo } from "../../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../../Store/Selector/Selector";
 
-const DetailTableSaleOrder = () => {
-  const [detailForm] = Form.useForm();
+const DetailTableSaleOrder = ({ detailForm }) => {
   const { action, detailInfo, paymentInfo } = useSelector(getSaleOrderInfo);
   const [columns, setColumns] = useState([]);
   const [currentAction, setCurrentAction] = useState("");
@@ -136,25 +129,6 @@ const DetailTableSaleOrder = () => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      await detailForm.validateFields();
-      const detailData = [];
-
-      getAllRowKeys(detailForm.getFieldsValue()).map((item) => {
-        return detailData.push(
-          getAllValueByRow(item, detailForm.getFieldsValue())
-        );
-      });
-
-      await setSaleOrderInsertDetails(detailData);
-    } catch (error) {
-      if (error.outOfDate) return;
-      setSaleOrderCurrentStep(0);
-      scrollToField("", error?.errorFields[0]?.name[0]);
-    }
-  };
-
   useEffect(() => {
     setCurrentAction(action || formStatus.VIEW);
     return () => {};
@@ -165,10 +139,6 @@ const DetailTableSaleOrder = () => {
       if (columns?.length == 0) setColumns(detailInfo?.columns || []);
       setDataSource(detailInfo?.data || []);
     }
-
-    emitter.on("HANDLE_SALE_ORDER_SAVE", async () => {
-      handleSave();
-    });
     return () => {};
   }, [detailInfo]);
 

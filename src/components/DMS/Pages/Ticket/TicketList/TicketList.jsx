@@ -16,7 +16,7 @@ const TicketList = () => {
   const [loading, setLoading] = useState(false);
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
-    orderby: "ma_kh",
+    orderby: "time desc",
     ma_kh: "",
     ten_kh: "",
     ten_nvbh: "",

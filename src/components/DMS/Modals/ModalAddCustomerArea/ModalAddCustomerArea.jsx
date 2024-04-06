@@ -2,11 +2,13 @@ import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddCustomerArea.css";
 
+import _ from "lodash";
 import { useDebouncedCallback } from "use-debounce";
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import SelectItemCode from "../../../../Context/SelectItemCode";
 import SelectNotFound from "../../../../Context/SelectNotFound";
 import send_icon from "../../../../Icons/send_icon.svg";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import {
   ApiWebLookup,
   SoFuckingUltimateApi,
@@ -20,8 +22,10 @@ const ModalAddCustomerArea = (props) => {
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
   const [selectLoading, setSelectLoading] = useState(false);
-  const [selectOptions, setSelectOptions] = useState([]);
+  const [provinceOptions, setProvinceOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
   const [disableFields, setDisableFields] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const lookupData = (item) => {
     setSelectLoading(true);
@@ -38,7 +42,10 @@ const ModalAddCustomerArea = (props) => {
         };
       });
       setSelectLoading(false);
-      setSelectOptions([...resOptions]);
+
+      if (item?.controller === "dmtinh_lookup")
+        setProvinceOptions([...resOptions]);
+      else setDistrictOptions([...resOptions]);
     });
   };
 
@@ -96,18 +103,22 @@ const ModalAddCustomerArea = (props) => {
     }).then((res) => {
       const provinceCode =
         res.data[0]?.ds_tinh.trim().split(",")[0] !== ""
-          ? res.data[0]?.ds_quan.split(",")
+          ? res.data[0]?.ds_tinh.split(",")
           : [];
       const districtCode =
         res.data[0]?.ds_quan.split(",")[0] !== ""
           ? res.data[0]?.ds_quan.split(",")
           : [];
+
+      console.log("provinceCode", provinceCode);
+      console.log("districtCode", districtCode);
       inputForm.setFieldValue(`areaCode`, res.data[0]?.ma_khu_vuc);
       inputForm.setFieldValue(`areaName`, res.data[0]?.ten_khu_vuc);
       inputForm.setFieldValue(`provinceCode`, provinceCode);
       inputForm.setFieldValue(`districtCode`, districtCode);
       inputForm.setFieldValue(`status`, res.data[0]?.status);
       setDisableFields(true);
+      setLoading(false);
     });
   };
 
@@ -128,7 +139,10 @@ const ModalAddCustomerArea = (props) => {
   useEffect(() => {
     setOpenModal(props.openModalState);
     if (props.openModalState && props.openModalType === "EDIT") {
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      setLoading(true);
+      getDataEdit(props.currentRecord || 0);
+      lookupData({ controller: "dmtinh_lookup", value: "" });
+      lookupData({ controller: "dmquan_lookup", value: "" });
     }
   }, [JSON.stringify(props)]);
 
@@ -154,6 +168,7 @@ const ModalAddCustomerArea = (props) => {
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
@@ -197,6 +212,7 @@ const ModalAddCustomerArea = (props) => {
               <Select
                 mode="multiple"
                 showSearch
+                popupMatchSelectWidth={false}
                 placeholder={`Tỉnh thành`}
                 style={{
                   width: "100%",
@@ -205,13 +221,16 @@ const ModalAddCustomerArea = (props) => {
                 defaultActiveFirstOption={false}
                 showArrow={false}
                 filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
+                notFoundContent={SelectNotFound(selectLoading, provinceOptions)}
                 onSearch={(e) => {
                   handleSelectionChange("province", e);
                 }}
-                onSelect={(key, item) => {}}
+                onClick={() => {
+                  if (_.isEmpty(provinceOptions))
+                    lookupData({ controller: "dmtinh_lookup", value: "" });
+                }}
               >
-                {SelectItemCode(selectOptions)}
+                {SelectItemCode(provinceOptions)}
               </Select>
             </Form.Item>
           </div>
@@ -229,6 +248,7 @@ const ModalAddCustomerArea = (props) => {
               <Select
                 mode="multiple"
                 showSearch
+                popupMatchSelectWidth={false}
                 placeholder={`Quận huyện`}
                 style={{
                   width: "100%",
@@ -237,15 +257,19 @@ const ModalAddCustomerArea = (props) => {
                 defaultActiveFirstOption={false}
                 showArrow={false}
                 filterOption={false}
-                notFoundContent={SelectNotFound(selectLoading, selectOptions)}
+                notFoundContent={SelectNotFound(selectLoading, districtOptions)}
                 onSearch={(e) => {
                   handleSelectionChange("district", e);
+                }}
+                onClick={() => {
+                  if (_.isEmpty(districtOptions))
+                    lookupData({ controller: "dmquan_lookup", value: "" });
                 }}
                 onSelect={(key, item) => {
                   // setSelectOptions([]);
                 }}
               >
-                {SelectItemCode(selectOptions)}
+                {SelectItemCode(districtOptions)}
               </Select>
             </Form.Item>
           </div>

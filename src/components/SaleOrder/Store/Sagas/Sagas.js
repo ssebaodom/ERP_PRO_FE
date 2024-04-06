@@ -26,6 +26,14 @@ export const setFinalDetails = async (payload) => {
   }
 };
 
+export const setSaleOutAction = async (payload) => {
+  try {
+    store.dispatch(saleoutActions.setAction(payload));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const fetchSaleOutMaster = async (payload) => {
   try {
     const params = {
@@ -45,6 +53,10 @@ export const fetchSaleOutMaster = async (payload) => {
     console.error(error);
     return false;
   }
+};
+
+export const setCurrentDetailSaleOut = async (payload) => {
+  store.dispatch(saleoutActions.setCurrentDetailSaleOut(payload));
 };
 
 export const fetchSaleOutDetail = async (payload) => {

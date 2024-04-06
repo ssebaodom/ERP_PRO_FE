@@ -49,7 +49,7 @@ const Filter = (props) => {
             <FormSelectDetail
               width={100}
               codeWidth={120}
-              controller={"dmkh_lookup"}
+              controller={"dmkhDMS_lookup"}
               keyCode="ma_kh"
               keyName="ten_kh"
               label="Khách hàng"

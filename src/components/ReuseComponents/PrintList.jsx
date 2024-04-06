@@ -22,7 +22,7 @@ const PrintList = ({ callBackClick, layouts, openState, onCancel }) => {
         dataSource={layouts}
         renderItem={(item, index) => (
           <List.Item
-            className="user__item"
+            className="item_in_list"
             style={{ cursor: "pointer" }}
             onClick={() => {
               callBackClick(item);

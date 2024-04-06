@@ -1,4 +1,5 @@
-import { Button, Drawer, Skeleton, Space, Tree } from "antd";
+import { Button, Drawer, notification, Skeleton, Space, Tree } from "antd";
+import _ from "lodash";
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -55,6 +56,9 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
         userid: currentUser?.user_id,
         Claims: ids,
       }).then((res) => {
+        notification.success({
+          message: `Thực hiện thành công`,
+        });
         handleClose();
       });
     } else {
@@ -69,10 +73,18 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
       setLoading(true);
       apiGetUserClaims({ userId: currentUser?.user_id })
         .then((res) => {
-          console.log(res);
-          const selected = res.data.map((item) => {
+          const userClaims = res.data.map((item) => {
             return item.value;
           });
+
+          const allClaimsValues = allClaims.map((claim) => {
+            return claim.claimValue;
+          });
+
+          const selected = userClaims.filter((item) =>
+            _.includes(allClaimsValues, item)
+          );
+
           setLoading(false);
           setClaimsSelected(selected);
           setExpandedKeys(selected);
@@ -80,7 +92,6 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
         .catch((err) => {
           console.log(err);
         });
-      setLoading(false);
     }
   }, [currentUser]);
 
@@ -89,7 +100,7 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
       const processedClaims = allClaims.map((claim) => {
         return {
           key: claim.claimValue,
-          title: claim.Description,
+          title: claim.description,
           parent: claim.claimUpper,
         };
       });
@@ -107,7 +118,7 @@ const UserPermissionsDrawer = ({ openState, handleClose, currentUser }) => {
   useEffect(() => {
     if (allClaims.length == 0) {
       apiGetAllClaims({}).then((res) => {
-        const allClaims = [...res?.data];
+        const allClaims = [...res];
         allClaims.map((claim) => {
           if (!claim.claimUpper) {
             delete claim.claimUpper;

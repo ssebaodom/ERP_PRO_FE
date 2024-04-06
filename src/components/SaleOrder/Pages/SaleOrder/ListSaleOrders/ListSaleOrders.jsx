@@ -5,22 +5,20 @@ import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../../app/Functions/filterHelper";
 import renderColumns from "../../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../../Context/TableLocale";
-import { formStatus } from "../../../../../utils/constants";
+import emitter from "../../../../../utils/emitter";
 import {
   fetchSaleOrderInfo,
   fetchSaleOrderList,
-  setActionSaleOrder,
   setCurrentSaleOrder,
   setOpenSaleOrderFilter,
   setSaleOrderCurrentStep,
-  setSaleOrderLoading,
 } from "../../../Store/Sagas/SaleOrderActions";
 import { getSaleOrderInfo } from "../../../Store/Selector/Selector";
 import FilterSaleOrder from "../FilterSaleOrder/FilterSaleOrder";
 
 const ListSaleOrders = () => {
   const [selectedRowkeys, setselectedRowkeys] = useState([]);
-  const { filterInfo, saleOrderList, currentItemId } =
+  const { filterInfo, saleOrderList, currentItemId, action } =
     useSelector(getSaleOrderInfo);
   const [columns, setColumns] = useState([]);
   const [dataSource, setDataSource] = useState([]);
@@ -54,11 +52,15 @@ const ListSaleOrders = () => {
     setParams({ ...params, searchKey: searchValue });
   }, 600);
 
+  const listenEmitter = () => {
+    emitter.on("HANLDE_REFRESH_LIST_SALE_ORDER", () => {
+      setPagination({ pageIndex: 1 });
+    });
+  };
+
   useEffect(() => {
     setselectedRowkeys([currentItemId || ""]);
-    setSaleOrderLoading(true);
     setSaleOrderCurrentStep(0);
-    setActionSaleOrder(formStatus.VIEW);
     fetchSaleOrderInfo(currentItemId || "");
   }, [JSON.stringify(currentItemId)]);
 
@@ -76,6 +78,10 @@ const ListSaleOrders = () => {
     setLoading(true);
     fetchSaleOrderList({ ...params, pageIndex: pagination.pageIndex });
   }, [JSON.stringify(params), pagination]);
+
+  useEffect(() => {
+    listenEmitter();
+  }, []);
 
   return (
     <>

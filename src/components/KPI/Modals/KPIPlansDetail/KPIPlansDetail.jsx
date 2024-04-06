@@ -300,6 +300,8 @@ const KPIPlansDetail = ({ refreshList }) => {
                   ]}
                 >
                   <InputNumber
+                    controls={false}
+                    min="0"
                     style={{
                       width: "100%",
                     }}
@@ -331,6 +333,8 @@ const KPIPlansDetail = ({ refreshList }) => {
                   ]}
                 >
                   <InputNumber
+                    controls={false}
+                    min="0"
                     style={{
                       width: "100%",
                     }}

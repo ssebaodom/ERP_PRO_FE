@@ -8,7 +8,7 @@ import TableLocale from "../../../../Context/TableLocale";
 import { formStatus } from "../../../../utils/constants";
 import {
   SoFuckingUltimateApi,
-  SoFuckingUltimateGetApi
+  SoFuckingUltimateGetApi,
 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
 import ModalApproveItems from "../../Modal/ModalApproveItems/ModalApproveItems";
@@ -223,7 +223,7 @@ const ApproveItems = () => {
         description={`Xoá  ${
           currentItemSelected.Id
             ? "quyền nhân viên: " +
-              currentItemSelected.ma_nv +
+              currentItemSelected.ma_nvbh +
               " - " +
               currentItemSelected.ten_nvbh
             : `${selectedRowKeys.length} quyền`

@@ -11,6 +11,7 @@ import imageRoutes from "./images";
 import itemsRoute from "./items";
 import kpiRoutes from "./KPI";
 import reportsRoute from "./report";
+import RORoutes from "./retail";
 import SORoutes from "./saleorder";
 import systemRoutes from "./system";
 import taskRoutes from "./task";
@@ -163,6 +164,7 @@ const homeRoutes = [
         element: <ApproveInvoice />,
       },
       ...kpiRoutes,
+      ...RORoutes,
 
       {
         label: "Liên hệ",

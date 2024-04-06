@@ -2,6 +2,7 @@ import { Checkbox, Image } from "antd";
 import dayjs from "dayjs";
 import React from "react";
 import { shallowEqual } from "react-redux";
+import ImageListColumn from "../../components/ReuseComponents/ImageListColumn/ImageListColumn";
 import { datetimeFormat } from "../Options/DataFomater";
 
 const renderColumns = (columns = [], sorter) => {
@@ -49,6 +50,9 @@ const renderColumns = (columns = [], sorter) => {
         }
         if (item.type === "Image") {
           return <Image src={data} alt={"SSE"} />;
+        }
+        if (item.type === "ImageList") {
+          return <ImageListColumn keys={data} />;
         }
         return data;
       },

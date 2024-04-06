@@ -4,6 +4,7 @@ import "./ModalDetailImages.css";
 
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import { setCurrentImageIndex } from "../../Store/Sagas/Sagas";
 import {
   getCurrentImageIndex,
@@ -90,6 +91,8 @@ const ModalDetailImages = (props) => {
       cancelButtonProps={{ style: { display: "none" } }}
       width={1000}
     >
+      <LoadingComponents text={"Đang tải..."} size={50} loading={isLoading} />
+
       <div className="default_modal_container p-0">
         <div className="image__detail_container">
           <Image

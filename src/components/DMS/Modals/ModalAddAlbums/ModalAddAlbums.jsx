@@ -15,7 +15,9 @@ import { memo } from "react";
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
-import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
+import LoadingComponents from "../../../Loading/LoadingComponents";
+import { multipleTablePutApi } from "../../../SaleOrder/API";
+import { SoFuckingUltimateGetApi } from "../../API";
 
 const ModalAddAlbums = ({
   handleCloseModal,
@@ -30,6 +32,7 @@ const ModalAddAlbums = ({
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
   const [disableFields, setDisableFields] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
@@ -39,25 +42,27 @@ const ModalAddAlbums = ({
 
   const onSubmitForm = (data) => {
     const master = { ...data };
-    SoFuckingUltimateApi({
+    multipleTablePutApi({
       store: "Api_create_dmalbum",
-      data: {
+      param: {
         action:
           openModalType === formStatus.EDIT ? openModalType : formStatus.ADD,
         userid: 0,
         ...master,
       },
+      data: {},
     })
       .then((res) => {
-        if (res.status === 200 && res.data === true) {
+        if (res?.responseModel?.isSucceded) {
           notification.success({
-            message: `Thành công`,
+            message: `Thực hiện thành công`,
           });
+
           refreshData();
           handleCancelModal();
         } else {
           notification.warning({
-            message: `Có lỗi xảy ra khi thực hiện`,
+            message: res?.responseModel?.message,
           });
         }
       })
@@ -82,13 +87,15 @@ const ModalAddAlbums = ({
         inputForm.setFieldValue(item, res.data[0][item]);
       });
       setDisableFields(true);
+      setLoading(false);
     });
   };
 
   useEffect(() => {
     setOpenModal(openModalState);
     if (openModalState && openModalType === formStatus.EDIT) {
-      getDataEdit(currentRecord ? currentRecord : 0);
+      setLoading(true);
+      getDataEdit(currentRecord || 0);
     }
   }, [JSON.stringify(openModalState)]);
 
@@ -114,6 +121,7 @@ const ModalAddAlbums = ({
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "150px" }}>

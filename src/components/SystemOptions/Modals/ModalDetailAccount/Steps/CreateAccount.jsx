@@ -7,8 +7,14 @@ import React, {
 } from "react";
 import { useSelector } from "react-redux";
 import { formatData } from "../../../../../app/hooks/dataFormatHelper";
-import { emailRegex, numberRegex } from "../../../../../app/regex/regex";
+import {
+  emailRegex,
+  passwordRegex,
+  phoneNumberRegex,
+  userNameRegex,
+} from "../../../../../app/regex/regex";
 import { SoFuckingUltimateGetApi } from "../../../../DMS/API";
+import LoadingComponents from "../../../../Loading/LoadingComponents";
 import {
   setCurrentAccount,
   setCurrentAvatar,
@@ -53,6 +59,7 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
   }));
 
   const getDetailData = () => {
+    setLoading(true);
     SoFuckingUltimateGetApi({
       store: "api_Get_Users",
       data: { id: propUserId ? propUserId : null, pageindex: 1, pageSize: 10 },
@@ -61,6 +68,7 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
       res?.reportLayoutModel.map((item) => {
         return infoForm.setFieldValue(`${item.field}`, data[`${item.field}`]);
       });
+      setLoading(false);
     });
   };
 
@@ -155,6 +163,7 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
         style={{ gap: "15px" }}
         initialValues={initValues}
       >
+        <LoadingComponents loading={loading} />
         <div className="default_modal_group_items" style={{ gap: "35px" }}>
           <div>
             <span className="default_bold_label">
@@ -173,9 +182,18 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
                       : Promise.reject(new Error("Trùng tài khoản"));
                   },
                 },
+
+                {
+                  validator: async (_, value) => {
+                    return ((await userNameRegex.test(value)) || !value) == true
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("Tối thiểu 8 ký tự"));
+                  },
+                },
               ]}
             >
               <Input
+                disabled={propUserId ? true : false}
                 autoComplete="one-time-code"
                 maxLength={32}
                 placeholder="Nhập tên đăng nhập"
@@ -191,7 +209,11 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
               name="full_name"
               rules={[{ required: true, message: "Điền tên đầy đủ" }]}
             >
-              <Input autoComplete="one-time-code" placeholder="Nhập tên " />
+              <Input
+                disabled={propUserId ? true : false}
+                autoComplete="one-time-code"
+                placeholder="Nhập tên "
+              />
             </Form.Item>
           </div>
         </div>
@@ -207,6 +229,13 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
                 {
                   required: propUserId ? false : true,
                   message: "Điền mật khẩu",
+                },
+                {
+                  validator: async (_, value) => {
+                    return ((await passwordRegex.test(value)) || !value) == true
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("Tối thiểu 8 ký tự"));
+                  },
                 },
               ]}
             >
@@ -271,7 +300,10 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
                 }),
               ]}
             >
-              <Input placeholder="Nhập email" />
+              <Input
+                disabled={propUserId ? true : false}
+                placeholder="Nhập email"
+              />
             </Form.Item>
           </div>
 
@@ -283,7 +315,7 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (
-                      numberRegex.test(value) ||
+                      phoneNumberRegex.test(value) ||
                       value?.trim() == "" ||
                       value == null
                     ) {
@@ -296,7 +328,11 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
                 }),
               ]}
             >
-              <Input maxLength={15} placeholder="Nhập điện thoại" />
+              <Input
+                disabled={propUserId ? true : false}
+                maxLength={15}
+                placeholder="Nhập điện thoại"
+              />
             </Form.Item>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { formStatus } from "../../../../utils/constants";
 
 const saleOutOrderDetailInitial = {
+  action: formStatus.VIEW,
   currentMasterItem: {},
   currentDetailItem: [],
   finalDetails: [],
@@ -10,6 +12,9 @@ const saleoutDetails = createSlice({
   name: "saleoutDetails",
   initialState: { ...saleOutOrderDetailInitial },
   reducers: {
+    setAction(state, action) {
+      state.action = action?.payload;
+    },
     setMasterLayout(state, action) {
       state.masterLayout = action?.payload;
     },

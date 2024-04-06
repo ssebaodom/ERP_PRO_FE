@@ -1,4 +1,4 @@
-import { Table } from "antd";
+import { notification, Table } from "antd";
 import React, { useCallback, useEffect, useState } from "react";
 import OperationColumn from "../../../../app/hooks/operationColumn";
 import renderColumns from "../../../../app/hooks/renderColumns";
@@ -6,7 +6,7 @@ import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import TableLocale from "../../../../Context/TableLocale";
 import { formStatus } from "../../../../utils/constants";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
-import { ApiGetTaskList } from "../../API";
+import { ApiGetTaskList, SoFuckingUltimateApi } from "../../API";
 import ModalAddTask from "../../Modals/ModalAddTask/ModalAddTask";
 import "./TaskList.css";
 
@@ -17,7 +17,7 @@ const TaskList = () => {
   const [tableColumns, setTableColumns] = useState([]);
   const [tableParams, setTableParams] = useState({
     keywords: "",
-    orderby: "id",
+    orderby: "start_date desc",
   });
   const [pagination, setPagination] = useState({
     pageindex: 1,
@@ -54,12 +54,31 @@ const TaskList = () => {
   const handleCloseDeleteDialog = () => {
     setIsOpenModalDeleteTask(false);
     setCurrentItemSelected({});
+    setSelectedRowKeys([]);
   };
 
   const handleDelete = (keys) => {
-    console.log("Gọi API delete ở đây", currentItemSelected);
-    handleCloseDeleteDialog();
-    refreshData();
+    SoFuckingUltimateApi({
+      store: "api_delete_task_list",
+      data: {
+        id: keys.replaceAll(" ", ""),
+        userid: 0,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200 && res.data === true) {
+          notification.success({
+            message: `Thành công`,
+          });
+          handleCloseDeleteDialog();
+          refreshData();
+        } else {
+          notification.warning({
+            message: `Có lỗi xảy ra khi thực hiện`,
+          });
+        }
+      })
+      .catch((err) => {});
   };
 
   const getdata = () => {

@@ -1,19 +1,17 @@
-import React from "react";
+import { Segmented } from "antd";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import accept__person from "../../../Icons/accept__person.svg";
-import add__voucher from "../../../Icons/add__voucher.svg";
-import cart from "../../../Icons/cart.svg";
 import dashboard__hi from "../../../Icons/dashboard__hi.svg";
-import location from "../../../Icons/location.svg";
 import { getUserInfo } from "../../../store/selectors/Selectors";
 import "./Dashboard.css";
+import SaleStatistics from "./SaleStatistics/SaleStatistics";
 import SimpleCharts from "./SimpleCharts/SimpleCharts";
 
 const Dashboard = () => {
   const userInfo = useSelector(getUserInfo);
-
   const navigate = useNavigate();
+  const [saleStatisticType, setSaleStatisticType] = useState("day");
 
   const test = () => {
     navigate("/images/gallary", { state: { id: "MachHung" } });
@@ -35,44 +33,8 @@ const Dashboard = () => {
             đã quay trở lại hệ thống!
           </span>
         </div>
-        <div className="dashboard__general__statistic__items">
-          <div className="dashboard__general__statistic__icon">
-            <img src={add__voucher} alt="voucher" />
-          </div>
-          <div className="dashboard__general__statistic__details">
-            <p className="dashboard__general__statistic__title">Đơn hàng mới</p>
-            <span className="dashboard__general__statistic__data">100</span>
-          </div>
-        </div>
-        <div className="dashboard__general__statistic__items">
-          <div className="dashboard__general__statistic__icon">
-            <img src={cart} alt="voucher" />
-          </div>
-          <div className="dashboard__general__statistic__details">
-            <p className="dashboard__general__statistic__title">
-              Đơn hàng bán mới
-            </p>
-            <span className="dashboard__general__statistic__data">100</span>
-          </div>
-        </div>
-        <div className="dashboard__general__statistic__items">
-          <div className="dashboard__general__statistic__icon">
-            <img src={location} alt="voucher" />
-          </div>
-          <div className="dashboard__general__statistic__details">
-            <p className="dashboard__general__statistic__title">Điểm bán mới</p>
-            <span className="dashboard__general__statistic__data">100</span>
-          </div>
-        </div>
-        <div className="dashboard__general__statistic__items">
-          <div className="dashboard__general__statistic__icon">
-            <img src={accept__person} alt="voucher" />
-          </div>
-          <div className="dashboard__general__statistic__details">
-            <p className="dashboard__general__statistic__title">Đơn phép mới</p>
-            <span className="dashboard__general__statistic__data">100</span>
-          </div>
-        </div>
+
+        {React.createElement(require("./Statistics/Statistics").default)}
       </div>
       <div className="dashboard__simple__chart__container">
         <span className="default_header_label">Báo cáo nhanh</span>
@@ -80,8 +42,37 @@ const Dashboard = () => {
       </div>
       <div className="dashboard__simple__chart__container">
         <span className="default_header_label">Bán hàng</span>
-
         {React.createElement(require("./Report/DashboardReport").default)}
+      </div>
+
+      <div>
+        <div className="default_header_label mb-3 mt-3">
+          <span className="default_header_label">Tình trạng bán hàng</span>
+          <Segmented
+            className="ml-3"
+            onChange={(value) => {
+              setSaleStatisticType(value);
+            }}
+            options={[
+              {
+                value: "DAY",
+                label: "Ngày",
+              },
+              {
+                value: "WEEK",
+                label: "Tuần",
+              },
+              {
+                value: "MONTH",
+                label: "Tháng",
+              },
+            ]}
+          />
+        </div>
+
+        <div className="dashboard__simple__chart__items__container">
+          <SaleStatistics type={saleStatisticType} />
+        </div>
       </div>
     </div>
   );

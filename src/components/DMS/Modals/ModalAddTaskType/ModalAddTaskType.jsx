@@ -2,12 +2,14 @@ import { Button, Form, Input, Modal, notification, Select, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import "./ModalAddTaskType.css";
 
+import _ from "lodash";
 import { memo } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import SelectItemCode from "../../../../Context/SelectItemCode";
 import SelectNotFound from "../../../../Context/SelectNotFound";
 import send_icon from "../../../../Icons/send_icon.svg";
 import { formStatus } from "../../../../utils/constants";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import {
   ApiWebLookup,
   SoFuckingUltimateApi,
@@ -28,6 +30,7 @@ const ModalAddTaskType = ({
   const [initialValues, setInitialValues] = useState({});
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const lookupData = (item) => {
     setSelectLoading(true);
@@ -105,6 +108,7 @@ const ModalAddTaskType = ({
       );
       inputForm.setFieldValue(`description`, res.data[0]?.mo_ta?.trim());
       inputForm.setFieldValue(`status`, res.data[0]?.status?.trim());
+      setLoading(false);
     });
   };
 
@@ -129,7 +133,8 @@ const ModalAddTaskType = ({
     setOpenModal(openModalState);
     if (openModalState && openModalType === formStatus.EDIT) {
       setInitialValues({});
-      getDataEdit(currentRecord ? currentRecord : 0);
+      setLoading(true);
+      getDataEdit(currentRecord || 0);
     }
   }, [JSON.stringify(openModalState)]);
 
@@ -155,6 +160,7 @@ const ModalAddTaskType = ({
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "150px" }}>
@@ -192,6 +198,11 @@ const ModalAddTaskType = ({
                   handleSelectionChange("album", e);
                 }}
                 onSelect={(key, item) => {}}
+                onClick={() => {
+                  if (_.isEmpty(selectOptions)) {
+                    lookupData({ controller: "dmalbum_lookup", value: "" });
+                  }
+                }}
               >
                 {SelectItemCode(selectOptions)}
               </Select>

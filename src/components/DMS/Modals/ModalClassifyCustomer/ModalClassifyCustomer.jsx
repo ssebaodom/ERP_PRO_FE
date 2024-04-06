@@ -13,6 +13,7 @@ import "./ModalClassifyCustomer.css";
 
 import { KeyFormatter } from "../../../../app/Options/KeyFormatter";
 import send_icon from "../../../../Icons/send_icon.svg";
+import LoadingComponents from "../../../Loading/LoadingComponents";
 import { SoFuckingUltimateApi, SoFuckingUltimateGetApi } from "../../API";
 
 // bắt buộc khai báo bên ngoài
@@ -22,6 +23,7 @@ const ModalClassifyCustomer = (props) => {
   const [isOpenModal, setOpenModal] = useState();
   const [initialValues, setInitialValues] = useState({});
   const [disableFields, setDisableFields] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCancelModal = () => {
     setOpenModal(false);
@@ -81,13 +83,15 @@ const ModalClassifyCustomer = (props) => {
       inputForm.setFieldValue(`colorCode`, res.data[0]?.color);
       inputForm.setFieldValue(`status`, res.data[0]?.status);
       setDisableFields(true);
+      setLoading(false);
     });
   };
 
   useEffect(() => {
     setOpenModal(props.openModalState);
     if (props.openModalState && props.openModalType === "EDIT") {
-      getDataEdit(props.currentRecord ? props.currentRecord : 0);
+      setLoading(true);
+      getDataEdit(props.currentRecord || 0);
     }
   }, [JSON.stringify(props)]);
 
@@ -113,6 +117,7 @@ const ModalClassifyCustomer = (props) => {
         onFinishFailed={onSubmitFormFail}
         onFinish={onSubmitForm}
       >
+        <LoadingComponents text={"Đang tải..."} size={50} loading={loading} />
         <div className="default_modal_group_items">
           <div className="default_modal_1_row_items">
             <span className="default_bold_label" style={{ width: "100px" }}>
@@ -149,8 +154,8 @@ const ModalClassifyCustomer = (props) => {
             <span className="default_bold_label" style={{ width: "100px" }}>
               Mã màu
             </span>
-            <Form.Item name="colorCode" initialValue={"#fff"}>
-              <ColorPicker format={"hex"} style={{ width: "80px" }} />
+            <Form.Item name="colorCode" initialValue={"#1677ff"}>
+              <ColorPicker format={"hex"} showText />
             </Form.Item>
           </div>
         </div>

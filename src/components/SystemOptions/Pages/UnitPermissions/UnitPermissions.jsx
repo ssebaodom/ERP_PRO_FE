@@ -104,7 +104,7 @@ const UnitPermissions = () => {
           dataSource={dataSource}
           renderItem={(item, index) => (
             <List.Item
-              className="user__item"
+              className="item_in_list"
               actions={[
                 <Button
                   shape="circle"
