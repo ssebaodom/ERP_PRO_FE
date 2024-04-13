@@ -51,7 +51,7 @@
 }
 
 .ticket__selected {
-    background: var(--warnning);
+    background: #f58320d4;
     color: white !important;
 }
 

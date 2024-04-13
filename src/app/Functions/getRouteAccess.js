@@ -17,41 +17,35 @@ const nestedArray = (raw) => {
 };
 
 const getRoutesAccess = async (routes) => {
-  const infoData = store.getState().claimsReducer.claims;
+  const userData = store.getState().claimsReducer.claims;
 
-  const infoDataKeys = Object.keys(infoData);
-  const claims = await infoDataKeys.filter((currKey) => {
-    if (currKey.includes("Permissions.")) return infoData[currKey];
-  });
-  const functionRoutes = await routes.filter((item) => item.path == "/")[0]
-    .children;
-
-  let homeRoute = await functionRoutes.filter((item) => {
-    if (infoData.RoleId != "1") {
-      if (claims.includes(item.claims)) {
-        return item;
-      }
-    } else {
-      return item;
-    }
+  const claims = Object.keys(userData).filter((key) => {
+    if (key.includes("Permissions.")) return userData[key];
   });
 
-  await homeRoute.map((route) => {
+  const validRoutes = routes.filter((item) => item.path == "/");
+  const allRoutes = [..._.first(validRoutes).children];
+
+  const userRoute =
+    userData?.RoleId == "1"
+      ? [...allRoutes]
+      : allRoutes.filter((route) => claims.includes(route.claims));
+
+  userRoute.map((route) => {
     route.key = route.path;
     if (
       route.parent &&
-      homeRoute.findIndex((item) => item.path == route.parent) < 0
+      userRoute.findIndex((item) => item.path == route.parent) < 0
     ) {
-      const parentRoute = {
-        ...functionRoutes.filter((item) => item.path == route.parent)[0],
-      };
+      const parentRoute = allRoutes.find((item) => item.path == route.parent);
       delete parentRoute.children;
-      homeRoute.push(parentRoute);
+      userRoute.push(parentRoute);
     } else if (!route.parent) {
       route.children = [];
     }
   });
 
+  const nestedRoutes = [...nestedArray(userRoute)];
   // await homeRoute.map((item, index) => {
   //   item.key = item.path;
   //   if (item.parent) {
@@ -68,8 +62,8 @@ const getRoutesAccess = async (routes) => {
   //   return item;
   // });
   return {
-    nestedRoutes: [...(await nestedArray(homeRoute))],
-    flatRoutes: homeRoute,
+    nestedRoutes: nestedRoutes || [],
+    flatRoutes: userRoute,
   };
 };
 

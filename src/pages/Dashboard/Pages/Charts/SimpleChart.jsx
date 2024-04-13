@@ -1,6 +1,7 @@
 import ReactECharts from "echarts-for-react";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
+import { formatCurrency } from "../../../../app/hooks/dataFormatHelper";
 import {
   getCircleOption,
   getLineOptions,
@@ -82,12 +83,12 @@ const SimpleChart = ({ chartId, type, numCharts }) => {
                   : "pi pi-caret-down danger_text_color"
               }`}
             />
-            {masterInfo?.Changes} %
+            {formatCurrency(masterInfo?.Changes)} %
           </span>
         </div>
 
         <p>
-          Tháng trước {masterInfo?.PreviousValue || 0}{" "}
+          Tháng trước {formatCurrency(masterInfo?.PreviousValue) || 0}{" "}
           {SIMPLECHARTS[`${chartId}`]?.unit}
         </p>
       </div>

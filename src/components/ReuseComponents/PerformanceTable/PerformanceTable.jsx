@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import BaseTable, { AutoResizer, Column } from "react-base-table";
 import "react-base-table/styles.css";
+import no_file from "../../../Icons/no_file.svg";
 import "./PerformanceTable.css";
 import SelectCell from "./SelectCell/SelectCell";
 import SelectCellHeader from "./SelectCell/SelectCellHeader";
@@ -85,7 +86,14 @@ const PerformanceTable = ({
       {({ width, height }) => (
         <BaseTable
           overscanRowCount={30}
-          emptyRenderer={<span>Hỏng có data bạn ôi</span>}
+          emptyRenderer={
+            <div className="abs_center">
+              <img src={no_file} />
+              <div className="text-center">
+                <b className="sub_text_color">Không có dữ liệu</b>
+              </div>
+            </div>
+          }
           headerClassName={"performance_table_header"}
           fixed
           width={width}

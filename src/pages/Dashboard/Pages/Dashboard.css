@@ -27,7 +27,7 @@
     gap: 0px 10px;
     width: 100%;
     border-radius: 20px;
-    box-shadow: 0px 6px 20px rgba(126, 149, 190, 0.1);
+    box-shadow: 0px 6px 8px rgba(126, 149, 190, 0.3);
 }
 
 .dashboard__general__statistic__title {

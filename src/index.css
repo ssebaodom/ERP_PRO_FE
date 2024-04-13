@@ -329,6 +329,10 @@ body {
   padding-top: 10px;
 }
 
+.ant-input-number-input {
+  text-align: right !important;
+}
+
 .page_2_side_right_default {
   display: flex;
   gap: 0px 36px;
@@ -1066,7 +1070,7 @@ body {
 }
 
 .performance-row-selected {
-  background-color: #e3e3e3 !important;
+  background-color: #f9f9f9 !important;
 }
 
 .operation_column_container {
@@ -1095,6 +1099,9 @@ body {
   cursor: pointer;
 }
 
+.line-height-16 {
+  line-height: 16px !important;
+}
 
 .line-height-22 {
   line-height: 22px !important;
@@ -1119,6 +1126,17 @@ body {
 .image_list_column_item {
   border-radius: 4px;
   overflow: hidden;
+}
+
+.abs_center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.shadow_3 {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
 

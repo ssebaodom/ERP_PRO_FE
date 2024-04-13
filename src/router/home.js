@@ -6,6 +6,7 @@ import Errorpage from "../components/Error/Errorpage";
 import ApproveInvoice from "../components/Invoices/Pages/ApproveInvoice/ApproveInvoice";
 import Contact from "../pages/Contact/Contact";
 import Dashboard from "../pages/Dashboard/Pages/Dashboard";
+import LoginHub from "../pages/LoginHub/LoginHub";
 import documentsRoutes from "./document";
 import imageRoutes from "./images";
 import itemsRoute from "./items";
@@ -173,6 +174,20 @@ const homeRoutes = [
         element: <Contact />,
       },
     ],
+  },
+  {
+    label: "Login nè",
+    claims: "Permissions.login",
+    path: "/login",
+    element: <Login />,
+    index: true,
+  },
+  {
+    label: "Login hub",
+    claims: "Permissions.login",
+    path: "/loginSSO",
+    element: <LoginHub />,
+    index: true,
   },
   {
     path: "*",

@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import "./Navbar.css";
 
 import { Dropdown, Input, Menu, Modal } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getRoutesAccess } from "../../app/Functions/getRouteAccess";
 import options__icon from "../../Icons/options__icon.svg";
 import sse__logo from "../../Icons/sse__logo.svg";
@@ -20,6 +20,8 @@ const Navbar = () => {
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
   const [navbarItems, setNavbarItems] = useState();
   const [searchFunctions, setSearchFunctions] = useState([]);
+
+  const routeLocation = useLocation();
 
   const renderNavbar = (navItems) => {
     const renderedNavbar = navItems.map((item) => {
@@ -46,7 +48,8 @@ const Navbar = () => {
       }
       return item;
     });
-    return renderedNavbar;
+
+    setNavbarItems(renderedNavbar || []);
   };
 
   // firebase to send notifications
@@ -109,23 +112,25 @@ const Navbar = () => {
       item?.item?.props?.path ? `${item.item.props.path}` : `${item.path}`
     );
   };
+
   const handleLogo = () => {
     setnavbarSelectedKey("");
     if (!router.state.location.pathname.includes("Dashboard")) navigate("/");
   };
+
+  const handleLoadNavbar = async () => {
+    const navitems = { ...(await getRoutesAccess(routes)) };
+    renderNavbar(navitems.nestedRoutes);
+    setSearchFunctions((item) => {
+      return (item = navitems.flatRoutes.filter(
+        (item) => !item.children || !item?.children?.length > 0
+      ));
+    });
+  };
+
   useEffect(() => {
     dispatch(setClaims(jwt.getClaims() ? jwt.getClaims() : {}));
-    async function fetchData() {
-      const navitems = await getRoutesAccess(routes);
-      setNavbarItems(await renderNavbar(navitems.nestedRoutes || []));
-
-      setSearchFunctions((item) => {
-        return (item = navitems.flatRoutes.filter(
-          (item) => !item.children || !item?.children?.length > 0
-        ));
-      });
-    }
-    fetchData();
+    handleLoadNavbar();
   }, []);
 
   const items = [
@@ -171,27 +176,6 @@ const Navbar = () => {
     setResultsSearchModal(value ? searchResult(value) : []);
   };
 
-  const currentActions = [
-    {
-      key: "1",
-      label: "Hoạt động thường xuyên",
-      children: [
-        {
-          key: "1.1",
-          label: "Logout",
-        },
-        {
-          key: "1.2",
-          label: "signin",
-        },
-      ],
-    },
-    {
-      key: "2",
-      label: <div onClick={handleOpenSearchModal}>Mở rộng</div>,
-    },
-  ];
-
   const handleSelectFuntion = (path) => {
     router.navigate(path);
     handleCancelSearchModal();
@@ -200,6 +184,24 @@ const Navbar = () => {
   const handleSetBackground = () => {
     dispatch(setIsBackgrouds(true));
   };
+
+  const handleRouteChange = async (data) => {
+    const { flatRoutes } = await getRoutesAccess(routes);
+    const validRoutes = ["/", "Dashboard", ""];
+
+    if (
+      !validRoutes.includes(data?.pathname?.substring(1)) &&
+      flatRoutes.findIndex(
+        (item) => item.path === data?.pathname?.substring(1)
+      ) < 0
+    ) {
+      // navigate("/notFound"); -- Sửa sau
+    }
+  };
+
+  useEffect(() => {
+    handleRouteChange(routeLocation);
+  }, [routeLocation]);
 
   return (
     <div className="navbar">

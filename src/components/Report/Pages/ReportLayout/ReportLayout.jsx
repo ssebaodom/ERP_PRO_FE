@@ -5,17 +5,31 @@ import { Outlet, useNavigate } from "react-router-dom";
 const reportLayout = [
   {
     key: "0",
-    label: "Checkin",
+    label: "Viếng thăm",
     data: "Báo cáo",
-    icon: "pi pi-unlock",
+    icon: "pi pi-clipboard",
     children: [
       {
         key: "0-0-0",
         label: "Báo cáo viếng thăm",
-        icon: "pi pi-user",
+        icon: "pi pi-check-circle",
         data: "checkin",
       },
+      {
+        key: "0-0-1",
+        label: "Báo cáo vị trí",
+        icon: "pi pi-map-marker",
+        data: "locationReport",
+      },
     ],
+  },
+
+  {
+    key: "1",
+    label: "Bán hàng",
+    data: "Báo cáo",
+    icon: "pi pi-dollar",
+    children: [],
   },
   // {
   //   key: "1",

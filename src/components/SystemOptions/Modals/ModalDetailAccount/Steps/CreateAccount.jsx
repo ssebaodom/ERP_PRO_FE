@@ -75,8 +75,8 @@ const CreateAccount = ({ userId: propUserId, record }, ref) => {
   const checkUserName = async (user_name) => {
     var valid = true;
     await SoFuckingUltimateGetApi({
-      store: "api_Check_User_Valid",
-      data: { user_name: user_name },
+      store: "api_Check_valid_value",
+      data: { value: user_name, key: "username" },
     }).then((res) => {
       if (res?.data[0]?.validation === 1 && !propUserId) {
         valid = false;

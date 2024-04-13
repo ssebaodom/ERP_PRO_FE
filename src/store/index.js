@@ -8,6 +8,7 @@ import { itemsListReducer } from "../components/Items/Store/Slices/Item";
 import { KPIListReducer } from "../components/KPI/Store/Slices/KPIList";
 import { KPIPerformReducer } from "../components/KPI/Store/Slices/KPIPerforms";
 import { KPIPlansReducer } from "../components/KPI/Store/Slices/KPIPlans";
+import { retailOrderReducer } from "../components/Retail/Store/Slices/RetailOrderSlice";
 import { saleOrderReducer } from "../components/SaleOrder/Store/Slice/SaleOrderSlice";
 import { saleoutDetailsReducer } from "../components/SaleOrder/Store/Slice/SaleOutSlice";
 import { AccountsReducer } from "../components/SystemOptions/Store/Reducers/Reducers";
@@ -33,6 +34,7 @@ const store = configureStore({
     KPIPlansReducer,
     saleOrderReducer,
     KPIListReducer,
+    retailOrderReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

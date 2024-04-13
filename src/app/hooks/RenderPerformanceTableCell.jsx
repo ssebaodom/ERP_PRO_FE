@@ -1,9 +1,38 @@
-import { DatePicker, Form, Input, InputNumber } from "antd";
-import React, { memo } from "react";
+import { DatePicker, Form, Input, InputNumber, Select } from "antd";
+import React, { memo, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import { ApiWebLookup } from "../../components/DMS/API";
+import SelectItemCode from "../../Context/SelectItemCode";
+import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
 const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
-  const { type, editable, title, key, required, width } = column;
+  const { type, editable, title, key, required, width, controller } = column;
+
+  const [selectLoading, setSelectLoading] = useState(false);
+  const [selectOptions, setSelectOptions] = useState([]);
+  const lookupData = async (item) => {
+    await setSelectLoading(true);
+    ApiWebLookup({
+      userId: "1",
+      controller: item.controller,
+      pageIndex: 1,
+      FilterValueCode: item.value.trim(),
+    }).then((res) => {
+      const resOptions = res.data.map((item) => {
+        return {
+          value: item.code.trim(),
+          label: item.name.trim(),
+        };
+      });
+      setSelectLoading(false);
+      setSelectOptions([...resOptions]);
+    });
+  };
+
+  const handleSelectionChange = useDebouncedCallback((value) => {
+    lookupData({ controller: controller, value: value });
+  }, 600);
 
   let node;
   switch (type) {
@@ -12,47 +41,46 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
         <InputNumber
           controls={false}
           min="0"
-          style={{ width: "100%" }}
+          className="w-full"
           step={quantityFormat}
         />
       );
       break;
     case "Text":
-      node = (
-        <Input style={{ width: "100%" }} className="default_input_detail" />
-      );
+      node = <Input className="default_input_detail w-full" />;
       break;
     case "Datetime":
       node = <DatePicker format={datetimeFormat} />;
       break;
-    // case "AutoComplete":
-    //   node = (
-    //     <Select
-    //       popupMatchSelectWidth={false}
-    //       showSearch
-    //       placeholder={`${title} trống`}
-    //       style={{
-    //         width: 200,
-    //       }}
-    //       onKeyDown={handleKeypress}
-    //       defaultActiveFirstOption={false}
-    //       showArrow={false}
-    //       notFoundContent={SelectNotFound(selectLoading, selectOptions)}
-    //       filterOption={false}
-    //       onSearch={(e) => {
-    //         handleSelectionChange(cell.controller, e);
-    //       }}
-    //       optionLabelProp="value"
-    //       onSelect={onChangeSelection}
-    //     >
-    //       {SelectItemCode(selectOptions)}
-    //     </Select>
-    //   );
+    case "AutoComplete":
+      node = (
+        <Select
+          className="w-full"
+          popupMatchSelectWidth={false}
+          showSearch
+          placeholder={`${title} trống`}
+          defaultActiveFirstOption={false}
+          showArrow={false}
+          notFoundContent={SelectNotFound(selectLoading, selectOptions)}
+          filterOption={false}
+          onSearch={(e) => {
+            handleSelectionChange(e);
+          }}
+          onClick={() => {
+            if (_.isEmpty(selectOptions))
+              lookupData({ controller: controller, value: "" });
+          }}
+          optionLabelProp="value"
+          // onSelect={onChangeSelection}
+        >
+          {SelectItemCode(selectOptions)}
+        </Select>
+      );
 
-    //   break;
+      break;
 
     default:
-      node = <Input className="default_input_detail" />;
+      node = <Input className="default_input_detail w-full" />;
       break;
   }
   return (
@@ -89,11 +117,24 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
             },
           ]}
         >
-          <Input
-            bordered={false}
-            className="BaseTable__row-cell-text p-0 Performance_table_span"
-            disabled={!editable}
-          />
+          {type === "TextArea" ? (
+            <Input.TextArea
+              autoSize={{
+                minRows: 1,
+                maxRows: 2,
+              }}
+              style={{ resize: "none", transition: "none" }}
+              bordered={false}
+              className="p-0 Performance_table_span"
+              disabled={!editable}
+            />
+          ) : (
+            <Input
+              bordered={false}
+              className="BaseTable__row-cell-text p-0 Performance_table_span"
+              disabled={!editable}
+            />
+          )}
         </Form.Item>
       )}
     </>

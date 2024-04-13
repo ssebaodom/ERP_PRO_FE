@@ -1,52 +1,14 @@
 import { Table } from "antd";
 import dayjs from "dayjs";
-import FileSaver from "file-saver";
 import React, { useCallback, useEffect, useState } from "react";
 import renderColumns from "../../../../app/hooks/renderColumns";
 import TableLocale from "../../../../Context/TableLocale";
-import { FILE_EXTENSION } from "../../../../utils/constants";
 import { SoFuckingUltimateGetApi2 } from "../../../DMS/API";
 import HeaderTableBar from "../../../ReuseComponents/HeaderTableBar";
-import { ApiPrintReport } from "../../API";
-import Filter from "./Drawer/Filter";
 
-const printLayouts = [
-  {
-    key: "CheckinReportExcel",
-    title: "Báo cáo checkin",
-    path: "File/get-file-pdf",
-    fileName: "File/Base.xlsx",
-    store: "Get_Test_Data",
-    type: FILE_EXTENSION.EXCEL,
-  },
-  {
-    key: "CheckinReportPDF",
-    title: "Báo cáo checkin",
-    path: "File/get-file-xml",
-    fileName: "File/Base.xlsx",
-    store: "Get_Test_Data",
-    type: FILE_EXTENSION.PDF,
-  },
+const printLayouts = [];
 
-  {
-    key: "testReportExcel",
-    title: "Báo cáo test",
-    path: "File/Report3.repx",
-    fileName: "Testing.xlsx",
-    store: "dmkh_api",
-    type: FILE_EXTENSION.EXCEL,
-  },
-  {
-    key: "testReportPDF",
-    title: "Báo cáo test",
-    path: "File/Report3.repx",
-    fileName: "Testing.pdf",
-    store: "dmkh_api",
-    type: FILE_EXTENSION.PDF,
-  },
-];
-
-const CheckinReport = () => {
+const LocationReport = () => {
   const [dataSourse, setDataSource] = useState([]);
   const [layoutSource, setLayoutSource] = useState([]);
   const [currentLayout, setCurrentLayout] = useState([]);
@@ -55,9 +17,13 @@ const CheckinReport = () => {
   const [tableParams, setTableParams] = useState({
     DateFrom: dayjs().add(-1, "month"),
     DateTo: dayjs(),
-    dvcq: "",
-    ma_nvbh: "",
-    Language: "V",
+    ma_tinh: "",
+    ma_quan: "",
+    ma_xa: "",
+    ma_dvcs: "",
+    phan_loai: "",
+    language: "V",
+    orderBy: "",
     UserID: 1022,
     Admin: 0,
   });
@@ -79,7 +45,7 @@ const CheckinReport = () => {
 
   const getReportData = async () => {
     await SoFuckingUltimateGetApi2({
-      store: "api_rpt_vieng_tham",
+      store: "api_Location_Report",
       data: {
         ...tableParams,
         orderBy: pagination.orderBy,
@@ -126,6 +92,7 @@ const CheckinReport = () => {
 
   const handleTableChange = async (paginationChanges, filters, sorter) => {
     var sortValues = "";
+
     if (Array.isArray(sorter)) {
       sortValues = sorter
         ?.map((item) =>
@@ -141,6 +108,7 @@ const CheckinReport = () => {
         }`;
       }
     }
+
     setPagination({
       ...pagination,
       pageIndex: paginationChanges.current,
@@ -189,20 +157,19 @@ const CheckinReport = () => {
     // }).then((res) => {
     //   FileSaver.saveAs(res, item.title);
     // });
-
-    ApiPrintReport({
-      filePath: item.path,
-      fileName: item.fileName,
-      store: item.store,
-      param: {
-        stt: "",
-      },
-    }).then((res) => {
-      console.log(res);
-      if (res.status === 200) {
-        FileSaver.saveAs(res.data, item.title);
-      }
-    });
+    // ApiPrintReport({
+    //   filePath: item.path,
+    //   fileName: item.fileName,
+    //   store: item.store,
+    //   param: {
+    //     stt: "",
+    //   },
+    // }).then((res) => {
+    //   console.log(res);
+    //   if (res.status === 200) {
+    //     FileSaver.saveAs(res.data, item.title);
+    //   }
+    // });
   }, []);
 
   ////////////////////////////////////Effects//////////////////////////
@@ -216,7 +183,7 @@ const CheckinReport = () => {
     <div className="w-full flex gap-3 flex-column min-h-0 h-full relative">
       <HeaderTableBar
         name={"Báo cáo"}
-        title={"Báo cáo viếng thăm"}
+        title={"Báo cáo vị trí"}
         totalResults={totalResults}
         refreshEvent={refreshData}
         changePaginations={changePaginations}
@@ -250,13 +217,8 @@ const CheckinReport = () => {
           showSorterTooltip={false}
         />
       </div>
-      <Filter
-        closeCallback={handleCloseFilter}
-        filterCallback={handleFilter}
-        openState={filterState}
-      />
     </div>
   );
 };
 
-export default CheckinReport;
+export default LocationReport;

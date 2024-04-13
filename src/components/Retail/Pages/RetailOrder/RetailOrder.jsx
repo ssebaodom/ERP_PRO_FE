@@ -1,11 +1,27 @@
-import React from "react";
+import React, { memo, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { resetRetailOrder } from "../../Store/Actions/RetailOrderActions";
+import { getRetailOrderState } from "../../Store/Selectors/RetailOrderSelectors";
 import "./RetailOrder.css";
 import RetailOrderInfo from "./RetailOrderInfo/RetailOrderInfo";
 
 const RetailOrder = () => {
+  const { listOrder, currentOrder } = useSelector(getRetailOrderState);
+
+  useEffect(() => {
+    return () => {
+      resetRetailOrder();
+    };
+  }, []);
+
   return (
     <div className="p-2 h-full flex flex-column align-items-stretch">
-      <RetailOrderInfo />
+      {listOrder.map((item) => (
+        <div key={item} className={currentOrder !== item ? "hidden" : "h-full"}>
+          <RetailOrderInfo orderKey={item} />
+        </div>
+      ))}
+
       {/* <div className="h-full min-h-0 flex gap-1 aaaaaaaaaaa">
         <div className="h-full min-h-0 w-full min-w-0 flex flex-column gap-1">
           <div className="h-full min-h-0 overflow-hidden">
@@ -60,4 +76,4 @@ const RetailOrder = () => {
   );
 };
 
-export default RetailOrder;
+export default memo(RetailOrder);

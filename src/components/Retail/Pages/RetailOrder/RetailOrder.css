@@ -20,7 +20,3 @@
 .BaseTable__table-main {
     outline: none !important;
 }
-
-.BaseTable__table-frozen-left {
-    box-shadow: 0px 6px 8px 0 #eeeeee !important;
-}
