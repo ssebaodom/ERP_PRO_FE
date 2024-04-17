@@ -98,6 +98,8 @@ instance.interceptors.response.use(
             resolve(instance(config));
           })
           .catch((err) => {
+            IS_REFRESHING = false;
+            REQUESTS_QUEUE.length = 0;
             controller.abort();
             jwt.resetAccessToken();
             router.navigate("/login");

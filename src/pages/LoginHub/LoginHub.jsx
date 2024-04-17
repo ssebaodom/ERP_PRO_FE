@@ -41,6 +41,7 @@ const LoginHub = () => {
     await https
       .post("Authentication/Login", {
         ...data,
+        Store: "",
       })
       .then((res) => {
         if (typeof res.data == "string") {

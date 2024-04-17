@@ -1,8 +1,17 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { uuidv4 } from "@antv/xflow-core";
-import { Button, Form, Image, message, Segmented, Select } from "antd";
+import {
+  Button,
+  Form,
+  Image,
+  InputNumber,
+  message,
+  Segmented,
+  Select,
+  Tooltip,
+} from "antd";
 import _ from "lodash";
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { Column } from "react-base-table";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
@@ -11,8 +20,11 @@ import {
   getAllRowKeys,
   getAllValueByColumn,
   getAllValueByRow,
+  getCellName,
+  getRowKey,
 } from "../../../../../app/Functions/getTableValue";
 import RenderPerformanceTableCell from "../../../../../app/hooks/RenderPerformanceTableCell";
+import { quantityFormat } from "../../../../../app/Options/DataFomater";
 import SelectNotFound from "../../../../../Context/SelectNotFound";
 import { getUserInfo } from "../../../../../store/selectors/Selectors";
 import PerformanceTable from "../../../../ReuseComponents/PerformanceTable/PerformanceTable";
@@ -89,7 +101,7 @@ const columns = [
     key: "ma_kho",
     title: "Kho",
     dataKey: "ma_kho",
-    width: 120,
+    width: 100,
     resizable: false,
     sortable: false,
     editable: true,
@@ -108,9 +120,9 @@ const columns = [
 
   {
     key: "dvt",
-    title: "Đơn vị tính",
+    title: "Đơn vị",
     dataKey: "dvt",
-    width: 100,
+    width: 80,
     resizable: false,
     sortable: false,
     cellRenderer: ({ rowData, column, cellData }) => {
@@ -167,8 +179,10 @@ const columns = [
 
 const RetailOrderInfo = ({ orderKey }) => {
   const [itemForm] = Form.useForm();
+
   const [data, setData] = useState([]);
   const [selectedRowkeys, setSelectedRowkeys] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
   const [searchOptions, setsearchOptions] = useState([]);
   const [searchColapse, setSearchColapse] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -178,18 +192,24 @@ const RetailOrderInfo = ({ orderKey }) => {
     ten_kh: "",
     dien_thoai: "",
     diem: 0,
+    ma_nt: "VND",
+    ty_gia: 1,
     tong_tien: 0,
+    thue_suat: 0,
     tong_thue: 0,
     tong_sl: 0,
+    tl_ck: 0,
     tong_ck: 0,
     voucher: "",
     tien_voucher: 0,
     tong_tt: 0,
   });
+  const [taxOptions, setTaxOptions] = useState([]);
+  const [currencyOptions, setCurrencyOptions] = useState([]);
 
   const { listOrder, currentOrder, isScanning } =
     useSelector(getRetailOrderState);
-  const { id: userId } = useSelector(getUserInfo);
+  const { id: userId, storeId, unitId } = useSelector(getUserInfo);
 
   /////// Calculations functions//////////////
 
@@ -209,16 +229,25 @@ const RetailOrderInfo = ({ orderKey }) => {
       return Sum + parseFloat(item.so_luong) * parseFloat(item.don_gia);
     }, 0);
 
-    const tong_tt =
-      tong_tien + paymentInfo.tong_thue - paymentInfo.tong_ck || 0;
+    const tong_ck = (tong_tien * paymentInfo.tl_ck) / 100;
+    const tong_thue = (tong_tien * paymentInfo.thue_suat) / 100;
 
-    const calculated = { ...paymentInfo, tong_sl, tong_tien, tong_tt };
+    const tong_tt = tong_tien + tong_thue - tong_ck || 0;
+
+    const calculated = {
+      ...paymentInfo,
+      tong_sl,
+      tong_tien,
+      tong_tt,
+      tong_ck,
+      tong_thue,
+    };
     setPaymentInfo(calculated);
   };
 
   useEffect(() => {
     handleCalculatorPayment();
-  }, [JSON.stringify(data)]);
+  }, [JSON.stringify(data), JSON.stringify(paymentInfo)]);
 
   ///////////orther functions /////
   const handleCollapseOptions = (key) => {
@@ -233,7 +262,6 @@ const RetailOrderInfo = ({ orderKey }) => {
   };
 
   const fetchItemsNCustomers = ({ searchValue }) => {
-    setSearchLoading(true);
     setsearchOptions([]);
     multipleTablePutApi({
       store: "Api_search_items_N_customers",
@@ -242,7 +270,7 @@ const RetailOrderInfo = ({ orderKey }) => {
         userId,
       },
       data: {},
-    }).then((res) => {
+    }).then(async (res) => {
       if (res.responseModel?.isSucceded) {
         const results = [
           {
@@ -265,7 +293,79 @@ const RetailOrderInfo = ({ orderKey }) => {
     });
   };
 
-  const handleSearchItem = useDebouncedCallback((searchValue) => {
+  const fetchSelectData = () => {
+    multipleTablePutApi({
+      store: "Api_get_retail_options",
+      param: {
+        userId,
+      },
+      data: {},
+    }).then((res) => {
+      if (res.responseModel?.isSucceded) {
+        setCurrencyOptions(res?.listObject[0] || []);
+        setTaxOptions(res?.listObject[1] || []);
+      }
+    });
+  };
+
+  const handleFetchItemInfo = async ({ barcode, ma_vt, stock }) => {
+    var results = {};
+    await multipleTablePutApi({
+      store: "Api_get_item_info",
+      param: {
+        barcode,
+        ma_vt,
+        UnitID: unitId,
+        StoreID: "BEPHC1",
+        StockID: stock || "",
+        Currency: paymentInfo?.ma_nt,
+        userId,
+      },
+      data: {},
+    }).then((res) => {
+      if (res.responseModel?.isSucceded) {
+        if (_.isEmpty(_.first(res.listObject))) {
+          message.warning("Barcode không tồn tại!");
+          return;
+        }
+
+        const { ma_vt, ten_vt, ma_kho, dvt, gia } = _.first(
+          _.first(res.listObject)
+        );
+
+        if (barcode) {
+          handleAddRowData({
+            ma_vt,
+            ten_vt,
+            ma_kho,
+            image: "",
+            dvt,
+            so_luong: 1,
+            don_gia: gia || "0",
+          });
+          return;
+        }
+        if (ma_vt) {
+          results = {
+            ma_vt,
+            ma_kho,
+            dvt,
+            gia,
+          };
+        }
+      }
+    });
+
+    return results;
+  };
+
+  const handleSearchItemInfo = useDebouncedCallback((barcode) => {
+    setSearchLoading(true);
+    handleFetchItemInfo({ barcode, ma_vt: "", stock: "" });
+    setSearchValue("");
+  }, 20);
+
+  const handleSearchValue = useDebouncedCallback((searchValue) => {
     fetchItemsNCustomers({ searchValue });
   }, 400);
 
@@ -365,36 +465,59 @@ const RetailOrderInfo = ({ orderKey }) => {
   };
 
   ////////Form Functions
-  const handleChangeValue = (key, value) => {
-    console.log(key);
-    console.log(value);
+  const handleChangeValue = (cellChanged, allCells) => {
     handleCalculatorPayment();
+    const cellName = getCellName(_.first(Object.keys(cellChanged)));
+    const cellValue = _.first(Object.values(cellChanged));
+    const changedRowKey = getRowKey(_.first(Object.keys(cellChanged)));
+    const rowValues = getAllValueByRow(changedRowKey, allCells);
+    const allCellsValues = getAllValueByColumn(cellName, allCells);
+
+    switch (cellName) {
+      case "ma_kho":
+        handleFetchItemInfo({
+          barcode: "",
+          ma_vt: rowValues?.ma_vt,
+          stock: cellValue,
+        }).then((res) => {
+          itemForm.setFieldValue(`${changedRowKey}_don_gia`, res?.gia || "0");
+          handleCalculatorPayment();
+        });
+        break;
+
+      default:
+        break;
+    }
   };
 
   ///////Scanning//////
-  const handleScanning = useMemo(() => {
-    return (e) => {
-      const data = e.clipboardData.getData("text");
-      handleAddRowData({
-        ma_vt: data,
-        ten_vt: data,
-        ma_kho: "TEST",
-        image: "",
-        dvt: "Chiếc",
-        don_gia: 9999,
-      });
-    };
-  }, [data]);
+  // const handleScanning = useMemo(() => {
+  //   return async (e) => {
+  //     const data =
+  //       e?.clipboardData?.getData("text") ||
+  //       "http://localhost:3000/RO/Reatailorder";
 
-  useEffect(() => {
-    if (isScanning && currentOrder === orderKey) {
-      window.addEventListener("paste", handleScanning);
-    }
+  //     setSearchValue("");
+  //     await handleAddRowData({
+  //       ma_vt: data,
+  //       ten_vt: data,
+  //       ma_kho: "TEST",
+  //       image: "",
+  //       dvt: "Chiếc",
+  //       don_gia: 9999,
+  //     });
+  //   };
+  // }, [data]);
 
-    return () => {
-      if (isScanning) window.removeEventListener("paste", handleScanning);
-    };
-  }, [isScanning, JSON.stringify(data)]);
+  // useEffect(() => {
+  //   if (isScanning && currentOrder === orderKey) {
+  //     window.addEventListener("paste", handleScanning);
+  //   }
+
+  //   return () => {
+  //     if (isScanning) window.removeEventListener("paste", handleScanning);
+  //   };
+  // }, [isScanning, JSON.stringify(data)]);
 
   // Search
   useEffect(() => {
@@ -413,11 +536,15 @@ const RetailOrderInfo = ({ orderKey }) => {
     return () => {};
   }, [JSON.stringify(searchOptions), JSON.stringify(searchColapse)]);
 
+  useEffect(() => {
+    fetchSelectData();
+  }, []);
+
   return (
     <div className="h-full min-h-0 flex gap-1">
       <div className="h-full min-h-0 w-full min-w-0 flex flex-column gap-1">
         <div
-          className="h-full min-h-0 overflow-hidden border-round-md"
+          className="h-full min-h-0 overflow-hidden border-round-md flex flex-column"
           style={{ background: "#fff" }}
         >
           <div
@@ -434,6 +561,7 @@ const RetailOrderInfo = ({ orderKey }) => {
               <Select
                 className="w-full"
                 value={null}
+                searchValue={searchValue}
                 popupMatchSelectWidth={false}
                 showSearch
                 placeholder="Tìm kiếm..."
@@ -446,13 +574,22 @@ const RetailOrderInfo = ({ orderKey }) => {
                 showArrow={false}
                 filterOption={false}
                 onChange={handleSelectChange}
-                onClick={() => {
-                  if (_.isEmpty(searchOptions)) {
+                onFocus={() => {
+                  if (_.isEmpty(searchOptions) && !isScanning) {
                     fetchItemsNCustomers({ searchValue: "" });
+                  } else {
+                    setSearchLoading(true);
                   }
                 }}
                 optionLabelProp="value"
-                onSearch={handleSearchItem}
+                onSearch={(e) => {
+                  setSearchValue(e);
+                  if (isScanning) {
+                    handleSearchItemInfo(e);
+                    return;
+                  }
+                  handleSearchValue(e);
+                }}
                 listHeight={500}
               >
                 {searchOptionsFiltered.map((group, index) => (
@@ -505,6 +642,8 @@ const RetailOrderInfo = ({ orderKey }) => {
               <Button
                 className="default_button shadow_3"
                 onClick={() => {
+                  setsearchOptions([]);
+                  setsearchOptionsFiltered([]);
                   setRetailOrderScanning(!isScanning);
                 }}
               >
@@ -536,63 +675,96 @@ const RetailOrderInfo = ({ orderKey }) => {
               </Button>
             </div>
           </div>
-          <Form
-            form={itemForm}
-            component={false}
-            initialValues={{}}
-            onValuesChange={handleChangeValue}
-          >
-            <PerformanceTable
-              selectable
-              columns={columns}
-              data={data}
-              onSelectedRowKeyChange={handleSelectedRowKeyChange}
-            />
-          </Form>
+
+          <div className="h-full min-h-0 ">
+            <Form
+              form={itemForm}
+              component={false}
+              initialValues={{}}
+              onValuesChange={handleChangeValue}
+            >
+              <PerformanceTable
+                selectable
+                columns={columns}
+                data={data}
+                onSelectedRowKeyChange={handleSelectedRowKeyChange}
+              />
+            </Form>
+          </div>
         </div>
         <div
-          className="border-round-md flex gap-2 p-2 "
+          className="border-round-md flex p-2 align-items-center justify-content-between"
           style={{
             height: "3.15rem",
             flexShrink: 0,
-            background: "aliceblue",
+            background: "#fff",
           }}
         >
-          <Button className="default_button">
-            <i
-              className="pi pi-pencil warning_text_color"
-              style={{ fontWeight: "bold" }}
-            ></i>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              className="default_button"
+              danger
+              onClick={handleRemoveRowData}
+            >
+              <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
+            </Button>
 
-          <Button
-            className="default_button"
-            danger
-            onClick={handleRemoveRowData}
-          >
-            <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
-          </Button>
+            <Tooltip placement="topRight" title="Khuyến mãi">
+              <Button className="default_button">
+                <i
+                  className="pi pi-gift danger_text_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
+          </div>
 
-          <Button className="default_button">
-            <i
-              className="pi pi-print sub_text_color"
-              style={{ fontWeight: "bold" }}
-            ></i>
-          </Button>
+          <div className="flex gap-3">
+            <div>
+              <b className="primary_bold_text mr-1">Thuế :</b>
+              <Select
+                style={{ width: "6rem" }}
+                defaultValue={0}
+                options={taxOptions}
+                onChange={(e) => {
+                  setPaymentInfo({
+                    ...paymentInfo,
+                    thue_suat: e,
+                  });
+                }}
+              />
+            </div>
 
-          <Button className="default_button">
-            <i
-              className="pi pi-angle-left sub_text_color"
-              style={{ fontWeight: "bold" }}
-            ></i>
-          </Button>
-
-          <Button className="default_button">
-            <i
-              className="pi pi-angle-right sub_text_color"
-              style={{ fontWeight: "bold" }}
-            ></i>
-          </Button>
+            <div>
+              <span className="primary_bold_text mr-1">Chiết khấu :</span>
+              <InputNumber
+                defaultValue={0}
+                controls={false}
+                min="0"
+                max="100"
+                style={{ width: "5rem" }}
+                step={quantityFormat}
+                onChange={(e) => {
+                  setPaymentInfo({
+                    ...paymentInfo,
+                    tl_ck: e,
+                  });
+                }}
+              />
+            </div>
+            <Select
+              style={{ width: "8rem" }}
+              defaultValue={1}
+              options={currencyOptions}
+              onChange={(e, option) => {
+                setPaymentInfo({
+                  ...paymentInfo,
+                  ty_gia: e,
+                  ma_nt: option.label,
+                });
+              }}
+            />
+          </div>
         </div>
       </div>
       <RetailPaidInfo itemForm={itemForm} paymentInfo={paymentInfo} />

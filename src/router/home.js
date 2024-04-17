@@ -1,23 +1,25 @@
 import { lazy } from "react";
 import App from "../App";
-import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomerList";
-import TourList from "../components/DMS/Pages/Tour/TourList";
+// import DMSCustomerList from "../components/DMS/Pages/DMSCustomerList/DMSCustomerList";
+// import TourList from "../components/DMS/Pages/Tour/TourList";
 import Errorpage from "../components/Error/Errorpage";
-import ApproveInvoice from "../components/Invoices/Pages/ApproveInvoice/ApproveInvoice";
+// import ApproveInvoice from "../components/Invoices/Pages/ApproveInvoice/ApproveInvoice";
 import Contact from "../pages/Contact/Contact";
 import Dashboard from "../pages/Dashboard/Pages/Dashboard";
-import LoginHub from "../pages/LoginHub/LoginHub";
-import documentsRoutes from "./document";
-import imageRoutes from "./images";
-import itemsRoute from "./items";
-import kpiRoutes from "./KPI";
+
+import TransferHub from "../pages/TransferHub/TransferHub";
+// import documentsRoutes from "./document";
+// import imageRoutes from "./images";
+// import itemsRoute from "./items";
+// import kpiRoutes from "./KPI";
 import reportsRoute from "./report";
 import RORoutes from "./retail";
-import SORoutes from "./saleorder";
-import systemRoutes from "./system";
-import taskRoutes from "./task";
-import ticketRoutes from "./ticket";
+// import SORoutes from "./saleorder";
+// import systemRoutes from "./system";
+// import taskRoutes from "./task";
+// import ticketRoutes from "./ticket";
 
+const LoginHub = lazy(() => import("../pages/LoginHub/LoginHub"));
 const Login = lazy(() => import("../pages/Login/Login"));
 
 const homeRoutes = [
@@ -42,13 +44,13 @@ const homeRoutes = [
         element: <Dashboard />,
         children: [],
       },
-      ...taskRoutes,
-      {
-        label: "Danh mục tuyến",
-        claims: "Permissions.tour",
-        path: "tour",
-        element: <TourList />,
-      },
+      // ...taskRoutes,
+      // {
+      //   label: "Danh mục tuyến",
+      //   claims: "Permissions.tour",
+      //   path: "tour",
+      //   element: <TourList />,
+      // },
       // {
       //   label: "Hoá đơn",
       //   claims: "Permissions.invoice",
@@ -145,26 +147,30 @@ const homeRoutes = [
       //   parent: "KPI",
       //   element: <KPIChecin />,
       // },
-      ...documentsRoutes,
-      ...ticketRoutes,
-      {
-        label: "Khách hàng DMS",
-        claims: "Permissions.DMSCustomers",
-        path: "DMSCustomer",
-        element: <DMSCustomerList />,
-      },
-      ...imageRoutes,
-      ...systemRoutes,
-      ...SORoutes,
-      ...itemsRoute,
+
+      /////////////////////////
+      // ...documentsRoutes,
+      // ...ticketRoutes,
+      // {
+      //   label: "Khách hàng DMS",
+      //   claims: "Permissions.DMSCustomers",
+      //   path: "DMSCustomer",
+      //   element: <DMSCustomerList />,
+      // },
+      // ...imageRoutes,
+      // ...systemRoutes,
+      // ...SORoutes,
+      // ...itemsRoute,
       ...reportsRoute,
-      {
-        label: "Duyệt chứng từ",
-        claims: "Permissions.ApproveInvoice",
-        path: "ApproveInvoice",
-        element: <ApproveInvoice />,
-      },
-      ...kpiRoutes,
+      // {
+      //   label: "Duyệt chứng từ",
+      //   claims: "Permissions.ApproveInvoice",
+      //   path: "ApproveInvoice",
+      //   element: <ApproveInvoice />,
+      // },
+      // ...kpiRoutes,
+
+      ///////////DMS///////////////
       ...RORoutes,
 
       {
@@ -189,6 +195,14 @@ const homeRoutes = [
     element: <LoginHub />,
     index: true,
   },
+  {
+    label: "Tranfering",
+    claims: "Permissions.Transfer",
+    path: "/transfer",
+    element: <TransferHub />,
+    index: true,
+  },
+
   {
     path: "*",
     element: <Errorpage />,

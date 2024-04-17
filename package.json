@@ -61,6 +61,7 @@
     "sass": "^1.69.5",
     "universal-cookie": "^4.0.4",
     "use-debounce": "^9.0.3",
+    "use-local-storage": "^3.0.0",
     "uuid": "^9.0.0",
     "vn-num2words": "^1.0.4",
     "web-vitals": "^2.1.4",

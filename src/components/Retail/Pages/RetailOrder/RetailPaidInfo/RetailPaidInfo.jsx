@@ -1,22 +1,30 @@
 import { Button, Input, InputNumber, message, Switch } from "antd";
 import _ from "lodash";
 import React, { memo, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import useLocalStorage from "use-local-storage";
 import {
   getAllRowKeys,
   getAllValueByRow,
 } from "../../../../../app/Functions/getTableValue";
 import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import { num2words } from "../../../../../app/Options/DataFomater";
+import { getUserInfo } from "../../../../../store/selectors/Selectors";
+import { multipleTablePutApi } from "../../../../SaleOrder/API";
 import AddCustomerPopup from "../AddCustomerPopup/AddCustomerPopup";
 
 const { Search } = Input;
 const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
   const [paymentData, setPaymentData] = useState({});
+  const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");
   const [change, setChange] = useState(0);
+  const { id: userId, storeId, unitId } = useSelector(getUserInfo);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const data = { ...itemForm.getFieldsValue() };
     console.log(data);
+    console.log(paymentData);
+
     const detailData = [];
 
     getAllRowKeys(data).map((item) => {
@@ -28,17 +36,48 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
       return;
     }
 
+    if (_.isEmpty(paymentData?.ma_kh)) {
+      message.warning("Mã khách hàng trống!");
+      return;
+    }
+
+    setPaymentQR(
+      `https://img.vietqr.io/image/970436-0551000325525-print.png?amount=${
+        paymentData?.tong_tien || 0
+      }&addInfo=TEST&accountName=MACH%20HAI%20HUNG&randon=${Math.floor(
+        Math.random() * 10000
+      )}`
+    );
+
+    await multipleTablePutApi({
+      store: "Api_create_retail_order",
+      param: {
+        UnitID: unitId,
+        StoreID: "BEPHC1",
+        userId,
+      },
+      data: {
+        master: [{ ...paymentData }],
+        detail: detailData,
+      },
+    }).then((res) => {
+      consol.log("res", res);
+    });
     console.log("SAVED", detailData);
   };
 
   useEffect(() => {
     if (!_.isEmpty(paymentInfo)) {
-      console.log(paymentInfo);
-
       setPaymentData(paymentInfo);
     }
     return () => {};
   }, [paymentInfo]);
+
+  useEffect(() => {
+    return () => {
+      setPaymentQR("");
+    };
+  }, []);
 
   return (
     <div
@@ -85,21 +124,33 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
               Tổng tiền ({paymentData?.tong_sl || 0} sản phẩm):
             </span>
             <span className="primary_bold_text line-height-16 white-space-normal">
-              {formatCurrency(paymentData?.tong_tien || 0)}
+              {formatCurrency(
+                (paymentData?.tong_tien / (paymentData?.ty_gia || 1)).toFixed(
+                  2
+                ) || 0
+              )}
             </span>
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Tổng thuế:</span>
             <span className="primary_bold_text">
-              {formatCurrency(paymentData?.tong_thue || 0)}
+              {formatCurrency(
+                (paymentData?.tong_thue / (paymentData?.ty_gia || 1)).toFixed(
+                  2
+                ) || 0
+              )}
             </span>
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Tổng chiết khấu:</span>
             <span className="primary_bold_text">
-              {formatCurrency(paymentData?.tong_ck || 0)}
+              {formatCurrency(
+                (paymentData?.tong_ck / (paymentData?.ty_gia || 1)).toFixed(
+                  2
+                ) || 0
+              )}
             </span>
           </div>
 
@@ -117,20 +168,28 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Sử dụng điểm:</span>
-            <Switch defaultChecked />
+            <Switch />
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Thanh toán:</span>
             <span className="primary_bold_text">
-              {formatCurrency(paymentData?.tong_tt || 0)}
+              {formatCurrency(
+                (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(
+                  2
+                ) || 0
+              )}
             </span>
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Bằng chữ:</span>
             <span className="primary_bold_text line-height-16 white-space-normal">
-              {num2words(parseInt(paymentData?.tong_tt) || 0)}
+              {num2words(
+                parseInt(
+                  (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(2)
+                ) || 0
+              )}
             </span>
           </div>
 

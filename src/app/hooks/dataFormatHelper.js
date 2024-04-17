@@ -43,4 +43,3 @@ const formatCurrency = (num = 0) => {
 };
 
 export { formatData, deleteObjectItems, formatCurrency };
-

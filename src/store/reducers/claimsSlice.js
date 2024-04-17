@@ -25,6 +25,7 @@ const claims = createSlice({
         roleName: action?.payload?.Role,
         unitId: action?.payload?.MA_DVCS,
         unitName: action?.payload?.DVCS,
+        storeId: action?.payload?.Store || "",
         isPremium: false,
         id: parseInt(action?.payload?.Id),
       };

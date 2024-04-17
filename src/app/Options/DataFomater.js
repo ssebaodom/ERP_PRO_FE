@@ -6,7 +6,12 @@ const PriceFormat = "0.01";
 
 function num2words(num) {
   try {
-    return VNnum2words(num);
+    var result = VNnum2words(num);
+    var first = result.charAt(0);
+    first = first.toUpperCase();
+    result = result.slice(1);
+    result = first + result;
+    return result;
   } catch (error) {
     return "Không";
   }

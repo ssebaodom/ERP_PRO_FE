@@ -6,6 +6,14 @@ export const SoFuckingUltimateApi = async (payload) => {
   });
 };
 
+// export const multipleTablePutApi = async (payload) => {
+//   return await https
+//     .post(`User/AddData`, { data: encrypted(payload) })
+//     .then((res) => {
+//       return res?.data || [];
+//     });
+// };
+
 export const multipleTablePutApi = async (payload) => {
   return await https.post(`User/AddData`, payload).then((res) => {
     return res?.data || [];

@@ -32,3 +32,9 @@ export const apiCreateAccount = async ({ name, userName, password, email }) => {
       return null;
     });
 };
+
+export const apiGetStoreByUser = async (payload) => {
+  return await https.get(`Authentication/DVCS`, payload).then((res) => {
+    return res.data;
+  });
+};

@@ -7,7 +7,8 @@ import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
 const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
-  const { type, editable, title, key, required, width, controller } = column;
+  const { type, editable, title, key, required, width, controller, format } =
+    column;
 
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
@@ -42,7 +43,7 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
           controls={false}
           min="0"
           className="w-full"
-          step={quantityFormat}
+          step={format || quantityFormat}
         />
       );
       break;
