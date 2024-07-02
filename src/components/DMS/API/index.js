@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { encrypted } from "../../../app/hooks/enCrypted";
+import store from "../../../store";
 import https from "../../../utils/https";
 
 export const ApiGetTaskList = async (payload) => {
@@ -107,5 +108,23 @@ export const apiGetImagesByCode = async (payload) => {
     })
     .then((res) => {
       return _.first(res?.data?.listObject) || [];
+    });
+};
+
+export const apiGetMapInfo = async (payload) => {
+  const { id, unitId, storeId } = store.getState().claimsReducer.userInfo;
+
+  return await https
+    .post(`User/AddData`, {
+      store: "api_get_geo_data_by_tour",
+      param: {
+        userId: id,
+        unitId,
+        storeId,
+      },
+      data: {},
+    })
+    .then((res) => {
+      return res?.data?.listObject;
     });
 };

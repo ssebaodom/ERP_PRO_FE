@@ -83,7 +83,7 @@ const ApproveGroupPermissions = () => {
           width: "100%",
         }}
         defaultActiveFirstOption={false}
-        showArrow={false}
+        suffixIcon={false}
         filterOption={false}
         notFoundContent={SelectNotFound(loading, groups)}
         onSearch={(e) => {

@@ -7,7 +7,7 @@ import {
   notification,
   Pagination,
   Space,
-  Steps,
+  Steps
 } from "antd";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -17,11 +17,11 @@ import { filterKeyHelper } from "../../../../app/Functions/filterHelper";
 import { getIndexRow } from "../../../../app/Functions/getIndexRow";
 import {
   getAllRowKeys,
-  getAllValueByRow,
+  getAllValueByRow
 } from "../../../../app/Functions/getTableValue";
 import {
   deleteObjectItems,
-  formatData,
+  formatData
 } from "../../../../app/hooks/dataFormatHelper";
 import ConfirmDialog from "../../../../Context/ConfirmDialog";
 import { getUserInfo } from "../../../../store/selectors/Selectors";
@@ -37,12 +37,12 @@ import {
   fetchSaleOutDetail,
   fetchSaleOutMaster,
   setCurrentDetailSaleOut,
-  setSaleOutAction,
+  setSaleOutAction
 } from "../../Store/Sagas/Sagas";
 import {
   getCurrentSaleOutDetail,
   getCurrentSaleOutMaster,
-  getSaleOutInfo,
+  getSaleOutInfo
 } from "../../Store/Selector/Selector";
 import SaleoutDetail from "./Detail/SaleoutDetail";
 import SaleOutMaster from "./Detail/SaleOutMaster";
@@ -162,7 +162,7 @@ const SaleOut = () => {
     });
 
     UltimatePutDataApi({
-      store: "app_create_sale_out",
+      store: "api_create_sale_out",
       data: master,
       listData: detail,
     })

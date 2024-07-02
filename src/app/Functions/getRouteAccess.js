@@ -1,3 +1,5 @@
+import _ from "lodash";
+import router from "../../router/routes";
 import store from "../../store";
 
 const nestedArray = (raw) => {
@@ -18,6 +20,13 @@ const nestedArray = (raw) => {
 
 const getRoutesAccess = async (routes) => {
   const userData = store.getState().claimsReducer.claims;
+  var routesToFlat = router.routes.find((r) => r.id == `1`).children;
+
+  const childRoutes = _.flatMap(routesToFlat, (parent) => {
+    return _.map(parent?.children, (child) => {
+      return { ...child, path: parent.path + "/" + child.path, children: null };
+    });
+  });
 
   const claims = Object.keys(userData).filter((key) => {
     if (key.includes("Permissions.")) return userData[key];
@@ -25,6 +34,23 @@ const getRoutesAccess = async (routes) => {
 
   const validRoutes = routes.filter((item) => item.path == "/");
   const allRoutes = [..._.first(validRoutes).children];
+
+  const flatRoutes =
+    userData?.RoleId == "1"
+      ? [...routesToFlat, ...childRoutes].map((r) => ({
+          label: r.label,
+          path: r.path,
+          claims: r.claims,
+          isParent: r.children ? true : false,
+        }))
+      : [...routesToFlat, ...childRoutes]
+          .filter((route) => claims.includes(route.claims))
+          .map((r) => ({
+            label: r.label,
+            path: r.path,
+            claims: r.claims,
+            isParent: r.children ? true : false,
+          }));
 
   const userRoute =
     userData?.RoleId == "1"
@@ -63,7 +89,7 @@ const getRoutesAccess = async (routes) => {
   // });
   return {
     nestedRoutes: nestedRoutes || [],
-    flatRoutes: userRoute,
+    flatRoutes: flatRoutes,
   };
 };
 

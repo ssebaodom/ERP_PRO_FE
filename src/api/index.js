@@ -8,10 +8,10 @@ export const refreshToken = async () => {
       refreshToken: await jwt.getRefreshToken(),
     })
     .then(async (res) => {
-      return res.data;
-    })
-    .catch((err) => {
-      return null;
+      const token = res?.data?.token;
+      const refreshToken = res?.data?.refreshToken;
+
+      return [token, refreshToken];
     });
 };
 
@@ -34,7 +34,7 @@ export const apiCreateAccount = async ({ name, userName, password, email }) => {
 };
 
 export const apiGetStoreByUser = async (payload) => {
-  return await https.get(`Authentication/DVCS`, payload).then((res) => {
+  return await https.get(`User/GetStore`, payload).then((res) => {
     return res.data;
   });
 };

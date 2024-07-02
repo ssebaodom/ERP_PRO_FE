@@ -101,7 +101,7 @@ const FormSelect = ({
           showSearch
           placeholder={placeHolderCode}
           defaultActiveFirstOption={false}
-          showArrow={false}
+          suffixIcon={false}
           filterOption={false}
           optionLabelProp="label"
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}

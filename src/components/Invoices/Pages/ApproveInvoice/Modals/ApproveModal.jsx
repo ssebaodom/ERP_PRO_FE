@@ -55,7 +55,7 @@ const ApproveModal = ({
 
       {vouchersInfo.length > 1 && (
         <Select
-          showArrow={false}
+          suffixIcon={false}
           className="default_select w-full"
           placeholder="Trạng thái"
         >

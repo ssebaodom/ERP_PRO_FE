@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "antd";
 import _ from "lodash";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Column } from "react-base-table";
 import { useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
@@ -29,6 +29,7 @@ import SelectNotFound from "../../../../../Context/SelectNotFound";
 import { getUserInfo } from "../../../../../store/selectors/Selectors";
 import PerformanceTable from "../../../../ReuseComponents/PerformanceTable/PerformanceTable";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
+import RetailOrderListModal from "../../../Modals/RetailOrderListModal/RetailOrderListModal";
 import {
   setCurrentRetailOrder,
   setRetailOrderList,
@@ -48,7 +49,13 @@ const columns = [
     frozen: Column.FrozenDirection.LEFT,
     cellRenderer: ({ cellData }) =>
       cellData ? (
-        <Image title="" style={{ height: 40 }} src={cellData} alt="SSE"></Image>
+        <Image
+          className="border-circle"
+          title=""
+          style={{ height: 40 }}
+          src={cellData}
+          alt="SSE"
+        ></Image>
       ) : (
         <FileImageOutlined
           style={{
@@ -125,9 +132,12 @@ const columns = [
     width: 80,
     resizable: false,
     sortable: false,
+    editable: true,
+    type: "dvt",
     cellRenderer: ({ rowData, column, cellData }) => {
       return (
         <RenderPerformanceTableCell
+          rowData={rowData}
           rowKey={rowData?.id}
           column={column}
           cellData={cellData}
@@ -194,6 +204,7 @@ const RetailOrderInfo = ({ orderKey }) => {
     diem: 0,
     ma_nt: "VND",
     ty_gia: 1,
+    quy_doi_diem: 1,
     tong_tien: 0,
     thue_suat: 0,
     tong_thue: 0,
@@ -203,15 +214,27 @@ const RetailOrderInfo = ({ orderKey }) => {
     voucher: "",
     tien_voucher: 0,
     tong_tt: 0,
+    tien_mat: 0,
+    tien_the: 0,
+    chuyen_khoan: 0,
   });
   const [taxOptions, setTaxOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [isOpenOrderList, setIsOpenOrderList] = useState(false);
+
+  const searchInputRef = useRef(null);
 
   const { listOrder, currentOrder, isScanning } =
     useSelector(getRetailOrderState);
   const { id: userId, storeId, unitId } = useSelector(getUserInfo);
 
-  /////// Calculations functions//////////////
+  /////// Orde List functions //////////////
+
+  const handleOrderListModal = useCallback(() => {
+    setIsOpenOrderList(!isOpenOrderList);
+  }, [isOpenOrderList]);
+
+  /////// Calculations functions////////////
 
   const handleCalculatorPayment = async () => {
     const changedValues = { ...itemForm.getFieldsValue() };
@@ -250,6 +273,14 @@ const RetailOrderInfo = ({ orderKey }) => {
   }, [JSON.stringify(data), JSON.stringify(paymentInfo)]);
 
   ///////////orther functions /////
+
+  //reset Form
+  const handleResetForm = useCallback(() => {
+    setData([]);
+    setPaymentInfo({ ...paymentInfo });
+  }, []);
+
+  // Xử lý khi thu gọn tìm kiếm
   const handleCollapseOptions = (key) => {
     const currentCollaps = [...searchColapse];
     if (currentCollaps.includes(key)) {
@@ -261,12 +292,15 @@ const RetailOrderInfo = ({ orderKey }) => {
     } else setSearchColapse([...currentCollaps, key]);
   };
 
+  // Lấy data khách hàng mà vật tư
   const fetchItemsNCustomers = ({ searchValue }) => {
     setsearchOptions([]);
     multipleTablePutApi({
       store: "Api_search_items_N_customers",
       param: {
         searchValue: filterKeyHelper(searchValue),
+        unitId,
+        storeId,
         userId,
       },
       data: {},
@@ -293,7 +327,8 @@ const RetailOrderInfo = ({ orderKey }) => {
     });
   };
 
-  const fetchSelectData = () => {
+  // Lấy các setting cho phiếu
+  const fetchRetailOptions = () => {
     multipleTablePutApi({
       store: "Api_get_retail_options",
       param: {
@@ -304,10 +339,15 @@ const RetailOrderInfo = ({ orderKey }) => {
       if (res.responseModel?.isSucceded) {
         setCurrencyOptions(res?.listObject[0] || []);
         setTaxOptions(res?.listObject[1] || []);
+        setPaymentInfo({
+          ...paymentInfo,
+          quy_doi_diem: parseInt(_.first(res?.listObject[2])?.val) || 0,
+        });
       }
     });
   };
 
+  // Lấy thông tin vật tư
   const handleFetchItemInfo = async ({ barcode, ma_vt, stock }) => {
     var results = {};
     await multipleTablePutApi({
@@ -316,7 +356,7 @@ const RetailOrderInfo = ({ orderKey }) => {
         barcode,
         ma_vt,
         UnitID: unitId,
-        StoreID: "BEPHC1",
+        StoreID: storeId,
         StockID: stock || "",
         Currency: paymentInfo?.ma_nt,
         userId,
@@ -359,15 +399,31 @@ const RetailOrderInfo = ({ orderKey }) => {
     return results;
   };
 
+  // Tìm kiếm vật tư khi vào chế đọ barcode
   const handleSearchItemInfo = useDebouncedCallback((barcode) => {
     setSearchLoading(true);
     handleFetchItemInfo({ barcode, ma_vt: "", stock: "" });
     setSearchValue("");
   }, 20);
 
+  // Tìm kiếm thông tin khách hàng và vật tư
   const handleSearchValue = useDebouncedCallback((searchValue) => {
     fetchItemsNCustomers({ searchValue });
   }, 400);
+
+  // Set khách hàng khi thêm mới
+  const handleAddCustomerComplete = useCallback(
+    ({ ma_kh, ten_kh, dien_thoai }) => {
+      setPaymentInfo({
+        ...paymentInfo,
+        ma_kh,
+        ten_kh,
+        dien_thoai,
+        diem: 0,
+      });
+    },
+    [paymentInfo]
+  );
 
   //////////table functions//////////
   const handleAddOrder = async () => {
@@ -423,14 +479,13 @@ const RetailOrderInfo = ({ orderKey }) => {
   }, []);
 
   const handleSelectChange = (key, params) => {
-    console.log(params.data);
     if (params.data.type === "VT") {
-      const { value, label, dvt, gia } = params.data;
+      const { value, label, dvt, gia, ma_kho } = params.data;
       handleAddRowData({
         ma_vt: value,
         ten_vt: label,
         image: "https://pbs.twimg.com/media/FfgUqSqWYAIygwN.jpg",
-        ma_kho: "KVT",
+        ma_kho: ma_kho,
         dvt,
         don_gia: gia,
       });
@@ -465,8 +520,7 @@ const RetailOrderInfo = ({ orderKey }) => {
   };
 
   ////////Form Functions
-  const handleChangeValue = (cellChanged, allCells) => {
-    handleCalculatorPayment();
+  const handleChangeValue = async (cellChanged, allCells) => {
     const cellName = getCellName(_.first(Object.keys(cellChanged)));
     const cellValue = _.first(Object.values(cellChanged));
     const changedRowKey = getRowKey(_.first(Object.keys(cellChanged)));
@@ -475,19 +529,19 @@ const RetailOrderInfo = ({ orderKey }) => {
 
     switch (cellName) {
       case "ma_kho":
-        handleFetchItemInfo({
+        await handleFetchItemInfo({
           barcode: "",
           ma_vt: rowValues?.ma_vt,
           stock: cellValue,
         }).then((res) => {
           itemForm.setFieldValue(`${changedRowKey}_don_gia`, res?.gia || "0");
-          handleCalculatorPayment();
         });
         break;
 
       default:
         break;
     }
+    handleCalculatorPayment();
   };
 
   ///////Scanning//////
@@ -537,7 +591,7 @@ const RetailOrderInfo = ({ orderKey }) => {
   }, [JSON.stringify(searchOptions), JSON.stringify(searchColapse)]);
 
   useEffect(() => {
-    fetchSelectData();
+    fetchRetailOptions();
   }, []);
 
   return (
@@ -559,6 +613,7 @@ const RetailOrderInfo = ({ orderKey }) => {
               }}
             >
               <Select
+                ref={searchInputRef}
                 className="w-full"
                 value={null}
                 searchValue={searchValue}
@@ -571,7 +626,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                 }}
                 notFoundContent={SelectNotFound(searchLoading, searchOptions)}
                 defaultActiveFirstOption={false}
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 onChange={handleSelectChange}
                 onFocus={() => {
@@ -611,8 +666,8 @@ const RetailOrderInfo = ({ orderKey }) => {
                   >
                     {group.options.map((item) => (
                       <Select.Option
-                        key={item.value}
-                        value={item.value}
+                        key={`${group.key}-${item.value}`}
+                        value={`${group.key}-${item.value}`}
                         label={item.label}
                         data={item}
                       >
@@ -645,6 +700,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                   setsearchOptions([]);
                   setsearchOptionsFiltered([]);
                   setRetailOrderScanning(!isScanning);
+                  if (!isScanning) searchInputRef.current.focus();
                 }}
               >
                 <i
@@ -684,6 +740,7 @@ const RetailOrderInfo = ({ orderKey }) => {
               onValuesChange={handleChangeValue}
             >
               <PerformanceTable
+                reverseIndex
                 selectable
                 columns={columns}
                 data={data}
@@ -701,18 +758,50 @@ const RetailOrderInfo = ({ orderKey }) => {
           }}
         >
           <div className="flex gap-2">
-            <Button
-              className="default_button"
-              danger
-              onClick={handleRemoveRowData}
-            >
-              <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
-            </Button>
+            <Tooltip placement="topRight" title="Xoá dữ liệu">
+              <Button
+                className="default_button"
+                danger
+                onClick={handleRemoveRowData}
+              >
+                <i className="pi pi-trash" style={{ fontWeight: "bold" }}></i>
+              </Button>
+            </Tooltip>
 
             <Tooltip placement="topRight" title="Khuyến mãi">
-              <Button className="default_button">
+              <Button className="default_button pointer-events-none opacity-30">
                 <i
                   className="pi pi-gift danger_text_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
+
+            <Tooltip placement="topRight" title="Thanh toán">
+              <Button
+                className="default_button"
+                onClick={() => {
+                  window.open(
+                    `${window.location.origin}/transfer`,
+                    "Thanh toán",
+                    "screenX=1,screenY=1,left=1,top=1,menubar=0,height=" +
+                      screen.height +
+                      ",width=" +
+                      screen.width
+                  );
+                }}
+              >
+                <i
+                  className="pi pi-credit-card primary_color"
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
+
+            <Tooltip placement="topRight" title="Danh sách đơn">
+              <Button onClick={handleOrderListModal} className="default_button">
+                <i
+                  className="pi pi-list sub_text_color"
                   style={{ fontWeight: "bold" }}
                 ></i>
               </Button>
@@ -767,7 +856,16 @@ const RetailOrderInfo = ({ orderKey }) => {
           </div>
         </div>
       </div>
-      <RetailPaidInfo itemForm={itemForm} paymentInfo={paymentInfo} />
+      <RetailPaidInfo
+        itemForm={itemForm}
+        paymentInfo={paymentInfo}
+        onChangeCustomer={handleAddCustomerComplete}
+        onResetForm={handleResetForm}
+      />
+      <RetailOrderListModal
+        isOpen={isOpenOrderList}
+        onClose={handleOrderListModal}
+      />
     </div>
   );
 };

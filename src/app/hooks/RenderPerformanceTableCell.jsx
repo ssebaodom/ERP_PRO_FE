@@ -1,17 +1,18 @@
 import { DatePicker, Form, Input, InputNumber, Select } from "antd";
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApiWebLookup } from "../../components/DMS/API";
 import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
-const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
+const RenderPerformanceTableCell = ({ rowKey, column, cellData, rowData }) => {
   const { type, editable, title, key, required, width, controller, format } =
     column;
 
   const [selectLoading, setSelectLoading] = useState(false);
   const [selectOptions, setSelectOptions] = useState([]);
+
   const lookupData = async (item) => {
     await setSelectLoading(true);
     ApiWebLookup({
@@ -34,6 +35,19 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
   const handleSelectionChange = useDebouncedCallback((value) => {
     lookupData({ controller: controller, value: value });
   }, 600);
+
+  const fetchItemUnitData = (ma_vt = "") => {
+    console.log("Fetchhing item unit data", ma_vt);
+    lookupData({ controller: "dmqddvt_lookup", value: ma_vt });
+  };
+
+  useEffect(() => {
+    if (type === "dvt") {
+      fetchItemUnitData(rowData?.ma_vt || "");
+    }
+
+    return () => {};
+  }, []);
 
   let node;
   switch (type) {
@@ -61,7 +75,7 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
           showSearch
           placeholder={`${title} trống`}
           defaultActiveFirstOption={false}
-          showArrow={false}
+          suffixIcon={false}
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           filterOption={false}
           onSearch={(e) => {
@@ -78,6 +92,24 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
         </Select>
       );
 
+      break;
+
+    case "dvt":
+      node = (
+        <Select
+          className="w-full"
+          popupMatchSelectWidth={false}
+          placeholder={`${title} trống`}
+          defaultActiveFirstOption={false}
+          suffixIcon={false}
+          notFoundContent={SelectNotFound(selectLoading, selectOptions)}
+          filterOption={false}
+          optionLabelProp="value"
+          // onSelect={onChangeSelection}
+        >
+          {SelectItemCode(selectOptions)}
+        </Select>
+      );
       break;
 
     default:
@@ -125,13 +157,13 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData }) => {
                 maxRows: 2,
               }}
               style={{ resize: "none", transition: "none" }}
-              bordered={false}
+              variant={"borderless"}
               className="p-0 Performance_table_span"
               disabled={!editable}
             />
           ) : (
             <Input
-              bordered={false}
+              variant={"borderless"}
               className="BaseTable__row-cell-text p-0 Performance_table_span"
               disabled={!editable}
             />

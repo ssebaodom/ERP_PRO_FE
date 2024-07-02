@@ -85,7 +85,7 @@ const ApprovePermissions = ({ userClaims }, ref) => {
       </div>
 
       <Collapse
-        bordered={false}
+        variant={"borderless"}
         defaultActiveKey={["1"]}
         className="h-full m-h-0 overflow-auto flex flex-column"
         expandIcon={({ isActive }) => (

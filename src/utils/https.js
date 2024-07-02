@@ -24,18 +24,18 @@ class HttpService {
   }
 
   post(apiEndpoint, payload, settings = {}) {
-    return axios.post(apiEndpoint, payload, settings).then(
-      (res) => {
+    return axios
+      .post(apiEndpoint, payload, settings)
+      .then((res) => {
         if (res?.data?.errors) {
           return this.handleErorr(res?.data?.errors);
         }
         return res;
-      },
-      (err) => {
-        this.handleErorr(err?.response, err?.response?.status);
+      })
+      .catch((err) => {
+        this.handleErorr(err?.code, err?.response?.status);
         return err.response;
-      }
-    );
+      });
   }
 
   put(apiEndpoint, payload) {
@@ -68,10 +68,15 @@ class HttpService {
     );
   }
 
-  handleErorr(error, code = null) {
-    switch (code) {
+  handleErorr(error, statusCode = null) {
+    if (error)
+      return notification.error({
+        message: `Không kết nối được đến server`,
+      });
+
+    switch (statusCode) {
       case 500:
-        notification.warning({
+        notification.error({
           message: `Không kết nối được đến server`,
           // description: `Quá thời gian thực hiện`,
         });

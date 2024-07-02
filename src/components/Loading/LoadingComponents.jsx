@@ -8,7 +8,7 @@ const LoadingComponents = ({ size, loading, text }) => {
     <>
       {loading && (
         <div className="loading__component">
-          {text ? <p>{text}</p> : <p>Không có dữ liệu</p>}
+          <b className="mb-2">{text || "Không có dữ liệu"}</b>
 
           <Spin className="mt-2" size="default" />
         </div>

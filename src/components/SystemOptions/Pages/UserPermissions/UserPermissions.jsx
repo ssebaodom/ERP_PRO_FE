@@ -55,7 +55,6 @@ const UserPermissions = () => {
       setLoading(false);
       setDataSource(res.data);
       setTotalRecord(res?.pagegination?.totalRecord);
-      userContainer.current.scrollTo(0, 0);
     });
   };
 

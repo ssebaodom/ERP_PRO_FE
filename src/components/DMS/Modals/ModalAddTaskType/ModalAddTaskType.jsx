@@ -191,7 +191,7 @@ const ModalAddTaskType = ({
                 }}
                 optionLabelProp="value"
                 defaultActiveFirstOption={false}
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 notFoundContent={SelectNotFound(selectLoading, selectOptions)}
                 onSearch={(e) => {

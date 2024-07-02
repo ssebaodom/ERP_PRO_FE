@@ -69,7 +69,7 @@ const DashboardOptions = () => {
   }, []);
 
   return (
-    <div>
+    <div className="relative p-3" style={{ background: "white" }}>
       <Popover content={content("totaly")} trigger="hover">
         <div className="w-fit mb-2">
           <HeaderTableBar

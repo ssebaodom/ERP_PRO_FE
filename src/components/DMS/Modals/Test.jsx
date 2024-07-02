@@ -1,4 +1,5 @@
 import { Modal } from "antd";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import useLocalStorage from "use-local-storage";
 const Test = () => {
@@ -15,6 +16,24 @@ const Test = () => {
   }, [qrSource]);
 
   useEffect(() => {
+    axios
+      .post(
+        "https://app82.faceworks.vn/app/MPV/API/gettoken.php?action=generate",
+        {
+          username: "admin_sse",
+          password: "sse132faceworks@api",
+        },
+        {
+          headers: {
+            Authorization: "Basic YWRtaW5fc3NlOnNzZTEzMmZhY2V3b3Jrc0BhcGk=",
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+      });
+
     return () => {
       setQrSource("");
     };

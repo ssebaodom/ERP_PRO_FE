@@ -91,7 +91,7 @@ const RenderEditCell = (cell, form, addRow) => {
           }}
           onKeyDown={handleKeypress}
           defaultActiveFirstOption={false}
-          showArrow={false}
+          suffixIcon={false}
           notFoundContent={SelectNotFound(selectLoading, selectOptions)}
           filterOption={false}
           onSearch={(e) => {

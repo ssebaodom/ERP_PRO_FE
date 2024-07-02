@@ -1,6 +1,6 @@
 import { notification } from "antd";
 import axios from "axios";
-import { refreshToken as refreshTokenReq } from "../api/index";
+import { refreshToken } from "../api";
 import router from "../router/routes";
 import { APP_CONFIG } from "./constants";
 import jwt from "./jwt";
@@ -9,8 +9,7 @@ const controller = new AbortController();
 const MAX_REQUESTS_COUNT = 3;
 const INTERVAL_MS = 300;
 let PENDING_REQUESTS = 0;
-let IS_REFRESHING = false;
-const REQUESTS_QUEUE = [];
+let refreshingFunc = undefined;
 
 const instance = axios.create({
   timeout: 20000,
@@ -27,18 +26,6 @@ const instance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-const processQueue = (token = null) => {
-  REQUESTS_QUEUE.forEach((prom) => {
-    if (token) {
-      prom.resolve(token);
-    } else {
-      prom.reject(null);
-    }
-  });
-
-  REQUESTS_QUEUE.length = 0;
-};
 
 instance.interceptors.request.use((req) => {
   req.headers.Authorization = `Bearer ${jwt.getAccessToken()}`;
@@ -62,57 +49,38 @@ instance.interceptors.response.use(
     const config = error?.config;
     PENDING_REQUESTS = Math.max(0, PENDING_REQUESTS - 1);
 
-    // if (
-    //   config.url.includes("login") ||
-    //   config.url.includes("Authentication/Refresh")
-    // ) {
-    //   controller.abort();
-    //   await jwt.resetAccessToken();
-    //   router.navigate("/login");
-    // }
+    if (error?.response?.status === 401) {
+      try {
+        if (!refreshingFunc) refreshingFunc = refreshToken();
 
-    if (error.response.status === 401 && !config._retry) {
-      if (IS_REFRESHING) {
-        return new Promise(function (resolve, reject) {
-          REQUESTS_QUEUE.push({ resolve, reject });
-        })
-          .then((token) => {
-            config.headers["Authorization"] = "Bearer " + token;
-            return instance(config);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
+        const [newToken, newRefreshToken] = await refreshingFunc;
 
-      config._retry = true;
-      IS_REFRESHING = true;
+        jwt.setRefreshToken(newRefreshToken);
+        jwt.setAccessToken(newToken);
 
-      return new Promise(function (resolve, reject) {
-        refreshTokenReq()
-          .then((res) => {
-            jwt.setRefreshToken(res.refreshToken);
-            jwt.setAccessToken(res.token);
-
-            processQueue(res.token);
-            resolve(instance(config));
-          })
-          .catch((err) => {
-            IS_REFRESHING = false;
-            REQUESTS_QUEUE.length = 0;
-            controller.abort();
+        config.headers.Authorization = `Bearer ${newToken}`;
+        // retry original request
+        try {
+          return await axios.request(config);
+        } catch (innerError) {
+          // if original req failed with 401 again - it means server returned not valid token for refresh request
+          if (error.response.status === 401) {
+            throw innerError;
             jwt.resetAccessToken();
             router.navigate("/login");
-            reject(err);
-          })
-          .finally(() => {
-            IS_REFRESHING = false;
-            REQUESTS_QUEUE.length = 0;
-          });
-      });
+            Promise.reject(error);
+          } else controller.abort();
+        }
+      } catch (error) {
+        jwt.resetAccessToken();
+        router.navigate("/login");
+        Promise.reject(error);
+      } finally {
+        refreshingFunc = undefined;
+      }
     }
 
-    if (error.response.status === 403) {
+    if (error?.response?.status === 403) {
       notification.warning({
         message: `Bạn không có quyền truy cập.`,
         description: "Vui lòng liên hệ người quản lý !",
@@ -120,7 +88,6 @@ instance.interceptors.response.use(
       controller.abort();
       router.navigate(-1);
     }
-
     return Promise.reject(error);
 
     ////////////////////////////////////////////

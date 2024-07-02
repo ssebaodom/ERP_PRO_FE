@@ -1,10 +1,12 @@
-import { Button, message, Modal, Upload } from "antd";
+import { Button, message as messageAPI, Modal, Upload } from "antd";
 import React, { memo } from "react";
 import * as XLSX from "xlsx";
 import { handleImportExcel } from "../../app/Functions/importExcel";
 const { Dragger } = Upload;
 
 const UploadFileModal = ({ openState, onOk, onCancel, fileExample }) => {
+  const [message, contextHolder] = messageAPI.useMessage();
+
   const IconUploadStyled = {
     fontSize: "3rem",
   };
@@ -106,6 +108,7 @@ const UploadFileModal = ({ openState, onOk, onCancel, fileExample }) => {
       >
         File mẫu
       </Button>
+      {contextHolder}
     </Modal>
   );
 };

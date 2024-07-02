@@ -103,11 +103,10 @@ const Navbar = () => {
   };
   const handleLogout = async () => {
     await jwt.resetAccessToken();
-    await dispatch(setClaims([]));
-    await await router.navigate("/login");
+    router.navigate("/login");
+    dispatch(setClaims([]));
   };
   const handleNavbarClick = (item) => {
-    setnavbarSelectedKey(item.key);
     navigate(
       item?.item?.props?.path ? `${item.item.props.path}` : `${item.path}`
     );
@@ -123,7 +122,8 @@ const Navbar = () => {
     renderNavbar(navitems.nestedRoutes);
     setSearchFunctions((item) => {
       return (item = navitems.flatRoutes.filter(
-        (item) => !item.children || !item?.children?.length > 0
+        (item) =>
+          (!item.children || !item?.children?.length > 0) && !item.isParent
       ));
     });
   };
@@ -186,16 +186,16 @@ const Navbar = () => {
   };
 
   const handleRouteChange = async (data) => {
+    setnavbarSelectedKey(data?.pathname?.substring(1) || "");
     const { flatRoutes } = await getRoutesAccess(routes);
-    const validRoutes = ["/", "Dashboard", ""];
-
+    const validRoutes = ["/", "Dashboard", "", "login", "loginSSO", "transfer"];
     if (
       !validRoutes.includes(data?.pathname?.substring(1)) &&
       flatRoutes.findIndex(
         (item) => item.path === data?.pathname?.substring(1)
       ) < 0
     ) {
-      // navigate("/notFound"); -- Sửa sau
+      navigate("/notFound");
     }
   };
 
@@ -310,7 +310,7 @@ const Navbar = () => {
             )}
 
             {resultsSearchModal.map((item, index) => (
-              <>{item.label}</>
+              <span key={index}>{item.label}</span>
             ))}
           </div>
         </div>

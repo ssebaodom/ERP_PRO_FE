@@ -99,7 +99,7 @@ const FormSelectDetail = ({
               showSearch
               placeholder={placeHolderCode}
               defaultActiveFirstOption={false}
-              showArrow={false}
+              suffixIcon={false}
               filterOption={false}
               optionLabelProp="value"
               popupMatchSelectWidth={false}

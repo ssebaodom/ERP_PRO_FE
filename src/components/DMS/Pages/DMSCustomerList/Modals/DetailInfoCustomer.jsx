@@ -87,7 +87,6 @@ const DetailInfoCustomer = ({ form, action }) => {
                 flex: "none",
               }}
               defaultActiveFirstOption={false}
-              showArrow={false}
               filterOption={false}
               notFoundContent={SelectNotFound(selectLoading, provinceOptions)}
               onSearch={(e) => {
@@ -143,7 +142,6 @@ const DetailInfoCustomer = ({ form, action }) => {
                 flex: "none",
               }}
               defaultActiveFirstOption={false}
-              showArrow={false}
               filterOption={false}
               notFoundContent={SelectNotFound(selectLoading, districtOptions)}
               onSearch={(e) => {
@@ -197,7 +195,6 @@ const DetailInfoCustomer = ({ form, action }) => {
                 flex: "none",
               }}
               defaultActiveFirstOption={false}
-              showArrow={false}
               filterOption={false}
               notFoundContent={SelectNotFound(selectLoading, communeOptions)}
               onSearch={(e) => {

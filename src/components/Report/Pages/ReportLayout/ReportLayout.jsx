@@ -1,8 +1,16 @@
 import { Tree } from "primereact/tree";
 import React, { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import ReportDashboard from "./ReportDashboard/ReportDashboard";
 
 const reportLayout = [
+  {
+    key: "reports",
+    label: "Dashboard",
+    data: "/reports",
+    icon: "pi pi-chart-bar",
+  },
+
   {
     key: "0",
     label: "Viếng thăm",
@@ -10,13 +18,13 @@ const reportLayout = [
     icon: "pi pi-clipboard",
     children: [
       {
-        key: "0-0-0",
+        key: "checkin",
         label: "Báo cáo viếng thăm",
         icon: "pi pi-check-circle",
         data: "checkin",
       },
       {
-        key: "0-0-1",
+        key: "locationReport",
         label: "Báo cáo vị trí",
         icon: "pi pi-map-marker",
         data: "locationReport",
@@ -50,7 +58,9 @@ const reportLayout = [
 const ReportLayout = () => {
   const [selectedNodeKey, setSelectedNodeKey] = useState("");
   const [expandedKeys, setExpandedKeys] = useState({});
+
   const navigate = useNavigate();
+  const curLocation = useLocation();
 
   const onSelect = (event) => {
     if (event.node.key in expandedKeys) {
@@ -92,6 +102,8 @@ const ReportLayout = () => {
         />
       </div>
       <div className="page_2_side_default_right system__right__side">
+        {curLocation?.pathname === "/reports" && <ReportDashboard />}
+
         <Outlet />
       </div>
     </div>

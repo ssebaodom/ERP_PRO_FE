@@ -4,7 +4,7 @@ import {
   Form,
   Input,
   InputNumber,
-  message,
+  message as messageAPI,
   Popover,
   Row,
 } from "antd";
@@ -14,6 +14,7 @@ import { quantityFormat } from "../../../../../../app/Options/DataFomater";
 import FormSelectDetail from "../../../../../ReuseComponents/FormSelectDetail";
 
 const AddSaleOrderPromotion = ({ addEvent }) => {
+  const [message, contextHolder] = messageAPI.useMessage();
   const [form] = Form.useForm();
 
   const handleAddPromotion = async (item) => {
@@ -128,19 +129,23 @@ const AddSaleOrderPromotion = ({ addEvent }) => {
   };
 
   return (
-    <Popover
-      destroyTooltipOnHide={true}
-      placement="bottomLeft"
-      content={popoverContent()}
-      trigger="click"
-    >
-      <Button className="default_button">
-        <i
-          className="pi pi-plus sub_text_color"
-          style={{ fontWeight: "bold" }}
-        ></i>
-      </Button>
-    </Popover>
+    <>
+      {contextHolder}
+
+      <Popover
+        destroyTooltipOnHide={true}
+        placement="bottomLeft"
+        content={popoverContent()}
+        trigger="click"
+      >
+        <Button className="default_button">
+          <i
+            className="pi pi-plus sub_text_color"
+            style={{ fontWeight: "bold" }}
+          ></i>
+        </Button>
+      </Popover>
+    </>
   );
 };
 

@@ -2,6 +2,7 @@ import VNnum2words from "vn-num2words";
 
 const quantityFormat = "0.01";
 const datetimeFormat = "DD/MM/YYYY";
+const datetimeFormat2 = "DD-MM-YYYY";
 const PriceFormat = "0.01";
 
 function num2words(num) {
@@ -17,4 +18,10 @@ function num2words(num) {
   }
 }
 
-export { quantityFormat, datetimeFormat, PriceFormat, num2words };
+export {
+  quantityFormat,
+  datetimeFormat2,
+  datetimeFormat,
+  PriceFormat,
+  num2words,
+};

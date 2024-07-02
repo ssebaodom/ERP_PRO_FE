@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { businessMapReducer } from "../components/DMS/Store/Reducers/BusinessMap";
 import { DMSCustomersReducer } from "../components/DMS/Store/Reducers/DMSCustomer";
 import { imagesListReducer } from "../components/DMS/Store/Reducers/ImagesList";
 import { taskReducer } from "../components/DMS/Store/Reducers/Task";
@@ -15,7 +16,6 @@ import { AccountsReducer } from "../components/SystemOptions/Store/Reducers/Redu
 import claimsReducer from "./reducers/claimsSlice";
 import loadingReducer from "./reducers/loadingSlice";
 import todoReducer from "./reducers/todoSlice";
-
 //store
 const store = configureStore({
   reducer: {
@@ -35,6 +35,7 @@ const store = configureStore({
     saleOrderReducer,
     KPIListReducer,
     retailOrderReducer,
+    businessMapReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

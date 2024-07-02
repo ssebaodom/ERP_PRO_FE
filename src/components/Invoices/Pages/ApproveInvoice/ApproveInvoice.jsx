@@ -107,7 +107,7 @@ const ApproveInvoice = () => {
                   <Select
                     allowClear={true}
                     className="default_select w-full"
-                    showArrow={false}
+                    suffixIcon={false}
                     filterOption={false}
                     showSearch
                     options={Options}
@@ -125,7 +125,7 @@ const ApproveInvoice = () => {
                   <Select
                     allowClear={true}
                     className="default_select w-full"
-                    showArrow={false}
+                    suffixIcon={false}
                     filterOption={false}
                     showSearch
                     options={statusOptions}
@@ -143,7 +143,7 @@ const ApproveInvoice = () => {
                   <Select
                     allowClear={true}
                     className="default_select w-full"
-                    showArrow={false}
+                    suffixIcon={false}
                     filterOption={false}
                     showSearch
                     options={voucherTypeOptions}

@@ -1,77 +1,232 @@
-import { Button, Input, InputNumber, message, Switch } from "antd";
+import {
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
+  LoadingOutlined
+} from "@ant-design/icons";
+
+import {
+  Button,
+  Input,
+  InputNumber,
+  message as messageAPI,
+  Spin,
+  Switch
+} from "antd";
 import _ from "lodash";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useDebouncedCallback } from "use-debounce";
 import useLocalStorage from "use-local-storage";
 import {
   getAllRowKeys,
-  getAllValueByRow,
+  getAllValueByRow
 } from "../../../../../app/Functions/getTableValue";
 import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import { num2words } from "../../../../../app/Options/DataFomater";
 import { getUserInfo } from "../../../../../store/selectors/Selectors";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
+import AdvanceRetailPayment from "../../../Modals/AdvanceRetailPayment/AdvanceRetailPayment";
+
 import AddCustomerPopup from "../AddCustomerPopup/AddCustomerPopup";
 
 const { Search } = Input;
-const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
+const RetailPaidInfo = ({
+  itemForm,
+  paymentInfo,
+  onChangeCustomer,
+  onResetForm,
+}) => {
+  const [message, contextHolder] = messageAPI.useMessage();
+
   const [paymentData, setPaymentData] = useState({});
   const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");
   const [change, setChange] = useState(0);
+  const [voucher, setVoucher] = useState({
+    voucherId: "",
+    tl_ck: 0,
+    tien_ck: 0,
+  });
+
+  const [voucherStatus, setVoucherStatus] = useState({
+    currentVoucher: "",
+    loading: false,
+    valid: false,
+  });
+  const [isUsePoint, setIsUsePoint] = useState(false);
+  const [isOpenAdvancePayment, setIsOpenAdvancePayment] = useState(false);
+
   const { id: userId, storeId, unitId } = useSelector(getUserInfo);
 
-  const handleSave = async () => {
-    const data = { ...itemForm.getFieldsValue() };
-    console.log(data);
-    console.log(paymentData);
+  // Lưu phiếu
+  const handleSave = useCallback(
+    async (paymentMethods, paymentMethodInfo) => {
+      const data = { ...itemForm.getFieldsValue() };
+      const master = {
+        tien_mat: paymentMethods ? 0 : paymentData.tong_tt,
+        ...paymentData,
+        ...paymentMethodInfo,
+        httt: paymentMethods || "tien_mat",
+      };
 
-    const detailData = [];
+      const detailData = [];
 
-    getAllRowKeys(data).map((item) => {
-      return detailData.push(getAllValueByRow(item, data));
-    });
+      getAllRowKeys(data).map((item) => {
+        return detailData.push(getAllValueByRow(item, data));
+      });
 
-    if (_.isEmpty(detailData)) {
-      message.warning("Vui lòng thêm vật tư !");
+      console.log("master", master);
+      console.log("Detail", detailData);
+
+      if (_.isEmpty(detailData)) {
+        message.warning("Vui lòng thêm vật tư !");
+        return;
+      }
+
+      if (_.isEmpty(master?.ma_kh)) {
+        message.warning("Mã khách hàng trống!");
+        return;
+      }
+
+      if (master?.chuyen_khoan > 0) {
+        setPaymentQR(
+          `https://img.vietqr.io/image/970436-0551000325525-print.png?amount=${
+            master?.chuyen_khoan || 0
+          }&addInfo=TEST&accountName=MACH%20HAI%20HUNG&randon=${Math.floor(
+            Math.random() * 10000
+          )}`
+        );
+      }
+
+      await multipleTablePutApi({
+        arandomnumber: Math.floor(Math.random() * 10000),
+        store: "Api_create_retail_order",
+        param: {
+          UnitID: unitId,
+          StoreID: storeId,
+          userId,
+        },
+        data: {
+          master: [
+            {
+              ...master,
+              voucher: voucher.voucherId,
+              sd_diem: isUsePoint ? 1 : 0,
+            },
+          ],
+          detail: detailData,
+        },
+      }).then((res) => {
+        console.log("res", res);
+        onResetForm();
+      });
+    },
+    [paymentData, voucher]
+  );
+
+  // Xác thực voucher
+  const handleFindVoucher = useDebouncedCallback(async (e) => {
+    const value = e.target.value;
+    if (value) {
+      setVoucherStatus({
+        ...voucherStatus,
+        currentVoucher: value,
+        loading: true,
+      });
+      await multipleTablePutApi({
+        store: "Api_check_Voucher_valid",
+        param: {
+          voucherId: value,
+          customerId: paymentData?.ma_kh || "",
+          unitId,
+          storeId,
+          userId,
+        },
+        data: {},
+      }).then((res) => {
+        if (res?.responseModel?.isSucceded) {
+          if (!_.isEmpty(_.first(res?.listObject))) {
+            const { tl_ck, tien_ck } = _.first(_.first(res?.listObject));
+
+            setVoucher({
+              voucherId: value,
+              tien_ck,
+              tl_ck,
+            });
+
+            setVoucherStatus({
+              ...voucherStatus,
+              currentVoucher: value,
+              valid: true,
+              loading: false,
+            });
+
+            return;
+          }
+        }
+
+        setVoucherStatus({
+          ...voucherStatus,
+          currentVoucher: value,
+          valid: false,
+          loading: false,
+        });
+      });
+
       return;
     }
+    setVoucherStatus({
+      ...voucherStatus,
+      currentVoucher: value,
+      valid: false,
+      loading: false,
+    });
+  }, 300);
 
-    if (_.isEmpty(paymentData?.ma_kh)) {
-      message.warning("Mã khách hàng trống!");
-      return;
+  // Set khách hàng khi thêm mới
+  const handleAddCustomerComplete = useCallback(
+    ({ ma_kh, ten_kh, dien_thoai }) => {
+      onChangeCustomer({
+        ma_kh,
+        ten_kh,
+        dien_thoai,
+      });
+    },
+    [paymentData]
+  );
+
+  // Tính toán thông tin thanh toán khi có sự thay đổi
+  const CalFinalPayment = () => {
+    var finalPay = paymentInfo?.tong_tt;
+    var tien_voucher = 0;
+
+    tien_voucher = voucher?.tl_ck
+      ? (voucher?.tl_ck * paymentInfo?.tong_tien) / 100
+      : voucher?.tien_ck;
+
+    finalPay = finalPay - tien_voucher;
+
+    if (isUsePoint) {
+      finalPay = finalPay - paymentInfo?.diem * paymentInfo?.quy_doi_diem;
     }
 
-    setPaymentQR(
-      `https://img.vietqr.io/image/970436-0551000325525-print.png?amount=${
-        paymentData?.tong_tien || 0
-      }&addInfo=TEST&accountName=MACH%20HAI%20HUNG&randon=${Math.floor(
-        Math.random() * 10000
-      )}`
-    );
-
-    await multipleTablePutApi({
-      store: "Api_create_retail_order",
-      param: {
-        UnitID: unitId,
-        StoreID: "BEPHC1",
-        userId,
-      },
-      data: {
-        master: [{ ...paymentData }],
-        detail: detailData,
-      },
-    }).then((res) => {
-      consol.log("res", res);
+    setPaymentData({
+      ...paymentInfo,
+      tong_tt: finalPay < 0 ? 0 : finalPay,
+      tien_voucher: tien_voucher,
     });
-    console.log("SAVED", detailData);
   };
 
+  const handleCloseAdvancePayment = useCallback(() => {
+    setIsOpenAdvancePayment(false);
+  }, []);
+
+  // Lắng nghe sự thay đổi tham số để tính toán
   useEffect(() => {
     if (!_.isEmpty(paymentInfo)) {
-      setPaymentData(paymentInfo);
+      CalFinalPayment();
     }
     return () => {};
-  }, [paymentInfo]);
+  }, [paymentInfo, isUsePoint, voucher]);
 
   useEffect(() => {
     return () => {
@@ -89,7 +244,7 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
           <span className="primary_bold_text text-lg line-height-4">
             Thông tin khách hàng:
           </span>
-          <AddCustomerPopup />
+          <AddCustomerPopup onSave={handleAddCustomerComplete} />
         </div>
 
         <div
@@ -103,11 +258,22 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
                 {paymentData?.ten_kh || "Không có dữ liệu"}
               </p>
               <p className="">
-                {paymentInfo?.dien_thoai?.trim() || "Không có số điện thoại"}
+                {paymentData?.dien_thoai?.trim() || "Không có số điện thoại"}
               </p>
-              <p className="primary_bold_text">
-                {formatCurrency(paymentData?.diem || 0)} điểm
-              </p>
+              <div>
+                <span className="primary_bold_text">
+                  {formatCurrency(paymentData?.diem || 0)} điểm{" "}
+                </span>
+                {isUsePoint && (
+                  <b className="danger_text_color">
+                    -
+                    {paymentData?.diem <=
+                    paymentInfo?.tong_tt / paymentInfo?.quy_doi_diem
+                      ? paymentData?.diem
+                      : paymentInfo?.tong_tt / paymentInfo?.quy_doi_diem}
+                  </b>
+                )}
+              </div>
             </>
           ) : (
             <b className="abs_center sub_text_color">Không có dữ liệu</b>
@@ -157,18 +323,58 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Voucher:</span>
             <span className="primary_bold_text">
-              <Input placeholder="Mã Voucher" />
+              <Input
+                status={
+                  !voucherStatus.valid &&
+                  voucherStatus.currentVoucher &&
+                  !voucherStatus.loading
+                    ? "error"
+                    : null
+                }
+                onChange={handleFindVoucher}
+                allowClear
+                placeholder="Mã Voucher"
+                suffix={
+                  voucherStatus.loading ? (
+                    <Spin
+                      indicator={
+                        <LoadingOutlined
+                          style={{
+                            fontSize: 14,
+                          }}
+                          spin
+                        />
+                      }
+                    />
+                  ) : !voucherStatus.valid && voucherStatus.currentVoucher ? (
+                    <CloseCircleTwoTone twoToneColor={"red"} />
+                  ) : voucherStatus.valid && voucherStatus.currentVoucher ? (
+                    <CheckCircleTwoTone twoToneColor="#52c41a" />
+                  ) : null
+                }
+              />
             </span>
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Tiền voucher:</span>
-            <span className="primary_bold_text">{formatCurrency(0)}</span>
+            <span className="primary_bold_text">
+              {formatCurrency(
+                (
+                  (paymentData?.tien_voucher || 0) / (paymentData?.ty_gia || 1)
+                ).toFixed(2) || 0
+              )}
+            </span>
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
             <span className="w-6 flex-shrink-0">Sử dụng điểm:</span>
-            <Switch />
+            <Switch
+              checked={isUsePoint}
+              onChange={(e) => {
+                setIsUsePoint(e);
+              }}
+            />
           </div>
 
           <div className="flex justify-content-between gap-2 align-items-center">
@@ -201,7 +407,9 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
               className="w-full"
               placeholder="0"
               onChange={(e) => {
-                setChange(paymentData?.tong_tt - e);
+                setChange(
+                  e - paymentData?.tong_tt < 0 ? 0 : e - paymentData?.tong_tt
+                );
               }}
             />
           </div>
@@ -215,11 +423,35 @@ const RetailPaidInfo = ({ itemForm, paymentInfo }) => {
         </div>
       </div>
 
-      <div className="retail-action-container p-2 w-full">
-        <Button className="w-full" onClick={handleSave}>
+      <div className="retail_action_container flex gap-2 p-2 w-full">
+        <Button
+          className="w-fit"
+          onClick={() => {
+            setIsOpenAdvancePayment(true);
+          }}
+        >
+          Nâng cao
+        </Button>
+
+        <Button
+          className="w-full min-w-0"
+          onClick={() => {
+            handleSave();
+          }}
+        >
           Thanh toán
         </Button>
       </div>
+      <AdvanceRetailPayment
+        isOpen={isOpenAdvancePayment}
+        total={formatCurrency(
+          (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(2) || 0
+        )}
+        onClose={handleCloseAdvancePayment}
+        onSave={handleSave}
+      />
+
+      {contextHolder}
     </div>
   );
 };

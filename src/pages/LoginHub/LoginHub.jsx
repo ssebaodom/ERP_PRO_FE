@@ -4,6 +4,7 @@ import { Button, Form, Input, notification, Select, Space } from "antd";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { apiGetStoreByUser, refreshToken } from "../../api";
 import { apiGetUnitByUser } from "../../components/SystemOptions/API";
 import router from "../../router/routes";
 import { setClaims } from "../../store/reducers/claimsSlice";
@@ -14,11 +15,13 @@ import "./LoginHub.css";
 const LoginHub = () => {
   const [loginForm] = Form.useForm();
   const userName = Form.useWatch("userName", loginForm);
-  const dispatch = useDispatch();
-
+  const unit = Form.useWatch("DVCS", loginForm);
   const [unitOptions, setUnitOptions] = useState([]);
   const [initUnit, setInitUnit] = useState("");
   const [loading, setLoading] = useState(false);
+  const [storeOptions, setStoreOptions] = useState([]);
+
+  const dispatch = useDispatch();
 
   const fetchUnitsData = (data) => {
     setLoading(true);
@@ -36,12 +39,31 @@ const LoginHub = () => {
     });
   };
 
+  const fetchStoreDate = async () => {
+    setLoading(true);
+    await apiGetStoreByUser({
+      unitId: unit.trim() || "",
+      userName: userName,
+    }).then((res) => {
+      loginForm.setFieldValue("Store", _.first(res)?.ma_bp || null);
+
+      setStoreOptions([
+        ...res.map((item) => {
+          return {
+            value: item.ma_bp,
+            label: item.ten_bp,
+          };
+        }),
+      ]);
+      setLoading(false);
+    });
+  };
+
   const handleLogin = async (data) => {
     setLoading(true);
     await https
       .post("Authentication/Login", {
         ...data,
-        Store: "",
       })
       .then((res) => {
         if (typeof res.data == "string") {
@@ -65,11 +87,45 @@ const LoginHub = () => {
       });
   };
 
+  const handleQuickLogin = async () => {
+    const url = new URL(document.URL);
+    const urlsp = url.searchParams;
+    const token = encodeURI(urlsp.get("token"));
+    const refreshTokenParams = encodeURI(urlsp.get("refreshToken")).replaceAll(
+      "%20",
+      "+"
+    );
+
+    if (token && refreshTokenParams) {
+      await jwt.setRefreshToken(refreshTokenParams);
+      await jwt.setAccessToken(token);
+      await refreshToken()
+        .then((res) => {
+          jwt.setRefreshToken(res.refreshToken);
+          jwt.setAccessToken(res.token);
+          router.navigate("/RO/Reatailorder");
+        })
+        .catch((err) => {
+          jwt.resetAccessToken();
+          router.navigate("/login");
+        });
+    }
+  };
+
+  useEffect(() => {
+    handleQuickLogin();
+  }, []);
+
+  useEffect(() => {
+    if (unit) {
+      fetchStoreDate();
+    }
+  }, [unit]);
+
   useEffect(() => {
     if (userName) {
       fetchUnitsData(userName);
     }
-
     return () => {};
   }, [userName]);
 
@@ -154,6 +210,16 @@ const LoginHub = () => {
                   rules={[{ required: true, message: "Vui lòng chọn đơn vị" }]}
                 >
                   <Select className="w-full" options={unitOptions} />
+                </Form.Item>
+
+                <span>Cửa hàng: </span>
+                <Form.Item
+                  name="Store"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn cửa hàng" },
+                  ]}
+                >
+                  <Select className="w-full" options={storeOptions} />
                 </Form.Item>
               </Space>
 

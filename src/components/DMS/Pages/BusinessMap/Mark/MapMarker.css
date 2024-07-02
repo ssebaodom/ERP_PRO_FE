@@ -1,0 +1,21 @@
+.map__marker {
+    position: relative;
+    top: 40%;
+    left: 50%;
+    margin-left: -115px;
+
+    border-radius: 50% 50% 50% 0;
+    background: #fff;
+    width: 30px;
+    height: 30px;
+    transform: rotate(-45deg);
+
+}
+
+.map__marker>* {
+    color: #f58220;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+}

@@ -105,7 +105,7 @@ const FormSelectDetailv2 = ({
               showSearch
               placeholder={placeHolderCode}
               defaultActiveFirstOption={false}
-              showArrow={false}
+              suffixIcon={false}
               filterOption={false}
               optionLabelProp="value"
               notFoundContent={SelectNotFound(selectLoading, selectOptions)}

@@ -20,3 +20,8 @@
 .BaseTable__table-main {
     outline: none !important;
 }
+
+.BaseTable__header-cell-text {
+    width: 100%;
+    cursor: pointer;
+}

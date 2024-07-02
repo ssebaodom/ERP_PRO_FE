@@ -219,7 +219,7 @@ const ModalAddCustomerArea = (props) => {
                   flex: "none",
                 }}
                 defaultActiveFirstOption={false}
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 notFoundContent={SelectNotFound(selectLoading, provinceOptions)}
                 onSearch={(e) => {
@@ -255,7 +255,7 @@ const ModalAddCustomerArea = (props) => {
                   flex: "none",
                 }}
                 defaultActiveFirstOption={false}
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 notFoundContent={SelectNotFound(selectLoading, districtOptions)}
                 onSearch={(e) => {

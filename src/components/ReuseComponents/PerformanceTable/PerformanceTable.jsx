@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import BaseTable, { AutoResizer, Column } from "react-base-table";
 import "react-base-table/styles.css";
 import no_file from "../../../Icons/no_file.svg";
+import LoadingComponents from "../../Loading/LoadingComponents";
 import "./PerformanceTable.css";
 import SelectCell from "./SelectCell/SelectCell";
 import SelectCellHeader from "./SelectCell/SelectCellHeader";
@@ -11,6 +12,8 @@ const PerformanceTable = ({
   columns,
   data,
   onSelectedRowKeyChange,
+  reverseIndex,
+  isLoading,
 }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
@@ -50,7 +53,8 @@ const PerformanceTable = ({
 
   const _columns = [
     {
-      width: selectable ? 40 : 0,
+      width: selectable ? 60 : 0,
+      hidden: !selectable,
       flexShrink: 0,
       resizable: false,
       headerRenderer: ({ column }) => <SelectCellHeader column={column} />,
@@ -65,18 +69,18 @@ const PerformanceTable = ({
       selectedRowKeys,
     },
     {
-      width: 40,
-      flexShrink: 0,
+      width: 55,
       resizable: false,
       title: "STT",
       cellRenderer: ({ rowIndex, rowData }) => {
         const { id } = rowData;
 
         const newIndex = data.findIndex((item) => item.id === id);
-        return newIndex + 1;
+        return reverseIndex ? newIndex + 1 : rowIndex + 1;
       },
       key: "__rowNumber__",
       frozen: Column.FrozenDirection.LEFT,
+      align: "center",
     },
     ...columns,
   ];
@@ -94,6 +98,13 @@ const PerformanceTable = ({
               </div>
             </div>
           }
+          overlayRenderer={
+            <LoadingComponents
+              text={"Đang tải..."}
+              size={50}
+              loading={isLoading}
+            />
+          }
           headerClassName={"performance_table_header"}
           fixed
           width={width}
@@ -101,10 +112,11 @@ const PerformanceTable = ({
           columns={_columns}
           data={[...data].reverse()}
           rowClassName={renderSelectedRowsClass}
+          className="performance__table__Container"
         />
       )}
     </AutoResizer>
   );
 };
 
-export default PerformanceTable;
+export default memo(PerformanceTable);

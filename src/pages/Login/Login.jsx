@@ -14,9 +14,11 @@ import {
   Select,
   Space,
 } from "antd";
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
+import { apiGetStoreByUser } from "../../api";
 import router from "../../router/routes";
 import { setClaims } from "../../store/reducers/claimsSlice";
 import https from "../../utils/https";
@@ -25,13 +27,15 @@ import "./Login.css";
 
 const Login = () => {
   const [loginLoading, setLoginLoading] = useState(false);
-  const [user_Name, set_User_Name] = useState("");
-  const [password, set_Password] = useState("");
-  const [units, set_Units] = useState([{ value: "", label: "Không" }]);
-  const [unitSelected, set_UnitSelected] = useState({
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [units, setUnits] = useState([{ value: "", label: "Không" }]);
+  const [unitSelected, setUnitSelected] = useState({
     value: "",
     label: "Không",
   });
+  const [storeOptions, setStoreOptions] = useState([]);
+  const [selectedStoreId, setSelectedStoreId] = useState(null);
 
   const dispatch = useDispatch();
   const handleLoginButton = async () => {
@@ -44,12 +48,21 @@ const Login = () => {
         icon: <UilExclamationOctagon size="25" color="#ffba00" />,
       });
     }
+
+    if (!selectedStoreId) {
+      setLoginLoading(false);
+      return notification.warning({
+        message: `Vui lòng chọn cửa hàng`,
+        placement: "topLeft",
+        icon: <UilExclamationOctagon size="25" color="#ffba00" />,
+      });
+    }
     await https
       .post("Authentication/Login", {
-        userName: user_Name,
+        userName: userName,
         password: password,
         DVCS: unitSelected.value.toString().trim(),
-        Store: "",
+        Store: selectedStoreId,
       })
       .then((res) => {
         setLoginLoading(false);
@@ -79,16 +92,42 @@ const Login = () => {
   };
 
   const handleInputUserName = useDebouncedCallback((userName) => {
-    set_User_Name((value) => {
+    setUserName((value) => {
       return (value = userName);
     });
-  }, 500);
+  }, 300);
+
+  const fetchStoreDate = async () => {
+    setLoginLoading(true);
+    await apiGetStoreByUser({
+      unitId: unitSelected?.value.trim() || "",
+      userName: userName,
+    }).then((res) => {
+      setLoginLoading(false);
+      setSelectedStoreId(_.first(res)?.ma_bp);
+      setStoreOptions([
+        ...res.map((item) => {
+          return {
+            value: item.ma_bp,
+            label: item.ten_bp,
+          };
+        }),
+      ]);
+    });
+  };
+
+  useEffect(() => {
+    if (unitSelected?.value) {
+      fetchStoreDate();
+    }
+  }, [unitSelected]);
 
   useEffect(() => {
     const getUnits = async () => {
+      setLoginLoading(true);
       await https
         .get("Authentication/DVCS", {
-          username: user_Name,
+          username: userName,
         })
         .then((res) => {
           if (res.data) {
@@ -96,21 +135,23 @@ const Login = () => {
             res.data.map((item) => {
               return new_Units.push({ value: item.dvcsCode, label: item.name });
             });
-            set_Units(new_Units);
-            set_UnitSelected(new_Units[0]);
+            setUnits(new_Units);
+            setUnitSelected(new_Units[0]);
+            setLoginLoading(false);
           } else {
-            set_Units([{ value: "", label: "Không" }]);
-            set_UnitSelected({ value: "", label: "Không" });
+            setUnits([{ value: "", label: "Không" }]);
+            setUnitSelected({ value: "", label: "Không" });
           }
         });
     };
-    if (user_Name) {
+
+    if (userName) {
       getUnits();
     } else {
-      set_Units([{ value: "", label: "Không" }]);
-      set_UnitSelected({ value: "", label: "Không" });
+      setUnits([{ value: "", label: "Không" }]);
+      setUnitSelected({ value: "", label: "Không" });
     }
-  }, [user_Name]);
+  }, [userName]);
 
   useEffect(() => {
     if (jwt.checkExistToken()) {
@@ -120,12 +161,12 @@ const Login = () => {
   }, [dispatch]);
 
   const handleChangeUnit = (item) => {
-    set_UnitSelected(units.find((unit) => unit.value == item));
+    setUnitSelected(units.find((unit) => unit.value == item));
   };
 
   const images = [
     {
-      url: "https://static.businessworld.in/article/article_extra_large_image/1641064057_htx5x8_30495_min.jpg",
+      url: "https://izisolution.vn/upload/2021/Kinh-nghiem-trien-khai-phan-mem-erp.jpg",
       alt: "",
     },
     {
@@ -156,7 +197,7 @@ const Login = () => {
           <div className="login_logo_container">
             <UilAnalysis
               className="login_logo_company_logo"
-              size="70"
+              size="50"
               color="#1677ff"
             />
             <span className="login_logo_company_name">
@@ -202,7 +243,7 @@ const Login = () => {
                     width: "100%",
                     padding: "10px 8px",
                   }}
-                  onChange={(e) => set_Password(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="default_input"
                   size="large"
                   placeholder="Nhập mật khẩu"
@@ -222,6 +263,17 @@ const Login = () => {
                 value={unitSelected}
                 options={units}
                 onSelect={handleChangeUnit}
+              />
+
+              <span>Cửa hàng</span>
+
+              <Select
+                value={selectedStoreId}
+                onSelect={(e) => setSelectedStoreId(e)}
+                className="default_select w-full"
+                size="large"
+                placeholder="Cửa hàng"
+                options={storeOptions}
               />
             </Space>
 
@@ -246,6 +298,7 @@ const Login = () => {
             <Space direction="vertical" className="default_space login_tools">
               <Form.Item>
                 <Button
+                  size="large"
                   className="default_button"
                   type="primary"
                   htmlType="submit"

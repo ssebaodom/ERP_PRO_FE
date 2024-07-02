@@ -25,3 +25,7 @@ export const getCurrentImagesList = (state) => {
 export const getCurrentImageIndex = (state) => {
   return state.imagesListReducer.currentImageIndex;
 };
+
+export const getBusinessMapState = (state) => {
+  return state.businessMapReducer;
+};

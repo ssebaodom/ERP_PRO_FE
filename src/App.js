@@ -1,4 +1,3 @@
-import "@goongmaps/goong-js/dist/goong-js.css";
 import { useSelector } from "react-redux";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import "./App.css";

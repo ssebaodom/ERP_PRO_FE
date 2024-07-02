@@ -55,7 +55,7 @@ body {
 }
 
 .primary_text_color {
-  color: var(--light_blue);
+  color: var(--light_blue) !important;
 }
 
 .main_text_color {
@@ -345,6 +345,7 @@ body {
 }
 
 .page_2_side_default {
+  gap: 1rem !important;
   display: flex;
   flex-direction: row;
   padding: 0px 10px;
@@ -417,7 +418,7 @@ body {
   flex: 0.2;
   flex-shrink: 0;
   border-radius: 10px 0px 0px 0px;
-  padding: 10px 0px 0px 0px;
+  padding: 10px 10px 0px 10px;
   background-color: rgba(255, 255, 255, 0.6);
 }
 
@@ -444,7 +445,7 @@ body {
 }
 
 .page_2_side_default_right_details {
-  overflow: scroll;
+  overflow: auto;
   height: 100%;
 }
 
@@ -615,10 +616,18 @@ body {
 
 .default_table {}
 
+
+.default_table .ant-table-container {
+  height: 100%;
+}
+
+.default_table .ant-table-content {
+  height: 100%;
+}
+
 .default_table .ant-table-column-sorter {
   flex-shrink: 0;
 }
-
 
 .default_table .ant-table-column-sort {
   background: unset !important;
@@ -649,6 +658,7 @@ body {
 
 .default_table .ant-table {
   overflow-x: auto;
+  scrollbar-color: auto !important;
 }
 
 .default_table table {
@@ -1168,5 +1178,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.5) !important;
-
 }

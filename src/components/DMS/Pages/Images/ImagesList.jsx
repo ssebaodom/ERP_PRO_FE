@@ -65,6 +65,23 @@ const ImagesList = () => {
       setLoading(true);
     }
   };
+  // const getdata = async () => {
+  //   setLoading(true);
+  //   await multipleTablePutApi({
+  //     store: "Api_Get_Images_Category",
+  //     param: {
+  //       DateFrom: dayjs().add(-12, "month"),
+  //       DateTo: dayjs(),
+  //       keywords: "",
+  //       unitId,
+  //       album: "",
+  //       userId,
+  //     },
+  //     data: {},
+  //   }).then((res) => {
+  //     console.log(res.data);
+  //   });
+  // };
 
   const getdata = async () => {
     setLoading(true);
@@ -179,7 +196,7 @@ const ImagesList = () => {
               <Select
                 allowClear={true}
                 className="default_select w-full"
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 showSearch
                 options={unitOptions}
@@ -198,7 +215,7 @@ const ImagesList = () => {
               <Select
                 allowClear={true}
                 className="default_select w-full"
-                showArrow={false}
+                suffixIcon={false}
                 filterOption={false}
                 showSearch
                 onChange={(item) => {
@@ -224,6 +241,27 @@ const ImagesList = () => {
       </div>
 
       <div className="images_list">
+        {/* <div className="dashboard__simple__chart__items__container">
+          {data.map((item, index) => {
+            return (
+              <div key={index} className="p-3">
+                <Link
+                  to={`/images/gallary?month=2024/04`}
+                  className="no-underline"
+                >
+                  <div className="text-center">
+                    <FolderOpenTwoTone
+                      twoToneColor={"#F58220"}
+                      style={{ fontSize: 170, fontWeight: "lighter" }}
+                    />
+                    <p className="primary_bold_text">Tháng: 4/2024</p>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
+        </div> */}
+
         {data.map((item, index) => {
           return (
             <div

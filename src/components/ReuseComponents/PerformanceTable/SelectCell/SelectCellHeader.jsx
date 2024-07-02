@@ -3,7 +3,7 @@ import React, { memo } from "react";
 
 const SelectCellHeader = ({ column }) => {
   const { selectedRowKeys, dataLength } = column;
-  const checked = selectedRowKeys.length === dataLength;
+  const checked = selectedRowKeys.length === dataLength && dataLength !== 0;
 
   const handleChange = (e) => {
     const { onSelectAll } = column;

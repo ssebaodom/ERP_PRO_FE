@@ -15,11 +15,48 @@ const TransferHub = () => {
   const [qrSource, setQrSource] = useLocalStorage("QRimg", "");
   const [isTransfering, setIsTransfering] = useState(false);
   const [isSucceded, setIsSucceded] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const handleCloseModal = () => {
     setIsTransfering(false);
     setIsSucceded(false);
     setQrSource("");
+  };
+
+  const handleFullScreen = () => {
+    console.log("click dô bút từn");
+
+    if (
+      (document.fullScreenElement !== undefined &&
+        document.fullScreenElement === null) ||
+      (document.msFullscreenElement !== undefined &&
+        document.msFullscreenElement === null) ||
+      (document.mozFullScreen !== undefined && !document.mozFullScreen) ||
+      (document.webkitIsFullScreen !== undefined &&
+        !document.webkitIsFullScreen)
+    ) {
+      if (document.body.requestFullScreen) {
+        document.body.requestFullScreen();
+      } else if (document.body.mozRequestFullScreen) {
+        document.body.mozRequestFullScreen();
+      } else if (document.body.webkitRequestFullScreen) {
+        document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+      } else if (document.body.msRequestFullscreen) {
+        document.body.msRequestFullscreen();
+      }
+      setIsFullScreen(true);
+    } else {
+      if (document.cancelFullScreen || !document.fullscreenElement) {
+        document.cancelFullScreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullScreen(false);
+    }
   };
 
   useEffect(() => {
@@ -50,8 +87,21 @@ const TransferHub = () => {
     };
   }, []);
 
+  useEffect(() => {
+    console.log(isFullScreen);
+    return () => {};
+  }, [isFullScreen]);
+
   return (
-    <div>
+    <div onClick={handleFullScreen} className="relative">
+      <div
+        className={`transfer_fullScreen_warning ${
+          isFullScreen ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <span>Click vào trang để mở toàn màn hình</span>
+      </div>
+
       <Carousel
         fade
         pauseOnHover={false}

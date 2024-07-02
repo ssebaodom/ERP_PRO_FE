@@ -1,4 +1,13 @@
-import { Button, Col, Form, Input, message, Popover, Row, Tooltip } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  message as messageAPI,
+  Popover,
+  Row,
+  Tooltip,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { KeyFormatter } from "../../../../../app/Options/KeyFormatter";
@@ -12,6 +21,7 @@ import { SoFuckingUltimateGetApi } from "../../../../DMS/API";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
 
 const AddCustomerPopup = ({ onSave }) => {
+  const [message, contextHolder] = messageAPI.useMessage();
   const [form] = Form.useForm();
   const [openState, setOpenState] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +37,12 @@ const AddCustomerPopup = ({ onSave }) => {
       if (res?.responseModel?.isSucceded) {
         message.success(`Thực hiện thành công`);
         handleClosePopup();
-        if (onSave) await onSave(data);
+        if (onSave)
+          await onSave({
+            ma_kh: data?.ma_kh,
+            ten_kh: data?.ten_kh,
+            dien_thoai: data?.dien_thoai,
+          });
       } else {
         message.warning(res?.responseModel?.message);
       }
@@ -64,13 +79,17 @@ const AddCustomerPopup = ({ onSave }) => {
     await SoFuckingUltimateGetApi({
       store: "api_Check_valid_value",
       data: { value: user_name, key: "dmkh" },
-    }).then((res) => {
-      if (res?.data[0]?.validation === 1) {
-        valid = false;
-      } else {
-        valid = true;
-      }
-    });
+    })
+      .then((res) => {
+        if (res?.data[0]?.validation === 1) {
+          valid = false;
+        } else {
+          valid = true;
+        }
+      })
+      .catch((err) => {
+        console.log("owsc ớc");
+      });
     return valid;
   };
 
@@ -240,21 +259,25 @@ const AddCustomerPopup = ({ onSave }) => {
   };
 
   return (
-    <Popover
-      onOpenChange={handlePopupchange}
-      destroyTooltipOnHide={true}
-      placement="bottomLeft"
-      content={popoverContent()}
-      trigger="click"
-      open={openState}
-    >
-      <Button className="default_button shadow_3">
-        <i
-          className="pi pi-user-plus sub_text_color"
-          style={{ fontWeight: "bold" }}
-        ></i>
-      </Button>
-    </Popover>
+    <>
+      {contextHolder}
+
+      <Popover
+        onOpenChange={handlePopupchange}
+        destroyTooltipOnHide={true}
+        placement="bottomLeft"
+        content={popoverContent()}
+        trigger="click"
+        open={openState}
+      >
+        <Button className="default_button shadow_3">
+          <i
+            className="pi pi-user-plus sub_text_color"
+            style={{ fontWeight: "bold" }}
+          ></i>
+        </Button>
+      </Popover>
+    </>
   );
 };
 

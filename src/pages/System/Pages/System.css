@@ -23,9 +23,10 @@
 }
 
 .system__right__side {
+    border-radius: 0.25rem !important;
     flex: 0.75;
-    padding: 16px;
-    overflow-y: scroll;
+    padding: 0px;
+    overflow-y: auto;
     overflow-x: hidden;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
