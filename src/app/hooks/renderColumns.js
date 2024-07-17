@@ -4,6 +4,7 @@ import React from "react";
 import { shallowEqual } from "react-redux";
 import ImageListColumn from "../../components/ReuseComponents/ImageListColumn/ImageListColumn";
 import { datetimeFormat } from "../Options/DataFomater";
+import { formatCurrency } from "./dataFormatHelper";
 
 const renderColumns = (columns = [], sorter) => {
   let layout = [];
@@ -43,8 +44,13 @@ const renderColumns = (columns = [], sorter) => {
           if (dayjs(data).isValid()) {
             return dayjs(data).format(datetimeFormat);
           }
-          return "Không có dữ liệu";
+          return "";
         }
+
+        if (item.type === "Numeric") {
+          return formatCurrency(data);
+        }
+
         if (item.type === "Boolean") {
           return <Checkbox checked={data}></Checkbox>;
         }

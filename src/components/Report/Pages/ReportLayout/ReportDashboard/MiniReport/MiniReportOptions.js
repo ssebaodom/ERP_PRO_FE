@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../../../../../app/hooks/dataFormatHelper";
 import { CHARTCOLORS } from "../../../../../../utils/constants";
 
 export const getMiniBarReportOptions = (title = [], value = []) => {
@@ -8,6 +9,9 @@ export const getMiniBarReportOptions = (title = [], value = []) => {
       bottom: 0,
       top: 20,
       containLabel: true,
+    },
+    textStyle: {
+      fontFamily: "'Lexend Deca', sans-serif",
     },
     tooltip: {
       trigger: "item",
@@ -39,34 +43,38 @@ export const getMiniBarReportOptions = (title = [], value = []) => {
         },
         colorBy: "data",
         color: CHARTCOLORS,
-        markLine: {
-          silent: true,
-          symbolSize: 6,
-          label: {
-            show: false,
-          },
-          lineStyle: {
-            type: "dashed",
-            color: "#1A4898",
-            width: 1, // Độ dày của nét đứt
-          },
-          data: [
-            [
-              {
-                type: "min",
-              },
-              {
-                type: "max",
-              },
-            ],
-          ],
-        },
+        // markLine: {
+        //   silent: true,
+        //   symbolSize: 6,
+        //   label: {
+        //     show: false,
+        //   },
+        //   lineStyle: {
+        //     type: "dashed",
+        //     color: "#1A4898",
+        //     width: 1, // Độ dày của nét đứt
+        //   },
+        //   data: [
+        //     [
+        //       {
+        //         type: "max",
+        //       },
+        //       {
+        //         type: "min",
+        //       },
+        //     ],
+        //   ],
+        // },
+        barWidth: "50",
       },
     ],
     label: {
       show: true, // Hiển thị nhãn
-      position: "inside", // Vị trí: trên thanh
-      color: "#fff",
+      position: "top", // Vị trí: trên thanh
+      color: "#000",
+      formatter: function (params) {
+        return `${formatCurrency(params?.data)}`;
+      },
     },
   };
 };
@@ -74,13 +82,18 @@ export const getMiniBarReportOptions = (title = [], value = []) => {
 export const lineOptions = {};
 
 export const getMinicircleOptions = (data) => {
+  console.log("data", data);
   return {
     tooltip: {
       trigger: "item",
       formatter: function (params) {
         return `${params.marker} ${params.name} 
-               <span class="text-float-left ml-2 primary_bold_text">${params.value} - </span>
-               <span class="text-float-right primary_bold_text">${params.percent}%</span>`;
+               <span class="text-float-left ml-2 primary_bold_text">${formatCurrency(
+                 params.value
+               )} - </span>
+               <span class="text-float-right primary_bold_text">${
+                 params.percent
+               }%</span>`;
       },
       textStyle: {
         fontFamily: "'Lexend Deca', sans-serif",

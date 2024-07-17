@@ -13,6 +13,9 @@ const initial = {
     pageIndex: 1,
     pageSize: 10,
   },
+  isFormLoading: false,
+  isOpenPromotion: false,
+  isPromotionLoading: false,
 };
 
 const retailOrderSlice = createSlice({
@@ -21,6 +24,18 @@ const retailOrderSlice = createSlice({
   reducers: {
     setCurrentOrder: (state, action) => {
       state.currentOrder = action?.payload;
+    },
+
+    setIsOpenPromotion: (state, action) => {
+      state.isOpenPromotion = action?.payload;
+    },
+
+    setIsPromotionLoading: (state, action) => {
+      state.isPromotionLoading = action?.payload;
+    },
+
+    setIsFormLoading: (state, action) => {
+      state.isFormLoading = action?.payload;
     },
 
     setIsScanning: (state, action) => {

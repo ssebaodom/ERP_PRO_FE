@@ -3,7 +3,7 @@ import {
   EyeTwoTone,
   UserOutlined,
 } from "@ant-design/icons";
-import { UilAnalysis, UilExclamationOctagon } from "@iconscout/react-unicons";
+import { UilExclamationOctagon } from "@iconscout/react-unicons";
 import {
   Button,
   Carousel,
@@ -67,7 +67,7 @@ const Login = () => {
       .then((res) => {
         setLoginLoading(false);
         if (typeof res.data == "string") {
-          if (res?.data?.toLowerCase()?.includes("login failed")) {
+          if (res?.status == 203) {
             return notification.warning({
               message: `Sai tài khoản hoặc mật khẩu`,
               placement: "topLeft",
@@ -97,7 +97,7 @@ const Login = () => {
     });
   }, 300);
 
-  const fetchStoreDate = async () => {
+  const fetchStoreData = async () => {
     setLoginLoading(true);
     await apiGetStoreByUser({
       unitId: unitSelected?.value.trim() || "",
@@ -118,11 +118,16 @@ const Login = () => {
 
   useEffect(() => {
     if (unitSelected?.value) {
-      fetchStoreDate();
+      fetchStoreData();
     }
   }, [unitSelected]);
 
   useEffect(() => {
+    setUnits([{ value: "", label: "Không" }]);
+    setUnitSelected({ value: "", label: "Không" });
+    setStoreOptions([{ value: "", label: "Không" }]);
+    setSelectedStoreId("");
+
     const getUnits = async () => {
       setLoginLoading(true);
       await https
@@ -137,11 +142,11 @@ const Login = () => {
             });
             setUnits(new_Units);
             setUnitSelected(new_Units[0]);
-            setLoginLoading(false);
           } else {
             setUnits([{ value: "", label: "Không" }]);
             setUnitSelected({ value: "", label: "Không" });
           }
+          setLoginLoading(false);
         });
     };
 
@@ -151,7 +156,7 @@ const Login = () => {
       setUnits([{ value: "", label: "Không" }]);
       setUnitSelected({ value: "", label: "Không" });
     }
-  }, [userName]);
+  }, [JSON.stringify(userName)]);
 
   useEffect(() => {
     if (jwt.checkExistToken()) {
@@ -195,11 +200,6 @@ const Login = () => {
           onFinish={onEnoughInfo}
         >
           <div className="login_logo_container">
-            <UilAnalysis
-              className="login_logo_company_logo"
-              size="50"
-              color="#1677ff"
-            />
             <span className="login_logo_company_name">
               SS<span style={{ color: "#F57A20" }}>E</span>
             </span>

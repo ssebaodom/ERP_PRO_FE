@@ -45,19 +45,6 @@
 }
 
 
-.well-marker {
-    color: rgb(255, 255, 255);
-    background: #19c822;
-    border-radius: 50%;
-    padding: 5px;
-    width: 5px;
-    height: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-
 
 @keyframes breathing {
     0% {

@@ -15,6 +15,7 @@ const claims = createSlice({
       id: 0,
     },
     isBackgound: false,
+    isHideNav: false,
   },
   reducers: {
     setClaims(state, action) {
@@ -36,9 +37,14 @@ const claims = createSlice({
     setText(state, action) {
       state.textTest = action?.payload;
     },
+
+    setIsHideNav(state, action) {
+      state.isHideNav = action?.payload;
+    },
   },
 });
 
 const claimsReducer = claims.reducer;
 export default claimsReducer;
-export const { setClaims, setText, setIsBackgrouds } = claims.actions;
+export const { setClaims, setText, setIsBackgrouds, setIsHideNav } =
+  claims.actions;

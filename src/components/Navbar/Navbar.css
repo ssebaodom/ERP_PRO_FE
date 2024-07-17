@@ -12,6 +12,14 @@
 }
 
 
+.navbar.hiden {
+    padding: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+
 .navbar .navbar_logo_functions {
     display: flex;
     justify-content: center;

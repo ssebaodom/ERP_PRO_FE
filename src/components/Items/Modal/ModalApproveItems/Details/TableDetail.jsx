@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
-  useState
+  useState,
 } from "react";
 import addNewRow from "../../../../../app/hooks/addNewRow";
 import getChangedTableRow from "../../../../../app/hooks/getChangedTableRow";
@@ -218,7 +218,6 @@ const TableDetail = ({ masterForm, data, Tablecolumns, Action }, ref) => {
             flex: "none",
           }}
         >
-
           <Tooltip placement="topLeft" title="Thêm dòng">
             <Button
               className="default_primary_detail_button"

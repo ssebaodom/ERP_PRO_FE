@@ -13,3 +13,7 @@
     border-radius: 6px;
     overflow: hidden;
 }
+
+.BaseTable__row-cell .ant-select-selection-item {
+    padding-inline-end: 0px !important;
+}

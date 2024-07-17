@@ -1,6 +1,6 @@
-import CheckinReport from "../components/Report/Pages/CheckinReport/CheckinReport";
-import LocationReport from "../components/Report/Pages/LocationReport/LocationReport";
 import ReportLayout from "../components/Report/Pages/ReportLayout/ReportLayout";
+import SaleInvoiceReport from "../components/Report/Pages/SaleInvoiceReport/SaleInvoiceReport";
+import SaleSummaryReport from "../components/Report/Pages/SaleSummaryReport/SaleSummaryReport";
 
 const reportsRoute = [
   {
@@ -10,18 +10,19 @@ const reportsRoute = [
     element: <ReportLayout />,
     children: [
       {
-        label: "Báo cáo viếng thăm",
-        claims: "Permissions.reports.checkinReport",
-        path: "checkin",
+        label: "Bảng kê hoá đơn bán hàng",
+        claims: "Permissions.reports.orderList",
+        path: "rptOrderList",
         children: [],
-        element: <CheckinReport />,
+        element: <SaleInvoiceReport />,
       },
+
       {
-        label: "Báo cáo vị trí",
-        claims: "Permissions.reports.locationReport",
-        path: "locationReport",
+        label: "Tổng hợp bán hàng",
+        claims: "Permissions.reports.saleSummary",
+        path: "rptSalesSummary",
         children: [],
-        element: <LocationReport />,
+        element: <SaleSummaryReport />,
       },
     ],
   },

@@ -1,7 +1,7 @@
 import {
   CheckCircleTwoTone,
   CloseCircleTwoTone,
-  LoadingOutlined
+  LoadingOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -9,23 +9,37 @@ import {
   Input,
   InputNumber,
   message as messageAPI,
+  notification,
   Spin,
-  Switch
+  Switch,
 } from "antd";
 import _ from "lodash";
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
+import { useReactToPrint } from "react-to-print";
 import { useDebouncedCallback } from "use-debounce";
 import useLocalStorage from "use-local-storage";
 import {
   getAllRowKeys,
-  getAllValueByRow
+  getAllValueByRow,
 } from "../../../../../app/Functions/getTableValue";
 import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import { num2words } from "../../../../../app/Options/DataFomater";
 import { getUserInfo } from "../../../../../store/selectors/Selectors";
+import emitter from "../../../../../utils/emitter";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
 import AdvanceRetailPayment from "../../../Modals/AdvanceRetailPayment/AdvanceRetailPayment";
+import PrintComponent from "../../../Modals/PrintRetailModal/PrintComponent/PrintComponent";
+import RetailPaymentConfirm from "../../../Modals/RetailPaymentConfirm/RetailPaymentConfirm";
+import { modifyIsFormLoading } from "../../../Store/Actions/RetailOrderActions";
+import { getRetailOrderState } from "../../../Store/Selectors/RetailOrderSelectors";
 
 import AddCustomerPopup from "../AddCustomerPopup/AddCustomerPopup";
 
@@ -35,11 +49,28 @@ const RetailPaidInfo = ({
   paymentInfo,
   onChangeCustomer,
   onResetForm,
+  cantSave,
 }) => {
   const [message, contextHolder] = messageAPI.useMessage();
+  const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");
+  const [retailOrderData, setRetailOrderData] = useLocalStorage(
+    "CUSTOMER_RETAILORDER_DATA",
+    null
+  );
+  const noteRef = useRef("");
+
+  const [printMaster, setPrintMaster] = useState({});
+  const [printDetail, setPrintDetail] = useState([]);
+
+  var printContent = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => printContent.current,
+    documentTitle: "Print This Document",
+    copyStyles: false,
+  });
 
   const [paymentData, setPaymentData] = useState({});
-  const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");
+
   const [change, setChange] = useState(0);
   const [voucher, setVoucher] = useState({
     voucherId: "",
@@ -54,36 +85,69 @@ const RetailPaidInfo = ({
   });
   const [isUsePoint, setIsUsePoint] = useState(false);
   const [isOpenAdvancePayment, setIsOpenAdvancePayment] = useState(false);
+  const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
+  const { isFormLoading } = useSelector(getRetailOrderState);
   const { id: userId, storeId, unitId } = useSelector(getUserInfo);
+
+  //Chuẩn bị dữ liệu
+  const prepareOrderData = (paymentMethods, paymentMethodInfo) => {
+    const data = { ...itemForm.getFieldsValue() };
+    const masterData = {
+      ...paymentData,
+      ...paymentMethodInfo,
+      tien_mat: paymentMethods
+        ? paymentMethodInfo?.tien_mat
+        : paymentData?.tong_tt,
+      httt: paymentMethods || "tien_mat",
+      dien_giai: noteRef?.current?.resizableTextArea?.textArea?.value || "",
+    };
+
+    const detailData = [];
+
+    getAllRowKeys(data).map((item) => {
+      return detailData.push(getAllValueByRow(item, data));
+    });
+
+    return [masterData, detailData];
+  };
+
+  //Hiển thị xác nhận lưu phiếu
+  const handleShowCustomerViewDialog = async () => {
+    const RETAILDATA = await prepareOrderData();
+    setRetailOrderData(JSON.stringify(RETAILDATA));
+  };
+
+  //Ẩn xác nhận lưu phiếu
+  const handleHideCustomerViewDialog = useCallback(async () => {
+    setRetailOrderData(JSON.stringify(""));
+  }, []);
 
   // Lưu phiếu
   const handleSave = useCallback(
     async (paymentMethods, paymentMethodInfo) => {
-      const data = { ...itemForm.getFieldsValue() };
-      const master = {
-        tien_mat: paymentMethods ? 0 : paymentData.tong_tt,
-        ...paymentData,
-        ...paymentMethodInfo,
-        httt: paymentMethods || "tien_mat",
-      };
+      modifyIsFormLoading(true);
 
-      const detailData = [];
+      const [master, detailData] = await prepareOrderData(
+        paymentMethods,
+        paymentMethodInfo
+      );
 
-      getAllRowKeys(data).map((item) => {
-        return detailData.push(getAllValueByRow(item, data));
-      });
-
-      console.log("master", master);
-      console.log("Detail", detailData);
+      if (change - paymentData?.tong_tt < 0 && !isOpenAdvancePayment) {
+        message.warning("Tiền thanh toán không đủ !");
+        modifyIsFormLoading(false);
+        return;
+      }
 
       if (_.isEmpty(detailData)) {
         message.warning("Vui lòng thêm vật tư !");
+        modifyIsFormLoading(false);
         return;
       }
 
       if (_.isEmpty(master?.ma_kh)) {
         message.warning("Mã khách hàng trống!");
+        modifyIsFormLoading(false);
         return;
       }
 
@@ -97,7 +161,9 @@ const RetailPaidInfo = ({
         );
       }
 
-      await multipleTablePutApi({
+      setIsShowConfirmDialog(false);
+
+      const result = await multipleTablePutApi({
         arandomnumber: Math.floor(Math.random() * 10000),
         store: "Api_create_retail_order",
         param: {
@@ -115,13 +181,52 @@ const RetailPaidInfo = ({
           ],
           detail: detailData,
         },
-      }).then((res) => {
-        console.log("res", res);
-        onResetForm();
-      });
+      })
+        .then((res) => {
+          if (res?.responseModel?.isSucceded) {
+            notification.success({
+              message: `Thực hiện thành công`,
+            });
+
+            onResetForm();
+
+            emitter.emit("HANDLE_RETAIL_ORDER_SAVE");
+            handleCloseAdvancePayment();
+            return _.first(res.listObject[0]);
+          } else {
+            notification.warning({
+              message: res?.responseModel?.message,
+            });
+            return null;
+          }
+        })
+        .catch((res) => {
+          return null;
+        });
+
+      // In phiếu
+      if (result && !_.isEmpty(result)) {
+        await multipleTablePutApi({
+          store: "api_get_infomation_print",
+          param: {
+            stt_rec: result?.stt_rec,
+          },
+          data: {},
+        }).then((res) => {
+          const data = res?.listObject || [];
+          setPrintMaster(_.first(data[0]));
+          setPrintDetail(data[1]);
+        });
+      }
+      modifyIsFormLoading(false);
     },
-    [paymentData, voucher]
+    [paymentData, voucher, change, isOpenAdvancePayment]
   );
+
+  //Tính toán tiền trả
+  const calculateBackMoney = useMemo(() => {
+    return change - paymentData?.tong_tt;
+  }, [paymentData, voucher, change]);
 
   // Xác thực voucher
   const handleFindVoucher = useDebouncedCallback(async (e) => {
@@ -199,14 +304,22 @@ const RetailPaidInfo = ({
     var finalPay = paymentInfo?.tong_tt;
     var tien_voucher = 0;
 
-    tien_voucher = voucher?.tl_ck
-      ? (voucher?.tl_ck * paymentInfo?.tong_tien) / 100
-      : voucher?.tien_ck;
+    tien_voucher = Number(
+      parseFloat(
+        voucher?.tl_ck
+          ? (voucher?.tl_ck * paymentInfo?.tong_tien) / 100
+          : voucher?.tien_ck
+      ).toFixed(2)
+    );
 
-    finalPay = finalPay - tien_voucher;
+    finalPay = Number(parseFloat(finalPay - tien_voucher).toFixed(2));
 
     if (isUsePoint) {
-      finalPay = finalPay - paymentInfo?.diem * paymentInfo?.quy_doi_diem;
+      finalPay = Number(
+        parseFloat(
+          finalPay - paymentInfo?.diem * paymentInfo?.quy_doi_diem
+        ).toFixed(2)
+      );
     }
 
     setPaymentData({
@@ -218,6 +331,7 @@ const RetailPaidInfo = ({
 
   const handleCloseAdvancePayment = useCallback(() => {
     setIsOpenAdvancePayment(false);
+    handleHideCustomerViewDialog();
   }, []);
 
   // Lắng nghe sự thay đổi tham số để tính toán
@@ -227,6 +341,18 @@ const RetailPaidInfo = ({
     }
     return () => {};
   }, [paymentInfo, isUsePoint, voucher]);
+
+  //Kiểm tra đã render lại phiếu chưa và in hoá đơn
+  useEffect(() => {
+    if (!_.isEmpty(printMaster)) {
+      handlePrint();
+    }
+
+    return () => {
+      setPrintMaster([]);
+      setPrintDetail([]);
+    };
+  }, [JSON.stringify(printMaster)]);
 
   useEffect(() => {
     return () => {
@@ -291,9 +417,8 @@ const RetailPaidInfo = ({
             </span>
             <span className="primary_bold_text line-height-16 white-space-normal">
               {formatCurrency(
-                (paymentData?.tong_tien / (paymentData?.ty_gia || 1)).toFixed(
-                  2
-                ) || 0
+                paymentData?.tong_tien / (paymentData?.ty_gia || 1),
+                paymentData?.ma_nt === "VND" ? 0 : 2
               )}
             </span>
           </div>
@@ -302,9 +427,8 @@ const RetailPaidInfo = ({
             <span className="w-6 flex-shrink-0">Tổng thuế:</span>
             <span className="primary_bold_text">
               {formatCurrency(
-                (paymentData?.tong_thue / (paymentData?.ty_gia || 1)).toFixed(
-                  2
-                ) || 0
+                paymentData?.tong_thue / (paymentData?.ty_gia || 1),
+                paymentData?.ma_nt === "VND" ? 0 : 2
               )}
             </span>
           </div>
@@ -313,9 +437,8 @@ const RetailPaidInfo = ({
             <span className="w-6 flex-shrink-0">Tổng chiết khấu:</span>
             <span className="primary_bold_text">
               {formatCurrency(
-                (paymentData?.tong_ck / (paymentData?.ty_gia || 1)).toFixed(
-                  2
-                ) || 0
+                paymentData?.tong_ck / (paymentData?.ty_gia || 1),
+                paymentData?.ma_nt === "VND" ? 0 : 2
               )}
             </span>
           </div>
@@ -360,9 +483,8 @@ const RetailPaidInfo = ({
             <span className="w-6 flex-shrink-0">Tiền voucher:</span>
             <span className="primary_bold_text">
               {formatCurrency(
-                (
-                  (paymentData?.tien_voucher || 0) / (paymentData?.ty_gia || 1)
-                ).toFixed(2) || 0
+                (paymentData?.tien_voucher || 0) / (paymentData?.ty_gia || 1),
+                paymentData?.ma_nt === "VND" ? 0 : 2
               )}
             </span>
           </div>
@@ -381,9 +503,8 @@ const RetailPaidInfo = ({
             <span className="w-6 flex-shrink-0">Thanh toán:</span>
             <span className="primary_bold_text">
               {formatCurrency(
-                (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(
-                  2
-                ) || 0
+                paymentData?.tong_tt / (paymentData?.ty_gia || 1),
+                paymentData?.ma_nt === "VND" ? 0 : 2
               )}
             </span>
           </div>
@@ -392,8 +513,10 @@ const RetailPaidInfo = ({
             <span className="w-6 flex-shrink-0">Bằng chữ:</span>
             <span className="primary_bold_text line-height-16 white-space-normal">
               {num2words(
-                parseInt(
-                  (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(2)
+                parseFloat(
+                  (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(
+                    paymentData?.ma_nt === "VND" ? 0 : 2
+                  )
                 ) || 0
               )}
             </span>
@@ -407,48 +530,75 @@ const RetailPaidInfo = ({
               className="w-full"
               placeholder="0"
               onChange={(e) => {
-                setChange(
-                  e - paymentData?.tong_tt < 0 ? 0 : e - paymentData?.tong_tt
-                );
+                setChange(e);
               }}
             />
           </div>
         </div>
 
         <div className="flex justify-content-between gap-2 align-items-center">
-          <span className="w-6 flex-shrink-0">Trả lại:</span>
+          <span className="w-6 flex-shrink-0 line-height-4">Trả lại:</span>
           <span className="primary_bold_text danger_text_color">
-            {formatCurrency(change)}
+            {formatCurrency(calculateBackMoney)}
           </span>
+        </div>
+
+        <div className="flex flex-column justify-content-between gap-2 ">
+          <span className="w-6 flex-shrink-0 line-height-4">Ghi chú:</span>
+          <Input.TextArea
+            ref={noteRef}
+            autoSize={{
+              minRows: 1,
+              maxRows: 3,
+            }}
+            style={{ resize: "none" }}
+          />
         </div>
       </div>
 
-      <div className="retail_action_container flex gap-2 p-2 w-full">
+      <div className="retail_action_container flex gap-2 p-2 w-full shadow-4">
         <Button
+          disabled={cantSave}
           className="w-fit"
           onClick={() => {
             setIsOpenAdvancePayment(true);
+            handleShowCustomerViewDialog();
           }}
         >
           Nâng cao
         </Button>
 
         <Button
+          type="primary"
           className="w-full min-w-0"
           onClick={() => {
-            handleSave();
+            setIsShowConfirmDialog(true);
+            handleShowCustomerViewDialog();
           }}
+          disabled={isFormLoading || cantSave}
         >
           Thanh toán
         </Button>
       </div>
       <AdvanceRetailPayment
         isOpen={isOpenAdvancePayment}
-        total={formatCurrency(
-          (paymentData?.tong_tt / (paymentData?.ty_gia || 1)).toFixed(2) || 0
-        )}
+        total={paymentData?.tong_tt / (paymentData?.ty_gia || 1)}
         onClose={handleCloseAdvancePayment}
         onSave={handleSave}
+      />
+
+      <RetailPaymentConfirm
+        onOk={handleSave}
+        isOpen={isShowConfirmDialog}
+        onClose={() => {
+          setIsShowConfirmDialog(false);
+          handleHideCustomerViewDialog();
+        }}
+      />
+      <PrintComponent
+        ref={printContent}
+        master={printMaster}
+        detail={printDetail}
       />
 
       {contextHolder}

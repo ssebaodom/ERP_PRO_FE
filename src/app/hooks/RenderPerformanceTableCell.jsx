@@ -37,7 +37,6 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData, rowData }) => {
   }, 600);
 
   const fetchItemUnitData = (ma_vt = "") => {
-    console.log("Fetchhing item unit data", ma_vt);
     lookupData({ controller: "dmqddvt_lookup", value: ma_vt });
   };
 

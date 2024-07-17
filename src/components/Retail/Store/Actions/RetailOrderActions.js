@@ -1,3 +1,7 @@
+import {
+  getAllRowKeys,
+  getAllValueByRow,
+} from "../../../../app/Functions/getTableValue";
 import store from "../../../../store";
 import { multipleTablePutApi } from "../../../SaleOrder/API";
 import { retailOrderActions } from "../Slices/RetailOrderSlice";
@@ -109,4 +113,75 @@ export const fetchRetailOderDetail = async (params) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+export const fetchRetailOderPromotion = async (data = [], customer = "") => {
+  try {
+    modifyIsLoadingPromotion(true);
+    const { id, unitId, storeId } = store.getState().claimsReducer.userInfo;
+
+    var lstItems = [];
+    var lstIds = [];
+    var lstStock = [];
+    var lstPrice = [];
+    var lstQuantity = [];
+    var listTotal = [];
+    const detailData = [];
+
+    getAllRowKeys(data).map((item) => {
+      return detailData.push({ id: item, ...getAllValueByRow(item, data) });
+    });
+
+    detailData.map((item) => {
+      if (!item.ck_yn) {
+        lstItems.push(item?.ma_vt);
+        lstIds.push(item?.id);
+        lstStock.push(item?.ma_kho);
+        lstPrice.push(item?.don_gia);
+        lstQuantity.push(item?.so_luong);
+        listTotal.push(item?.thanh_tien);
+      }
+      return true;
+    });
+
+    const result = await multipleTablePutApi({
+      store: "API_SSELIB$Voucher$Sales$Discount",
+      param: {
+        cLstItemPr: lstItems.join(","),
+        cLstQtyPr: lstQuantity.join(","),
+        cLstPricePr: lstPrice.join(","),
+        cLstMoneyPr: listTotal.join(","),
+        cLstSitePr: lstStock.join(","),
+        clistID: lstIds.join(","),
+        ma_kh: customer,
+        voucherCode: "HDL",
+        gt_vip_yn: 0,
+        storeId,
+        unitId,
+      },
+      data: {},
+    });
+
+    modifyIsLoadingPromotion(false);
+
+    return {
+      ckvt: result?.listObject[1] || [],
+      ckth: result?.listObject[2] || [],
+      cktd: result?.listObject[0] || [],
+    };
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const modifyIsFormLoading = async (params) => {
+  store.dispatch(retailOrderActions.setIsFormLoading(params));
+};
+
+export const modifyIsOpenPromotion = async (params) => {
+  store.dispatch(retailOrderActions.setIsOpenPromotion(params));
+};
+
+export const modifyIsLoadingPromotion = async (params) => {
+  store.dispatch(retailOrderActions.setIsPromotionLoading(params));
 };

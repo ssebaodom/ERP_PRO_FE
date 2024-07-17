@@ -1,23 +1,32 @@
 import { ShopOutlined } from "@ant-design/icons";
-import React from "react";
+import { AdvancedMarker } from "@vis.gl/react-google-maps";
+import React, { useCallback } from "react";
 import { setCustomerSelected } from "../../../Store/Sagas/BusinessMapActions";
 import "./MapMarker.css";
 
-const MapMarker = ({ id, title = "", children }) => {
+const MapMarker = ({ id, position, setMarkerRef, children }) => {
   const handleMarkerClick = () => {
-    setCustomerSelected(id);
+    setCustomerSelected(id, position);
   };
 
+  const ref = useCallback(
+    (marker: google.maps.marker.AdvancedMarkerElement) =>
+      setMarkerRef(marker, id),
+    [setMarkerRef, id]
+  );
+
   return (
-    <div className="cursor-pointer" onClick={handleMarkerClick}>
-      {children ? (
-        children
-      ) : (
-        <div className="map__marker">
-          <ShopOutlined style={{ fontSize: "20px" }} />
-        </div>
-      )}
-    </div>
+    <AdvancedMarker position={position} ref={ref} onClick={handleMarkerClick}>
+      <div className="cursor-pointer map__marker shadow-4">
+        {children ? (
+          children
+        ) : (
+          <div>
+            <ShopOutlined style={{ fontSize: "20px" }} />
+          </div>
+        )}
+      </div>
+    </AdvancedMarker>
   );
 };
 

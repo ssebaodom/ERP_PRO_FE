@@ -47,6 +47,7 @@ const MiniReport = ({
   const barDataProcess = (data = []) => {
     const names = _.first(data).map((item) => item.name);
     const arrValue = _.first(data).map((item) => item.value);
+
     setValues(arrValue);
     setLabels(names);
   };
@@ -145,8 +146,8 @@ const MiniReport = ({
           <ReactECharts
             style={{ width: "100%" }}
             option={getMiniBarReportOptions(
-              _.isEmpty ? ["Không"] : labels,
-              _.isEmpty ? [0] : values
+              _.isEmpty(labels) ? ["Không"] : labels,
+              _.isEmpty(values) ? [0] : values
             )}
           />
         );

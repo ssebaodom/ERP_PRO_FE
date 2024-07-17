@@ -69,8 +69,8 @@ const RetailOrderListModal = ({ isOpen, onClose }) => {
     const result = await fetchRetailOderList({
       ...fetchListParams,
       userId,
-      storeId: "CH01",
-      unitId: "CTY",
+      storeId,
+      unitId,
     });
 
     setData(result?.data || []);
@@ -90,7 +90,6 @@ const RetailOrderListModal = ({ isOpen, onClose }) => {
 
     setTotalRecord(_.first(result?.pagination)?.totalRecord || 0);
 
-    console.log("fetched data::::", result);
     setIsLoading(false);
   };
 
@@ -165,11 +164,7 @@ const RetailOrderListModal = ({ isOpen, onClose }) => {
                   });
                 }}
                 format={datetimeFormat}
-                defaultValue={() => {
-                  return getValueParam(key)
-                    ? dayjs(getValueParam(key), datetimeFormat)
-                    : null;
-                }}
+                defaultValue={dayjs()}
                 className="w-full"
                 placeholder="Ngày nè"
               />
@@ -282,16 +277,19 @@ const RetailOrderListModal = ({ isOpen, onClose }) => {
                   setFetchListParams({ pageIndex: e });
                 }}
                 total={totalRecord}
+                showSizeChanger={false}
               />
             </div>
           </div>
         </Skeleton>
       </div>
+
       <DetailRetailViewer
         isOpen={isShowDetail}
         itemKey={curItemShow}
         onClose={modifyShowDetail}
       />
+
       <PrintRetailModal
         item={curItemShow}
         onClose={modifyPrintModalVisible}

@@ -10,6 +10,9 @@
   --warnning: #F57A20;
   --info: #4779CF;
   --primary_color: #F58220;
+
+
+  background-color: #f4f5fa;
 }
 
 @font-face {
@@ -30,6 +33,11 @@
   font-family: 'Lexend Deca', sans-serif;
 }
 
+
+text {
+  font-size: revert-layer !important;
+}
+
 img,
 picture,
 svg,
@@ -37,7 +45,7 @@ video,
 path {
   display: block;
   max-width: 100%;
-  font-size: unset;
+  font-size: unset !important;
 }
 
 input {
@@ -46,6 +54,10 @@ input {
 
 body {
   overflow-y: hidden;
+}
+
+body>iframe {
+  display: none;
 }
 
 
@@ -60,6 +72,10 @@ body {
 
 .main_text_color {
   color: #0C122F !important;
+}
+
+.gray_text_color {
+  color: #bbb !important;
 }
 
 .dark_grey_text_color {
@@ -348,11 +364,10 @@ body {
   gap: 1rem !important;
   display: flex;
   flex-direction: row;
-  padding: 0px 10px;
+  padding: 10px;
   border-radius: 10px;
   height: 100%;
-  padding-top: 10px;
-  padding-bottom: 20px;
+  min-height: 0px;
 }
 
 .default_table_row td {
@@ -623,6 +638,7 @@ body {
 
 .default_table .ant-table-content {
   height: 100%;
+  overflow: auto !important;
 }
 
 .default_table .ant-table-column-sorter {
@@ -707,6 +723,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   position: relative;
+  scrollbar-color: auto !important;
 }
 
 .default_table_none_pagination table tr th {
@@ -1083,6 +1100,10 @@ body {
   background-color: #f9f9f9 !important;
 }
 
+.performance-ck-row {
+  background-color: #f9f9f9 !important;
+}
+
 .operation_column_container {
   display: flex;
   gap: 15px;
@@ -1147,6 +1168,10 @@ body {
 
 .shadow_3 {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+
+.Select__no__padding .ant-select-selection-item {
+  padding-inline-end: 0px !important;
 }
 
 

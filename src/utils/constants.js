@@ -102,48 +102,6 @@ export const systemOptions = [
     data: "/System",
     icon: "pi pi-cog",
   },
-
-  {
-    key: "0",
-    label: "Phân quyền",
-    data: "Phân quyền",
-    icon: "pi pi-unlock",
-    children: [
-      {
-        key: "0-0-0",
-        label: "Phân quyền truy cập",
-        icon: "pi pi-user",
-        data: "UsersPermissions",
-      },
-      {
-        key: "0-0-1",
-        label: "Phần quyền nhóm truy cập",
-        icon: "pi pi-users",
-        data: "GroupPermissions",
-      },
-      {
-        key: "0-0-2",
-        label: "Phần quyền đơn vị cơ sở",
-        icon: "pi pi-sitemap",
-        data: "UnitPermissions",
-      },
-    ],
-  },
-  {
-    key: "1",
-    label: "Tài khoản",
-    data: "Events Folder",
-    icon: "pi pi-id-card",
-    children: [
-      {
-        key: "1-0",
-        label: "Tạo tài khoản",
-        icon: "pi pi-user-plus",
-        data: "Accounts",
-      },
-    ],
-  },
-
   {
     key: "2",
     label: "Màn hình hệ thống",
@@ -164,40 +122,6 @@ export const systemOptions = [
       },
     ],
   },
-  // {
-  //   key: "2",
-  //   label: "Chứng từ",
-  //   data: "Movies Folder",
-  //   icon: "pi pi-ticket",
-  //   children: [
-  //     {
-  //       key: "2-0",
-  //       icon: "pi pi-check-circle",
-  //       label: "Duyệt chứng từ",
-  //       data: "VoucherApprove",
-  //     },
-  //     {
-  //       key: "2-1",
-  //       label: "Robert De Niro",
-  //       icon: "pi pi-fw pi-star-fill",
-  //       data: "De Niro Movies",
-  //       children: [
-  //         {
-  //           key: "2-1-0",
-  //           label: "Goodfellas",
-  //           icon: "pi pi-fw pi-video",
-  //           data: "Goodfellas Movie",
-  //         },
-  //         {
-  //           key: "2-1-1",
-  //           label: "Untouchables",
-  //           icon: "pi pi-fw pi-video",
-  //           data: "Untouchables Movie",
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // },
 ];
 
 const systemOptionsDEMO = [

@@ -35,7 +35,7 @@ const MapFooter = () => {
         </div>
       </Popover>
       <div className={isFooterColappsed ? "opacity-0 pointer-events-none" : ""}>
-        <p className="text-8xl">làm cốn lài, đi ăn lẩu {customerSelected}</p>
+        <p className="text-8xl"> hihihi {customerSelected}</p>
       </div>
     </div>
   );

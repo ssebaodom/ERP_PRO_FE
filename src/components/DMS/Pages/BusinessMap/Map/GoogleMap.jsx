@@ -1,114 +1,64 @@
-import GoogleMapReact from "google-map-react";
+import { AdvancedMarker, APIProvider, Map } from "@vis.gl/react-google-maps";
 import _ from "lodash";
-import React, { useEffect, useRef, useState } from "react";
-import useSupercluster from "use-supercluster";
-import { apiGetMapInfo } from "../../../API";
+import React, { useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { fetchTourPoints } from "../../../Store/Sagas/BusinessMapActions";
+import { getBusinessMapState } from "../../../Store/Selector/Selectors";
 import Cluster from "../Cluster/Cluster";
-import "../Cluster/Cluster.css";
-import MapMarker from "../Mark/MapMarker";
-import { GGMapStyles } from "./GoogleMapStyle";
+const position = { lat: 16.612861269489162, lng: 109.33640127191714 };
 
-const Marker = ({ children }) => children;
 const GoogleMap = () => {
-  const [map, setMap] = useState(null);
-  const googleMapRef = useRef();
-  const [center, setCenter] = useState({
-    lat: 20.99633582896531,
-    lng: 105.80243370865026,
-  });
-  const [zoom, setZoom] = useState(12);
-  const [bounds, setBounds] = useState(null);
-  const [points, setPoints] = useState([]);
+  const { currentPoints } = useSelector(getBusinessMapState);
 
-  const handleMapChange = ({ center, zoom, bounds }) => {
-    setCenter(center);
-    setZoom(zoom);
-    setBounds([bounds.nw.lng, bounds.se.lat, bounds.se.lng, bounds.nw.lat]);
-  };
+  const points = useMemo(() => {
+    if (_.isEmpty(currentPoints)) return null;
 
-  const getdata = async () => {
-    const data = _.first(await apiGetMapInfo());
-    const fetchedPoints = data.map((crime) => ({
-      type: "Feature",
-      properties: {
-        cluster: false,
-        id: crime?.key,
-      },
-      geometry: {
-        type: "Point",
-        coordinates: crime?.latlong
-          ?.split(",")
-          ?.map((coor) => parseFloat(coor))
-          .reverse(),
-      },
-    }));
+    const data = currentPoints.map((cur) => {
+      const location = cur.latlong.split(",");
+      return {
+        key: cur.key,
+        ten_kh: cur.ten_kh,
+        position: {
+          lat: parseFloat(location[0]),
+          lng: parseFloat(location[1]),
+        },
+      };
+    });
 
-    setPoints([...fetchedPoints]);
-  };
-
-  const { clusters, supercluster } = useSupercluster({
-    points,
-    bounds,
-    zoom,
-    options: { radius: 75, maxZoom: 20 },
-  });
+    return data;
+  }, [currentPoints]);
 
   useEffect(() => {
-    getdata();
-    return () => {};
+    fetchTourPoints();
   }, []);
 
   return (
-    <GoogleMapReact
-      bootstrapURLKeys={{
-        key: process.env.REACT_APP_API_GOOGLE_KEY,
-      }}
-      onGoogleApiLoaded={({ map }) => {
-        googleMapRef.current = map;
-      }}
-      center={center}
-      zoom={zoom}
-      yesIWantToUseGoogleMapApiInternals
-      onChange={handleMapChange}
-      options={{ disableDefaultUI: true, styles: GGMapStyles }}
-    >
-      {clusters.map((cluster, index) => {
-        const [longitude, latitude] = cluster.geometry.coordinates;
-        const {
-          cluster: isCluster,
-          point_count: pointCount,
-          id,
-        } = cluster.properties;
-        if (isCluster) {
-          return (
-            <Marker lat={latitude} lng={longitude} key={`cluster-${index}`}>
-              <Cluster
-                onClick={() => {
-                  const expansionZoom = Math.min(
-                    supercluster.getClusterExpansionZoom(cluster.id),
-                    20
-                  );
-                  googleMapRef.current.setZoom(expansionZoom);
-                  googleMapRef.current.panTo({ lat: latitude, lng: longitude });
-                }}
-                style={{
-                  width: `${7 + (pointCount / points.length) * 20}px`,
-                  height: `${7 + (pointCount / points.length) * 20}px`,
-                  background: "red",
-                }}
-                value={pointCount}
-              />
-            </Marker>
-          );
-        }
+    <APIProvider apiKey={process.env.REACT_APP_API_GOOGLE_KEY}>
+      <Map
+        mapId={"bf51a910020fa25a"}
+        defaultCenter={position}
+        defaultZoom={5.8}
+        // styles={GGMapStyles}
+        disableDefaultUI
+      >
+        {points && <Cluster points={points} />}
+        <AdvancedMarker
+          position={{ lat: 16.703635356004945, lng: 111.93847972415134 }}
+        >
+          <div className="Hoang__Sa__Truong__Sa__belong_to_Viet_Nam">
+            Hoàng Sa, Trường Sa là của Việt Nam
+          </div>
+        </AdvancedMarker>
 
-        return (
-          <Marker key={`cluster-${index}`} lat={latitude} lng={longitude}>
-            <MapMarker id={id} />
-          </Marker>
-        );
-      })}
-    </GoogleMapReact>
+        <AdvancedMarker
+          position={{ lat: 10.824517682032573, lng: 114.30516468335472 }}
+        >
+          <div className="Hoang__Sa__Truong__Sa__belong_to_Viet_Nam">
+            Hoang Sa, Truong Sa belong to VietNam
+          </div>
+        </AdvancedMarker>
+      </Map>
+    </APIProvider>
   );
 };
 

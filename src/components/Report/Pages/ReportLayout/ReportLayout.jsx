@@ -12,6 +12,51 @@ const reportLayout = [
   },
 
   {
+    key: "1",
+    label: "Bán hàng",
+    data: "Báo cáo",
+    icon: "pi pi-dollar",
+    children: [
+      {
+        key: "1-1",
+        label: "Bảng kê hoá đơn bán hàng",
+        icon: "pi pi-list",
+        data: "rptOrderList",
+      },
+
+      {
+        key: "1-2",
+        label: "Tổng hợp bán hàng",
+        icon: "pi pi-dollar",
+        data: "rptSalesSummary",
+      },
+    ],
+  },
+  // {
+  //   key: "1",
+  //   label: "Tài khoản",
+  //   data: "Events Folder",
+  //   icon: "pi pi-id-card",
+  //   children: [
+  //     {
+  //       key: "1-0",
+  //       label: "Tạo tài khoản",
+  //       icon: "pi pi-user-plus",
+  //       data: "Accounts",
+  //     },
+  //   ],
+  // },
+];
+
+const reportLayoutDMS = [
+  {
+    key: "reports",
+    label: "Dashboard",
+    data: "/reports",
+    icon: "pi pi-chart-bar",
+  },
+
+  {
     key: "0",
     label: "Viếng thăm",
     data: "Báo cáo",

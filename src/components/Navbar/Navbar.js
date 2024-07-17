@@ -1,6 +1,6 @@
 import { UilSearch } from "@iconscout/react-unicons";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "./Navbar.css";
 
 import { Dropdown, Input, Menu, Modal } from "antd";
@@ -10,6 +10,7 @@ import options__icon from "../../Icons/options__icon.svg";
 import sse__logo from "../../Icons/sse__logo.svg";
 import router, { routes } from "../../router/routes";
 import { setClaims, setIsBackgrouds } from "../../store/reducers/claimsSlice";
+import { getIsHideNav } from "../../store/selectors/Selectors";
 import jwt from "../../utils/jwt";
 import Notify from "./Notify/Notify.jsx";
 
@@ -20,6 +21,9 @@ const Navbar = () => {
   const [navbarSelectedKey, setnavbarSelectedKey] = useState("");
   const [navbarItems, setNavbarItems] = useState();
   const [searchFunctions, setSearchFunctions] = useState([]);
+  const isHideNav = useSelector(getIsHideNav);
+  const [isShowAlert, setIsShowAlert] = useState(false);
+  const [nextRoute, setNextRoute] = useState("");
 
   const routeLocation = useLocation();
 
@@ -107,6 +111,14 @@ const Navbar = () => {
     dispatch(setClaims([]));
   };
   const handleNavbarClick = (item) => {
+    console.log("routeLocation.pathname", routeLocation);
+    if (routeLocation.pathname === "/RO/Reatailorder") {
+      setIsShowAlert(true);
+      setNextRoute(
+        item?.item?.props?.path ? `${item.item.props.path}` : `${item.path}`
+      );
+      return;
+    }
     navigate(
       item?.item?.props?.path ? `${item.item.props.path}` : `${item.path}`
     );
@@ -177,7 +189,7 @@ const Navbar = () => {
   };
 
   const handleSelectFuntion = (path) => {
-    router.navigate(path);
+    router.navigate("/" + path);
     handleCancelSearchModal();
   };
 
@@ -188,14 +200,22 @@ const Navbar = () => {
   const handleRouteChange = async (data) => {
     setnavbarSelectedKey(data?.pathname?.substring(1) || "");
     const { flatRoutes } = await getRoutesAccess(routes);
-    const validRoutes = ["/", "Dashboard", "", "login", "loginSSO", "transfer"];
+    const validRoutes = [
+      "/",
+      "Dashboard",
+      " ",
+      "",
+      "login",
+      "loginSSO",
+      "transfer",
+    ];
     if (
       !validRoutes.includes(data?.pathname?.substring(1)) &&
       flatRoutes.findIndex(
         (item) => item.path === data?.pathname?.substring(1)
       ) < 0
     ) {
-      navigate("/notFound");
+      // navigate("/notFound");
     }
   };
 
@@ -204,7 +224,7 @@ const Navbar = () => {
   }, [routeLocation]);
 
   return (
-    <div className="navbar">
+    <div className={`navbar${isHideNav ? " hiden" : ""}`}>
       <div className="first_navbar_row_left">
         <div className="navbar_logo_functions">
           <img
@@ -314,6 +334,26 @@ const Navbar = () => {
             ))}
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={isShowAlert}
+        onCancel={() => {
+          setIsShowAlert(false);
+        }}
+        onOk={() => {
+          navigate(nextRoute);
+          setIsShowAlert(false);
+        }}
+        closable={true}
+        title="Cảnh báo"
+        cancelText="Đóng"
+        centered
+      >
+        <span>
+          Khi chuyển trang bạn sẽ mất những dữ liệu đang dở dang, tiếp tục hay
+          không ?
+        </span>
       </Modal>
     </div>
   );

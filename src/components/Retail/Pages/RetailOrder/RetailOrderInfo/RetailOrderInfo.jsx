@@ -1,11 +1,12 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { uuidv4 } from "@antv/xflow-core";
 import {
+  Avatar,
   Button,
   Form,
   Image,
   InputNumber,
-  message,
+  message as messageAPI,
   Segmented,
   Select,
   Tooltip,
@@ -13,7 +14,7 @@ import {
 import _ from "lodash";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Column } from "react-base-table";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../../app/Functions/filterHelper";
 import {
@@ -23,14 +24,24 @@ import {
   getCellName,
   getRowKey,
 } from "../../../../../app/Functions/getTableValue";
+import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import RenderPerformanceTableCell from "../../../../../app/hooks/RenderPerformanceTableCell";
 import { quantityFormat } from "../../../../../app/Options/DataFomater";
 import SelectNotFound from "../../../../../Context/SelectNotFound";
-import { getUserInfo } from "../../../../../store/selectors/Selectors";
+import { setIsHideNav } from "../../../../../store/reducers/claimsSlice";
+import {
+  getIsHideNav,
+  getUserInfo,
+} from "../../../../../store/selectors/Selectors";
+import { CHARTCOLORS } from "../../../../../utils/constants";
+import LoadingComponents from "../../../../Loading/LoadingComponents";
 import PerformanceTable from "../../../../ReuseComponents/PerformanceTable/PerformanceTable";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
 import RetailOrderListModal from "../../../Modals/RetailOrderListModal/RetailOrderListModal";
+import RetailPromotionModal from "../../../Modals/RetailPromotionModal/RetailPromotionModal";
 import {
+  fetchRetailOderPromotion,
+  modifyIsOpenPromotion,
   setCurrentRetailOrder,
   setRetailOrderList,
   setRetailOrderScanning,
@@ -47,7 +58,7 @@ const columns = [
     align: Column.Alignment.CENTER,
     resizable: false,
     frozen: Column.FrozenDirection.LEFT,
-    cellRenderer: ({ cellData }) =>
+    cellRenderer: ({ cellData, rowData }) =>
       cellData ? (
         <Image
           className="border-circle"
@@ -57,11 +68,17 @@ const columns = [
           alt="SSE"
         ></Image>
       ) : (
-        <FileImageOutlined
-          style={{
-            fontSize: "35px",
-          }}
-        />
+        <Avatar style={{ background: rowData.ck_yn ? "red" : "#341b4d" }}>
+          {rowData.ck_yn ? (
+            <i className="pi pi-gift" style={{ fontSize: 40 }}></i>
+          ) : (
+            <FileImageOutlined
+              style={{
+                fontSize: "40px",
+              }}
+            />
+          )}
+        </Avatar>
       ),
   },
 
@@ -87,12 +104,34 @@ const columns = [
   },
 
   {
+    key: "barcode",
+    title: "Barcode",
+    dataKey: "barcode",
+    width: 0,
+    resizable: false,
+    sortable: false,
+    className: "p-0",
+    headerClassName: "p-0",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
     key: "ma_vt",
     title: "Mã vật tư",
     dataKey: "ma_vt",
     width: 0,
     resizable: false,
     sortable: false,
+    className: "p-0",
+    headerClassName: "p-0",
     cellRenderer: ({ rowData, column, cellData }) => {
       return (
         <RenderPerformanceTableCell
@@ -108,7 +147,7 @@ const columns = [
     key: "ma_kho",
     title: "Kho",
     dataKey: "ma_kho",
-    width: 100,
+    width: 120,
     resizable: false,
     sortable: false,
     editable: true,
@@ -129,7 +168,7 @@ const columns = [
     key: "dvt",
     title: "Đơn vị",
     dataKey: "dvt",
-    width: 80,
+    width: 70,
     resizable: false,
     sortable: false,
     editable: true,
@@ -175,6 +214,114 @@ const columns = [
     sortable: false,
     editable: true,
     type: "Numeric",
+    format: "0",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
+    key: "thanh_tien",
+    title: "Thành tiền",
+    dataKey: "thanh_tien",
+    width: 120,
+    resizable: false,
+    sortable: false,
+    editable: true,
+    format: "0",
+    type: "Numeric",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
+    key: "ck_yn",
+    title: "Chiết khấu",
+    dataKey: "ck_yn",
+    width: 0,
+    resizable: false,
+    sortable: false,
+    className: "p-0",
+    headerClassName: "p-0",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
+    key: "ma_ck",
+    title: "Mã chiết khấu",
+    dataKey: "ma_ck",
+    width: 0,
+    resizable: false,
+    sortable: false,
+    className: "p-0",
+    headerClassName: "p-0",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
+    key: "tl_ck",
+    title: "Tỷ lệ chiết khấu",
+    dataKey: "tl_ck",
+    width: 0,
+    resizable: false,
+    sortable: false,
+    editable: false,
+    format: "0",
+    type: "Numeric",
+    className: "p-0",
+    headerClassName: "p-0",
+    cellRenderer: ({ rowData, column, cellData }) => {
+      return (
+        <RenderPerformanceTableCell
+          rowKey={rowData?.id}
+          column={column}
+          cellData={cellData}
+        />
+      );
+    },
+  },
+
+  {
+    key: "ck",
+    title: "Tiền chiết khấu",
+    dataKey: "ck",
+    width: 0,
+    resizable: false,
+    sortable: false,
+    editable: false,
+    format: "0",
+    type: "Numeric",
+    className: "p-0",
+    headerClassName: "p-0",
     cellRenderer: ({ rowData, column, cellData }) => {
       return (
         <RenderPerformanceTableCell
@@ -188,7 +335,10 @@ const columns = [
 ];
 
 const RetailOrderInfo = ({ orderKey }) => {
+  const [message, contextHolder] = messageAPI.useMessage();
   const [itemForm] = Form.useForm();
+
+  const [totalPromotionType, setTotalPromotionType] = useState("RATIO");
 
   const [data, setData] = useState([]);
   const [selectedRowkeys, setSelectedRowkeys] = useState([]);
@@ -198,9 +348,9 @@ const RetailOrderInfo = ({ orderKey }) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchOptionsFiltered, setsearchOptionsFiltered] = useState([]);
   const [paymentInfo, setPaymentInfo] = useState({
-    ma_kh: "",
-    ten_kh: "",
-    dien_thoai: "",
+    ma_kh: "KVL",
+    ten_kh: "Vãng lai",
+    dien_thoai: null,
     diem: 0,
     ma_nt: "VND",
     ty_gia: 1,
@@ -209,6 +359,8 @@ const RetailOrderInfo = ({ orderKey }) => {
     thue_suat: 0,
     tong_thue: 0,
     tong_sl: 0,
+    ck: 0,
+    ma_ck: "",
     tl_ck: 0,
     tong_ck: 0,
     voucher: "",
@@ -220,13 +372,21 @@ const RetailOrderInfo = ({ orderKey }) => {
   });
   const [taxOptions, setTaxOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [autoCalPromotion, setAutoCalPromotion] = useState(false);
+
   const [isOpenOrderList, setIsOpenOrderList] = useState(false);
+
+  const [isCalPromotion, setIsCalPromotion] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const searchInputRef = useRef(null);
 
-  const { listOrder, currentOrder, isScanning } =
+  const { listOrder, currentOrder, isScanning, isFormLoading } =
     useSelector(getRetailOrderState);
   const { id: userId, storeId, unitId } = useSelector(getUserInfo);
+  const dispatch = useDispatch();
+
+  const isHideNav = useSelector(getIsHideNav);
 
   /////// Orde List functions //////////////
 
@@ -234,8 +394,93 @@ const RetailOrderInfo = ({ orderKey }) => {
     setIsOpenOrderList(!isOpenOrderList);
   }, [isOpenOrderList]);
 
+  const handleHideNavbar = () => {
+    dispatch(setIsHideNav(!isHideNav));
+  };
+
   /////// Calculations functions////////////
 
+  //Tính chiết khấu
+  const handlePromotionCalculate = useCallback(
+    async (CKVT = [], CKTH = [], CKTD = [], currentData) => {
+      var ckvtObject = {};
+
+      CKVT.map(async (ck) => {
+        ckvtObject[`${ck.rowKey}_ma_ck`] = ck?.ma_ck;
+        ckvtObject[`${ck.rowKey}_tl_ck`] = ck.tl_ck;
+        ckvtObject[`${ck.rowKey}_ck`] = ck.ck;
+      });
+
+      itemForm.setFieldsValue({
+        ...ckvtObject,
+      });
+
+      const ckthRows = CKTH.map((ck) => {
+        return {
+          id: uuidv4(),
+          ma_vt: ck.ma_vt,
+          ten_vt: ck.ten_vt,
+          ma_kho: ck.ma_kho,
+          image: "",
+          dvt: ck.dvt,
+          so_luong: ck.so_luong,
+          don_gia: "0",
+          thanh_tien: "0",
+          ck_yn: true,
+          ma_ck: ck.ma_ck,
+        };
+      });
+
+      if (!_.isEmpty(ckthRows))
+        setData([...(currentData || data), ...ckthRows]);
+
+      const cktdValues = _.first(CKTD);
+
+      setPaymentInfo({
+        ...paymentInfo,
+        ma_ck: cktdValues?.ma_ck || "",
+        ck: cktdValues?.ck || 0,
+        tl_ck: cktdValues?.tl_ck || 0,
+      });
+
+      handleCalculatorPayment();
+    },
+    [JSON.stringify(paymentInfo), JSON.stringify(data)]
+  );
+
+  const handleResetPromotion = async () => {
+    const changedValues = { ...itemForm.getFieldsValue() };
+    const allKeys = getAllRowKeys(changedValues);
+
+    var promotions = {};
+
+    allKeys.map(async (key) => {
+      promotions[`${key}_ma_ck`] = "";
+      promotions[`${key}_tl_ck`] = 0;
+      promotions[`${key}_ck`] = 0;
+    });
+
+    const rawData = data.filter((item) => !item.ck_yn);
+
+    setData([...rawData]);
+
+    await itemForm.setFieldsValue({
+      ...promotions,
+    });
+
+    setPaymentInfo({
+      ...paymentInfo,
+      ma_ck: "",
+      ck: 0,
+      tl_ck: 0,
+    });
+
+    setTotalPromotionType("RATIO");
+
+    handleCalculatorPayment();
+  };
+
+  //Tính thanh toán
   const handleCalculatorPayment = async () => {
     const changedValues = { ...itemForm.getFieldsValue() };
 
@@ -248,14 +493,30 @@ const RetailOrderInfo = ({ orderKey }) => {
       0
     );
 
-    const tong_tien = await allData.reduce((Sum, item) => {
-      return Sum + parseFloat(item.so_luong) * parseFloat(item.don_gia);
-    }, 0);
+    const tong_tien = await parseFloat(
+      allData.reduce((Sum, item) => {
+        return (
+          Sum + parseFloat(item.so_luong || 0) * parseFloat(item.don_gia || 0)
+        );
+      }, 0)
+    );
 
-    const tong_ck = (tong_tien * paymentInfo.tl_ck) / 100;
-    const tong_thue = (tong_tien * paymentInfo.thue_suat) / 100;
+    const tong_ckvt = await parseFloat(
+      allData.reduce((Sum, item) => {
+        return Sum + parseFloat(item.ck || 0);
+      }, 0)
+    );
 
-    const tong_tt = tong_tien + tong_thue - tong_ck || 0;
+    const ck_tong_don =
+      paymentInfo.ma_ck || !paymentInfo.tl_ck
+        ? paymentInfo.ck
+        : (tong_tien * paymentInfo.tl_ck) / 100;
+
+    const tong_ck = parseFloat(tong_ckvt + ck_tong_don);
+
+    const tong_thue = parseFloat((tong_tien * paymentInfo.thue_suat) / 100);
+
+    const tong_tt = parseFloat(tong_tien + tong_thue - tong_ck);
 
     const calculated = {
       ...paymentInfo,
@@ -271,6 +532,99 @@ const RetailOrderInfo = ({ orderKey }) => {
   useEffect(() => {
     handleCalculatorPayment();
   }, [JSON.stringify(data), JSON.stringify(paymentInfo)]);
+
+  const recalPromotion = useDebouncedCallback(async () => {
+    setIsCalculating(true);
+    message.open({
+      type: "loading",
+      content: "Đang xử lý chương trình chiết khấu",
+      duration: 0,
+    });
+
+    //Reset
+    const changedValues = { ...itemForm.getFieldsValue() };
+    const allKeys = getAllRowKeys(changedValues);
+    const rawData = [...data].filter((row) => !row?.ck_yn);
+    var promotions = {};
+
+    allKeys.map(async (key) => {
+      promotions[`${key}_ma_ck`] = "";
+      promotions[`${key}_tl_ck`] = 0;
+      promotions[`${key}_ck`] = 0;
+    });
+
+    setPaymentInfo({
+      ...paymentInfo,
+      ma_ck: "",
+      ck: 0,
+      tl_ck: 0,
+    });
+
+    await itemForm.setFieldsValue({
+      ...promotions,
+    });
+    //Recal
+    const Tinhtrang = await fetchRetailOderPromotion(
+      changedValues,
+      paymentInfo.ma_kh
+    ).then((result) => {
+      //Chiết khấu chi tiết vật tư
+      var ckvtObject = {};
+
+      result?.ckvt?.map(async (ck) => {
+        ckvtObject[`${ck.rowKey}_ma_ck`] = ck?.ma_ck;
+        ckvtObject[`${ck.rowKey}_tl_ck`] = ck.tl_ck;
+        ckvtObject[`${ck.rowKey}_ck`] = ck.ck;
+      });
+
+      itemForm.setFieldsValue({
+        ...ckvtObject,
+      });
+
+      const ckthRows = result?.ckth?.map((ck) => {
+        return {
+          id: uuidv4(),
+          ma_vt: ck.ma_vt,
+          ten_vt: ck.ten_vt,
+          ma_kho: ck.ma_kho,
+          image: "",
+          dvt: ck.dvt,
+          so_luong: ck.so_luong,
+          don_gia: "0",
+          thanh_tien: "0",
+          ck_yn: true,
+          ma_ck: ck.ma_ck,
+        };
+      });
+
+      setData([...rawData, ...ckthRows]);
+
+      const cktdValues = _.first(result.cktd);
+
+      setPaymentInfo({
+        ...paymentInfo,
+        ma_ck: cktdValues?.ma_ck || "",
+        ck: cktdValues?.ck || 0,
+        tl_ck: cktdValues?.tl_ck || 0,
+      });
+
+      if (_.isEmpty(ckthRows) && _.isEmpty(cktdValues))
+        handleCalculatorPayment();
+      message.destroy();
+      return !_.isEmpty(ckthRows);
+    });
+
+    setIsCalculating(false);
+    setIsCalPromotion(Tinhtrang);
+  }, 1300);
+
+  useEffect(() => {
+    if (!isCalPromotion && !_.isEmpty(data) && autoCalPromotion) {
+      recalPromotion();
+      return;
+    }
+    setIsCalPromotion(false);
+  }, [JSON.stringify(data), JSON.stringify(paymentInfo.ma_kh)]);
 
   ///////////orther functions /////
 
@@ -343,6 +697,9 @@ const RetailOrderInfo = ({ orderKey }) => {
           ...paymentInfo,
           quy_doi_diem: parseInt(_.first(res?.listObject[2])?.val) || 0,
         });
+        setAutoCalPromotion(
+          _.first(res?.listObject[3])?.val === "1" ? true : false
+        );
       }
     });
   };
@@ -375,6 +732,7 @@ const RetailOrderInfo = ({ orderKey }) => {
 
         if (barcode) {
           handleAddRowData({
+            barcode,
             ma_vt,
             ten_vt,
             ma_kho,
@@ -382,6 +740,7 @@ const RetailOrderInfo = ({ orderKey }) => {
             dvt,
             so_luong: 1,
             don_gia: gia || "0",
+            ck_yn: false,
           });
           return;
         }
@@ -401,7 +760,6 @@ const RetailOrderInfo = ({ orderKey }) => {
 
   // Tìm kiếm vật tư khi vào chế đọ barcode
   const handleSearchItemInfo = useDebouncedCallback((barcode) => {
-    setSearchLoading(true);
     handleFetchItemInfo({ barcode, ma_vt: "", stock: "" });
     setSearchValue("");
   }, 20);
@@ -450,28 +808,52 @@ const RetailOrderInfo = ({ orderKey }) => {
     setRetailOrderList(curListOrder);
   };
 
-  const handleAddRowData = ({ ma_vt, ten_vt, image, ma_kho, dvt, don_gia }) => {
+  //Thêm dòng vật tư
+  const handleAddRowData = ({
+    barcode = "",
+    ma_vt,
+    ten_vt,
+    image,
+    ma_kho,
+    dvt,
+    don_gia,
+    ck_yn,
+    so_luong,
+  }) => {
     setData([
       ...data,
       {
         id: uuidv4(),
+        barcode: barcode || "",
         ma_vt,
         ten_vt,
         image,
         ma_kho,
         dvt,
-        so_luong: 1,
+        so_luong: so_luong ? so_luong : 1,
         don_gia: don_gia || "0",
+        thanh_tien: don_gia * 1 || "0",
+        ck_yn: ck_yn || false,
       },
     ]);
   };
 
+  //xoá dòng vật tư
   const handleRemoveRowData = () => {
     const filteredData = [...data].filter(
       (item) => !selectedRowkeys.includes(item?.id)
     );
 
     setData(filteredData);
+
+    if (_.isEmpty(filteredData)) {
+      setPaymentInfo({
+        ...paymentInfo,
+        ma_ck: "",
+        ck: 0,
+        tl_ck: 0,
+      });
+    }
   };
 
   const handleSelectedRowKeyChange = useCallback((keys) => {
@@ -480,14 +862,15 @@ const RetailOrderInfo = ({ orderKey }) => {
 
   const handleSelectChange = (key, params) => {
     if (params.data.type === "VT") {
-      const { value, label, dvt, gia, ma_kho } = params.data;
+      const { value, label, dvt, gia, ma_kho, image } = params.data;
       handleAddRowData({
         ma_vt: value,
         ten_vt: label,
-        image: "https://pbs.twimg.com/media/FfgUqSqWYAIygwN.jpg",
+        image: image || "https://pbs.twimg.com/media/FfgUqSqWYAIygwN.jpg",
         ma_kho: ma_kho,
         dvt,
         don_gia: gia,
+        ck_yn: false,
       });
     }
 
@@ -525,7 +908,15 @@ const RetailOrderInfo = ({ orderKey }) => {
     const cellValue = _.first(Object.values(cellChanged));
     const changedRowKey = getRowKey(_.first(Object.keys(cellChanged)));
     const rowValues = getAllValueByRow(changedRowKey, allCells);
+
+    const getCurRowValues = () => {
+      return getAllValueByRow(changedRowKey, itemForm.getFieldsValue());
+    };
     const allCellsValues = getAllValueByColumn(cellName, allCells);
+
+    const reCalculateTotal = (donGia = 0, soLuong = 0) => {
+      itemForm.setFieldValue(`${changedRowKey}_thanh_tien`, donGia * soLuong);
+    };
 
     switch (cellName) {
       case "ma_kho":
@@ -536,11 +927,25 @@ const RetailOrderInfo = ({ orderKey }) => {
         }).then((res) => {
           itemForm.setFieldValue(`${changedRowKey}_don_gia`, res?.gia || "0");
         });
+        recalPromotion();
+        break;
+
+      case "don_gia":
+        recalPromotion();
+        break;
+
+      case "so_luong":
+        recalPromotion();
         break;
 
       default:
         break;
     }
+
+    await reCalculateTotal(
+      getCurRowValues()?.don_gia,
+      getCurRowValues()?.so_luong
+    );
     handleCalculatorPayment();
   };
 
@@ -595,7 +1000,9 @@ const RetailOrderInfo = ({ orderKey }) => {
   }, []);
 
   return (
-    <div className="h-full min-h-0 flex gap-1">
+    <div className="h-full min-h-0 flex gap-1 relative">
+      {contextHolder}
+      <LoadingComponents loading={isFormLoading} text={"Đang tạo đơn hàng"} />
       <div className="h-full min-h-0 w-full min-w-0 flex flex-column gap-1">
         <div
           className="h-full min-h-0 overflow-hidden border-round-md flex flex-column"
@@ -613,6 +1020,7 @@ const RetailOrderInfo = ({ orderKey }) => {
               }}
             >
               <Select
+                disabled={isCalculating}
                 ref={searchInputRef}
                 className="w-full"
                 value={null}
@@ -631,6 +1039,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                 onChange={handleSelectChange}
                 onFocus={() => {
                   if (_.isEmpty(searchOptions) && !isScanning) {
+                    setSearchLoading(true);
                     fetchItemsNCustomers({ searchValue: "" });
                   } else {
                     setSearchLoading(true);
@@ -643,6 +1052,8 @@ const RetailOrderInfo = ({ orderKey }) => {
                     handleSearchItemInfo(e);
                     return;
                   }
+                  setsearchOptionsFiltered([]);
+                  setSearchLoading(true);
                   handleSearchValue(e);
                 }}
                 listHeight={500}
@@ -669,6 +1080,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                         key={`${group.key}-${item.value}`}
                         value={`${group.key}-${item.value}`}
                         label={item.label}
+                        className="px-2"
                         data={item}
                       >
                         <div
@@ -678,15 +1090,35 @@ const RetailOrderInfo = ({ orderKey }) => {
                             e.stopPropagation();
                           }}
                         >
-                          <Image
-                            preview={false}
-                            role="img"
-                            width={30}
-                            src={
-                              "https://i2.wp.com/genshinbuilds.aipurrjects.com/genshin/characters/hu_tao/image.png?strip=all&quality=100"
-                            }
-                          />
-                          <span>{item.label}</span>
+                          <Avatar
+                            style={{
+                              background:
+                                CHARTCOLORS[Math.floor(Math.random() * 12)],
+                              width: 30,
+                              height: 30,
+                            }}
+                            src={item?.image}
+                          >
+                            {item?.label?.substring(0, 1)}
+                          </Avatar>
+                          <div className="flex gap-3 w-full">
+                            <div className="w-full">{item.label}</div>
+                            {item?.type == "VT" && (
+                              <div className="text-right ml-3">
+                                <span className="ml-1 primary_bold_text">
+                                  {formatCurrency(item?.ton || 0)}
+                                </span>
+                              </div>
+                            )}
+
+                            {item?.type == "KH" && (
+                              <div className="text-right ml-3">
+                                <span className="ml-1 primary_bold_text">
+                                  {item?.dien_thoai?.trim() || ""}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </Select.Option>
                     ))}
@@ -769,7 +1201,13 @@ const RetailOrderInfo = ({ orderKey }) => {
             </Tooltip>
 
             <Tooltip placement="topRight" title="Khuyến mãi">
-              <Button className="default_button pointer-events-none opacity-30">
+              <Button
+                className="default_button"
+                onClick={() => {
+                  handleResetPromotion();
+                  modifyIsOpenPromotion(true);
+                }}
+              >
                 <i
                   className="pi pi-gift danger_text_color"
                   style={{ fontWeight: "bold" }}
@@ -806,6 +1244,17 @@ const RetailOrderInfo = ({ orderKey }) => {
                 ></i>
               </Button>
             </Tooltip>
+
+            <Tooltip placement="topRight" title="Toàn màn hình">
+              <Button onClick={handleHideNavbar} className="default_button">
+                <i
+                  className={`pi pi-arrows-alt ${
+                    isHideNav ? "sub_text_color" : "gray_text_color"
+                  } `}
+                  style={{ fontWeight: "bold" }}
+                ></i>
+              </Button>
+            </Tooltip>
           </div>
 
           <div className="flex gap-3">
@@ -815,6 +1264,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                 style={{ width: "6rem" }}
                 defaultValue={0}
                 options={taxOptions}
+                value={paymentInfo.thue_suat}
                 onChange={(e) => {
                   setPaymentInfo({
                     ...paymentInfo,
@@ -824,21 +1274,56 @@ const RetailOrderInfo = ({ orderKey }) => {
               />
             </div>
 
-            <div>
+            <div className="flex align-items-center justify-content-center">
               <span className="primary_bold_text mr-1">Chiết khấu :</span>
               <InputNumber
+                disabled={paymentInfo.ma_ck}
                 defaultValue={0}
                 controls={false}
                 min="0"
-                max="100"
-                style={{ width: "5rem" }}
+                max={
+                  totalPromotionType === "MONEY"
+                    ? paymentInfo.tong_tien + paymentInfo.tong_thue
+                    : 100
+                }
+                style={{ width: "10rem" }}
                 step={quantityFormat}
+                value={
+                  totalPromotionType === "MONEY"
+                    ? paymentInfo.ck
+                    : paymentInfo.tl_ck
+                }
                 onChange={(e) => {
                   setPaymentInfo({
                     ...paymentInfo,
-                    tl_ck: e,
+                    tl_ck: totalPromotionType === "MONEY" ? 0 : e,
+                    ck: totalPromotionType === "MONEY" ? e : 0,
                   });
                 }}
+                addonAfter={
+                  <Select
+                    disabled={paymentInfo.ma_ck}
+                    className="Select__no__padding"
+                    style={{
+                      width: 40,
+                    }}
+                    value={totalPromotionType}
+                    popupMatchSelectWidth={false}
+                    suffixIcon={false}
+                    filterOption={false}
+                    onChange={(e) => {
+                      setTotalPromotionType(e);
+                      setPaymentInfo({
+                        ...paymentInfo,
+                        tl_ck: 0,
+                        ck: 0,
+                      });
+                    }}
+                  >
+                    <Select.Option value="MONEY">₫</Select.Option>
+                    <Select.Option value="RATIO">%</Select.Option>
+                  </Select>
+                }
               />
             </div>
             <Select
@@ -861,10 +1346,16 @@ const RetailOrderInfo = ({ orderKey }) => {
         paymentInfo={paymentInfo}
         onChangeCustomer={handleAddCustomerComplete}
         onResetForm={handleResetForm}
+        cantSave={isCalculating}
       />
       <RetailOrderListModal
         isOpen={isOpenOrderList}
         onClose={handleOrderListModal}
+      />
+      <RetailPromotionModal
+        tableData={itemForm.getFieldsValue()}
+        customer={paymentInfo?.ma_kh}
+        handleSave={handlePromotionCalculate}
       />
     </div>
   );

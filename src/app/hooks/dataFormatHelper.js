@@ -35,9 +35,9 @@ const deleteObjectItems = (data: {}, options: []) => {
   return rawData;
 };
 
-const formatCurrency = (num = 0) => {
-  return num.toLocaleString("de-DE", {
-    minimumFractionDigits: 2,
+const formatCurrency = (num = 0, numDegit = 0) => {
+  return Number(num).toLocaleString("de-DE", {
+    minimumFractionDigits: Number(numDegit),
     maximumFractionDigits: 2,
   });
 };

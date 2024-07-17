@@ -40,6 +40,11 @@ const PerformanceTable = ({
   };
 
   const renderSelectedRowsClass = ({ rowData, rowIndex }) => {
+    const { ck_yn } = rowData;
+    if (ck_yn) {
+      return "performance-ck-row";
+    }
+
     const checked = selectedRowKeys?.includes(rowData?.id);
     return checked ? "performance-row-selected" : "";
   };
@@ -53,7 +58,7 @@ const PerformanceTable = ({
 
   const _columns = [
     {
-      width: selectable ? 60 : 0,
+      width: selectable ? 40 : 0,
       hidden: !selectable,
       flexShrink: 0,
       resizable: false,
@@ -110,7 +115,7 @@ const PerformanceTable = ({
           width={width}
           height={height}
           columns={_columns}
-          data={[...data].reverse()}
+          data={reverseIndex ? [...data].reverse() : [...data]}
           rowClassName={renderSelectedRowsClass}
           className="performance__table__Container"
         />

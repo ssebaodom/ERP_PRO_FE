@@ -151,14 +151,14 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
           <div className="flex flex-column gap-3 w-full min-w-0">
             <Alert
               message={
-                data?.master?.status == "1"
+                data?.master?.status == "1" || data?.master?.status == "2"
                   ? "Đơn hàng đã được xác nhận thành công"
                   : data?.master?.status == "3"
                   ? "Đơn hàng đã bị huỷ"
                   : "Đơn hàng đang chờ xác nhận"
               }
               type={
-                data?.master?.status == "1"
+                data?.master?.status == "1" || data?.master?.status == "2"
                   ? "success"
                   : data?.master?.status == "3"
                   ? "error"

@@ -27,9 +27,13 @@ export const setTourSelected = (tour = "") => {
   store.dispatch(actions.setTourSelected(tour));
 };
 
-export const setCustomerSelected = (customer = "") => {
+export const setCustomerSelected = (
+  customer = "",
+  position = { lat: 0, lng: 0 }
+) => {
   store.dispatch(actions.setIsFooterColappsed(false));
   store.dispatch(actions.setCustomerSelected(customer));
+  store.dispatch(actions.setPositionSelected(position));
 };
 
 export const resetBusinessMapState = () => {
@@ -42,4 +46,24 @@ export const setisSideBarColappsed = async (state = false) => {
 
 export const setisFooterColappsed = async (state = false) => {
   store.dispatch(actions.setIsFooterColappsed(state));
+};
+
+export const fetchTourPoints = async (tourCode = "") => {
+  store.dispatch(actions.setCurentPoints([]));
+  const { id, unitId, storeId } = store.getState().claimsReducer.userInfo;
+  store.dispatch(actions.setIsMapLoading(true));
+
+  const result = await multipleTablePutApi({
+    store: "api_get_geo_data_by_tour",
+    param: {
+      ma_tuyen: "",
+      userId: id,
+      unitId,
+      storeId,
+    },
+    data: {},
+  });
+
+  store.dispatch(actions.setIsMapLoading(false));
+  store.dispatch(actions.setCurentPoints(_.first(result?.listObject) || []));
 };

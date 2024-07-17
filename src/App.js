@@ -28,7 +28,8 @@ function App() {
         <Navigate to="Dashboard" replace={true} />
       )}
 
-      <Navbar />
+      {jwt.checkExistToken() && <Navbar />}
+
       <div className="App" style={isBackgound ? backgroundStyled : {}}>
         <Outlet />
       </div>

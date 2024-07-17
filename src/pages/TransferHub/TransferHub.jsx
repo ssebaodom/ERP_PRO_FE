@@ -1,6 +1,7 @@
 import { Carousel, Modal } from "antd";
 import React, { useEffect, useState } from "react";
 import useLocalStorage from "use-local-storage";
+import OrderModal from "./Modal/OrderModal";
 import "./TransferHub.css";
 
 const bannerList = [
@@ -24,8 +25,6 @@ const TransferHub = () => {
   };
 
   const handleFullScreen = () => {
-    console.log("click dô bút từn");
-
     if (
       (document.fullScreenElement !== undefined &&
         document.fullScreenElement === null) ||
@@ -87,11 +86,6 @@ const TransferHub = () => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log(isFullScreen);
-    return () => {};
-  }, [isFullScreen]);
-
   return (
     <div onClick={handleFullScreen} className="relative">
       <div
@@ -119,7 +113,9 @@ const TransferHub = () => {
           </div>
         ))}
       </Carousel>
+
       <Modal
+        zIndex={5000}
         forceRender
         closable={false}
         footer
@@ -130,8 +126,10 @@ const TransferHub = () => {
         open={isTransfering}
         okButtonProps={{ style: { display: "none" } }}
         cancelButtonProps={{ style: { display: "none" } }}
-        bodyStyle={{
-          position: "relative",
+        styles={{
+          body: {
+            position: "relative",
+          },
         }}
       >
         {!isSucceded ? (
@@ -168,6 +166,8 @@ const TransferHub = () => {
           </div>
         )}
       </Modal>
+
+      <OrderModal />
     </div>
   );
 };

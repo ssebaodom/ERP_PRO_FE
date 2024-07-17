@@ -6,12 +6,17 @@ const initial = {
   isFooterColappsed: true,
   isFooterLoading: false,
   tourSelected: "",
-  customerSelected: "",
   tourList: [],
+
+  isMapLoading: false,
+  currentPoints: [],
+
+  customerSelected: "",
+  positionSelected: { lat: 0, lng: 0 },
 };
 
 const reducer = createSlice({
-  name: "DMSCustomers",
+  name: "BusinessMapState",
   initialState: { ...initial },
   reducers: {
     setSideBarLoading(state, action) {
@@ -34,12 +39,24 @@ const reducer = createSlice({
       state.customerSelected = action?.payload;
     },
 
+    setPositionSelected(state, action) {
+      state.positionSelected = action?.payload;
+    },
+
     setTourList(state, action) {
       state.tourList = action?.payload;
     },
 
     setTourSelected(state, action) {
       state.tourSelected = action?.payload;
+    },
+
+    setIsMapLoading(state, action) {
+      state.isMapLoading = action?.payload;
+    },
+
+    setCurentPoints(state, action) {
+      state.currentPoints = action?.payload;
     },
 
     reset: () => initial,
