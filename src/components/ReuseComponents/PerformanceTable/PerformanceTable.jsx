@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
-import BaseTable, { AutoResizer, Column } from "react-base-table";
+import BaseTable, { AutoResizer } from "react-base-table";
 import "react-base-table/styles.css";
 import no_file from "../../../Icons/no_file.svg";
 import LoadingComponents from "../../Loading/LoadingComponents";
@@ -49,6 +49,12 @@ const PerformanceTable = ({
     return checked ? "performance-row-selected" : "";
   };
 
+  const rowRenderer = ({ rowData, cells }) => {
+    if (rowData.content)
+      return <div className="p-2 w-full">{rowData.content}</div>;
+    return cells;
+  };
+
   useEffect(() => {
     if (onSelectedRowKeyChange) {
       onSelectedRowKeyChange(selectedRowKeys);
@@ -58,7 +64,7 @@ const PerformanceTable = ({
 
   const _columns = [
     {
-      width: selectable ? 40 : 0,
+      width: selectable ? 60 : 0,
       hidden: !selectable,
       flexShrink: 0,
       resizable: false,
@@ -67,7 +73,7 @@ const PerformanceTable = ({
         <SelectCell rowData={rowData} rowIndex={rowIndex} column={column} />
       ),
       key: "__selection__",
-      frozen: Column.FrozenDirection.LEFT,
+
       onChange: handleSelectionChange,
       onSelectAll: handleSelectAll,
       dataLength: data.length,
@@ -84,7 +90,7 @@ const PerformanceTable = ({
         return reverseIndex ? newIndex + 1 : rowIndex + 1;
       },
       key: "__rowNumber__",
-      frozen: Column.FrozenDirection.LEFT,
+
       align: "center",
     },
     ...columns,
@@ -94,6 +100,7 @@ const PerformanceTable = ({
     <AutoResizer>
       {({ width, height }) => (
         <BaseTable
+          expandColumnKey={_columns[0].key}
           overscanRowCount={30}
           emptyRenderer={
             <div className="abs_center">
@@ -118,6 +125,7 @@ const PerformanceTable = ({
           data={reverseIndex ? [...data].reverse() : [...data]}
           rowClassName={renderSelectedRowsClass}
           className="performance__table__Container"
+          rowRenderer={rowRenderer}
         />
       )}
     </AutoResizer>

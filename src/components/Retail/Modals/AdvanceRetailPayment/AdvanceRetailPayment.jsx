@@ -86,7 +86,7 @@ const AdvanceRetailPayment = ({ onSave, isOpen, total, onClose }) => {
       return;
     }
 
-    onSave(paymentSelected.join(","), paymentChangeValue);
+    onSave(paymentSelected.join(","), paymentChangeValue, "ADVANCE");
   };
 
   useEffect(() => {

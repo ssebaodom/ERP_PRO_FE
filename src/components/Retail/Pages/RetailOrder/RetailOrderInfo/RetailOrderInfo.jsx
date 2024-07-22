@@ -5,6 +5,7 @@ import {
   Button,
   Form,
   Image,
+  Input,
   InputNumber,
   message as messageAPI,
   Segmented,
@@ -14,6 +15,7 @@ import {
 import _ from "lodash";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Column } from "react-base-table";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useDispatch, useSelector } from "react-redux";
 import { useDebouncedCallback } from "use-debounce";
 import { filterKeyHelper } from "../../../../../app/Functions/filterHelper";
@@ -57,7 +59,7 @@ const columns = [
     width: 60,
     align: Column.Alignment.CENTER,
     resizable: false,
-    frozen: Column.FrozenDirection.LEFT,
+
     cellRenderer: ({ cellData, rowData }) =>
       cellData ? (
         <Image
@@ -335,6 +337,9 @@ const columns = [
 ];
 
 const RetailOrderInfo = ({ orderKey }) => {
+  const { listOrder, currentOrder, isScanning, isFormLoading } =
+    useSelector(getRetailOrderState);
+
   const [message, contextHolder] = messageAPI.useMessage();
   const [itemForm] = Form.useForm();
 
@@ -373,16 +378,16 @@ const RetailOrderInfo = ({ orderKey }) => {
   const [taxOptions, setTaxOptions] = useState([]);
   const [currencyOptions, setCurrencyOptions] = useState([]);
   const [autoCalPromotion, setAutoCalPromotion] = useState(false);
+  const [isMergeRowData, setIsMergeRowData] = useState(false);
 
   const [isOpenOrderList, setIsOpenOrderList] = useState(false);
 
   const [isCalPromotion, setIsCalPromotion] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isChangedData, setIsChangedData] = useState(false);
 
   const searchInputRef = useRef(null);
 
-  const { listOrder, currentOrder, isScanning, isFormLoading } =
-    useSelector(getRetailOrderState);
   const { id: userId, storeId, unitId } = useSelector(getUserInfo);
   const dispatch = useDispatch();
 
@@ -531,6 +536,7 @@ const RetailOrderInfo = ({ orderKey }) => {
 
   useEffect(() => {
     handleCalculatorPayment();
+    setIsChangedData(uuidv4());
   }, [JSON.stringify(data), JSON.stringify(paymentInfo)]);
 
   const recalPromotion = useDebouncedCallback(async () => {
@@ -700,6 +706,10 @@ const RetailOrderInfo = ({ orderKey }) => {
         setAutoCalPromotion(
           _.first(res?.listObject[3])?.val === "1" ? true : false
         );
+
+        setIsMergeRowData(
+          _.first(res?.listObject[4])?.val === "1" ? true : false
+        );
       }
     });
   };
@@ -762,7 +772,7 @@ const RetailOrderInfo = ({ orderKey }) => {
   const handleSearchItemInfo = useDebouncedCallback((barcode) => {
     handleFetchItemInfo({ barcode, ma_vt: "", stock: "" });
     setSearchValue("");
-  }, 20);
+  }, 100);
 
   // Tìm kiếm thông tin khách hàng và vật tư
   const handleSearchValue = useDebouncedCallback((searchValue) => {
@@ -809,7 +819,7 @@ const RetailOrderInfo = ({ orderKey }) => {
   };
 
   //Thêm dòng vật tư
-  const handleAddRowData = ({
+  const handleAddRowData = async ({
     barcode = "",
     ma_vt,
     ten_vt,
@@ -818,12 +828,33 @@ const RetailOrderInfo = ({ orderKey }) => {
     dvt,
     don_gia,
     ck_yn,
-    so_luong,
+    so_luong = 1,
   }) => {
+    if (isMergeRowData) {
+      const curData = itemForm.getFieldsValue();
+      let isHad = false;
+
+      await getAllRowKeys(curData).map((key) => {
+        if (getAllValueByRow(key, curData)?.ma_vt === ma_vt) {
+          itemForm.setFieldValue(
+            `${key}_so_luong`,
+            Number(getAllValueByRow(key, curData)?.so_luong) + so_luong
+          );
+          isHad = true;
+          return;
+        }
+      });
+      if (autoCalPromotion) await recalPromotion();
+      else await handleCalculatorPayment();
+
+      if (isHad) return;
+    }
+
+    const rowID = uuidv4();
     setData([
       ...data,
       {
-        id: uuidv4(),
+        id: rowID,
         barcode: barcode || "",
         ma_vt,
         ten_vt,
@@ -834,6 +865,64 @@ const RetailOrderInfo = ({ orderKey }) => {
         don_gia: don_gia || "0",
         thanh_tien: don_gia * 1 || "0",
         ck_yn: ck_yn || false,
+        children: [
+          {
+            id: `${rowID}-detail`,
+            content: (
+              <div className="flex gap-2 justify-content-between">
+                <Form.Item
+                  initialValue={""}
+                  name={`${rowID}_ghi_chu`}
+                  style={{
+                    width: "55%",
+                    margin: 0,
+                  }}
+                  rules={[
+                    {
+                      required: false,
+                      message: `Ghi chú trống !`,
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    autoSize={{
+                      minRows: 1,
+                      maxRows: 1,
+                    }}
+                    placeholder="Ghi chú"
+                    style={{ resize: "none" }}
+                  />
+                </Form.Item>
+                <div className="flex align-items-center gap-2">
+                  <span>Chiết khấu</span>
+                  <Form.Item
+                    initialValue={0}
+                    name={`${rowID}_ck`}
+                    style={{
+                      margin: 0,
+                      width: 105,
+                    }}
+                    rules={[
+                      {
+                        required: false,
+                        message: `Ghi chú trống !`,
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      placeholder="0"
+                      disabled
+                      controls={false}
+                      min="0"
+                      className="w-full"
+                      step={quantityFormat}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+            ),
+          },
+        ],
       },
     ]);
   };
@@ -927,15 +1016,16 @@ const RetailOrderInfo = ({ orderKey }) => {
         }).then((res) => {
           itemForm.setFieldValue(`${changedRowKey}_don_gia`, res?.gia || "0");
         });
-        recalPromotion();
+
+        if (autoCalPromotion) recalPromotion();
         break;
 
       case "don_gia":
-        recalPromotion();
+        if (autoCalPromotion) recalPromotion();
         break;
 
       case "so_luong":
-        recalPromotion();
+        if (autoCalPromotion) recalPromotion();
         break;
 
       default:
@@ -995,6 +1085,26 @@ const RetailOrderInfo = ({ orderKey }) => {
     return () => {};
   }, [JSON.stringify(searchOptions), JSON.stringify(searchColapse)]);
 
+  //Key map
+  useHotkeys("f8", (e) => {
+    e.preventDefault();
+    handleResetPromotion();
+    modifyIsOpenPromotion(true);
+  });
+
+  useHotkeys(
+    "f10",
+    (e) => {
+      setsearchOptions([]);
+      setsearchOptionsFiltered([]);
+      setRetailOrderScanning(true);
+      if (!isScanning) searchInputRef.current.focus();
+
+      e.preventDefault();
+    },
+    [isScanning]
+  );
+
   useEffect(() => {
     fetchRetailOptions();
   }, []);
@@ -1038,10 +1148,11 @@ const RetailOrderInfo = ({ orderKey }) => {
                 filterOption={false}
                 onChange={handleSelectChange}
                 onFocus={() => {
-                  if (_.isEmpty(searchOptions) && !isScanning) {
+                  if (!isScanning) {
                     setSearchLoading(true);
                     fetchItemsNCustomers({ searchValue: "" });
                   } else {
+                    setsearchOptionsFiltered([]);
                     setSearchLoading(true);
                   }
                 }}
@@ -1049,6 +1160,7 @@ const RetailOrderInfo = ({ orderKey }) => {
                 onSearch={(e) => {
                   setSearchValue(e);
                   if (isScanning) {
+                    setSearchLoading(true);
                     handleSearchItemInfo(e);
                     return;
                   }
@@ -1058,90 +1170,93 @@ const RetailOrderInfo = ({ orderKey }) => {
                 }}
                 listHeight={500}
               >
-                {searchOptionsFiltered.map((group, index) => (
-                  <Select.OptGroup
-                    key={index}
-                    label={
-                      <div className="flex justify-content-between align-items-center">
-                        <b className="primary_color">{group?.label}</b>
-                        <i
-                          className={`pi pi-angle-${
-                            searchColapse.includes(group.key) ? "down" : "up"
-                          } cursor-pointer`}
-                          onClick={() => {
-                            handleCollapseOptions(group.key);
-                          }}
-                        ></i>
-                      </div>
-                    }
-                  >
-                    {group.options.map((item) => (
-                      <Select.Option
-                        key={`${group.key}-${item.value}`}
-                        value={`${group.key}-${item.value}`}
-                        label={item.label}
-                        className="px-2"
-                        data={item}
-                      >
-                        <div
-                          className="flex align-items-center gap-2"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                        >
-                          <Avatar
-                            style={{
-                              background:
-                                CHARTCOLORS[Math.floor(Math.random() * 12)],
-                              width: 30,
-                              height: 30,
+                {!isScanning &&
+                  searchOptionsFiltered.map((group, index) => (
+                    <Select.OptGroup
+                      key={index}
+                      label={
+                        <div className="flex justify-content-between align-items-center">
+                          <b className="primary_color">{group?.label}</b>
+                          <i
+                            className={`pi pi-angle-${
+                              searchColapse.includes(group.key) ? "down" : "up"
+                            } cursor-pointer`}
+                            onClick={() => {
+                              handleCollapseOptions(group.key);
                             }}
-                            src={item?.image}
-                          >
-                            {item?.label?.substring(0, 1)}
-                          </Avatar>
-                          <div className="flex gap-3 w-full">
-                            <div className="w-full">{item.label}</div>
-                            {item?.type == "VT" && (
-                              <div className="text-right ml-3">
-                                <span className="ml-1 primary_bold_text">
-                                  {formatCurrency(item?.ton || 0)}
-                                </span>
-                              </div>
-                            )}
-
-                            {item?.type == "KH" && (
-                              <div className="text-right ml-3">
-                                <span className="ml-1 primary_bold_text">
-                                  {item?.dien_thoai?.trim() || ""}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                          ></i>
                         </div>
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                ))}
+                      }
+                    >
+                      {group.options.map((item) => (
+                        <Select.Option
+                          key={`${group.key}-${item.value}`}
+                          value={`${group.key}-${item.value}`}
+                          label={item.label}
+                          className="px-2"
+                          data={item}
+                        >
+                          <div
+                            className="flex align-items-center gap-2"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <Avatar
+                              style={{
+                                background:
+                                  CHARTCOLORS[Math.floor(Math.random() * 12)],
+                                width: 30,
+                                height: 30,
+                              }}
+                              src={item?.image}
+                            >
+                              {item?.label?.substring(0, 1)}
+                            </Avatar>
+                            <div className="flex gap-3 w-full">
+                              <div className="w-full">{item.label}</div>
+                              {item?.type == "VT" && (
+                                <div className="text-right ml-3">
+                                  <span className="ml-1 primary_bold_text">
+                                    {formatCurrency(item?.ton || 0)}
+                                  </span>
+                                </div>
+                              )}
+
+                              {item?.type == "KH" && (
+                                <div className="text-right ml-3">
+                                  <span className="ml-1 primary_bold_text">
+                                    {item?.dien_thoai?.trim() || ""}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select.OptGroup>
+                  ))}
               </Select>
 
-              <Button
-                className="default_button shadow_3"
-                onClick={() => {
-                  setsearchOptions([]);
-                  setsearchOptionsFiltered([]);
-                  setRetailOrderScanning(!isScanning);
-                  if (!isScanning) searchInputRef.current.focus();
-                }}
-              >
-                <i
-                  className={`pi pi-qrcode ${
-                    isScanning ? "success_text_color" : "danger_text_color"
-                  }`}
-                  style={{ fontWeight: "bold" }}
-                ></i>
-              </Button>
+              <Tooltip placement="topRight" title="Quét (F10)">
+                <Button
+                  className="default_button shadow_3"
+                  onClick={() => {
+                    setsearchOptions([]);
+                    setsearchOptionsFiltered([]);
+                    setRetailOrderScanning(!isScanning);
+                    if (!isScanning) searchInputRef.current.focus();
+                  }}
+                >
+                  <i
+                    className={`pi pi-qrcode ${
+                      isScanning ? "success_text_color" : "danger_text_color"
+                    }`}
+                    style={{ fontWeight: "bold" }}
+                  ></i>
+                </Button>
+              </Tooltip>
             </div>
 
             <div className="Retail_order_tabs_container justify-content-end align-items-center w-full min-w-0 flex gap-2">
@@ -1200,7 +1315,7 @@ const RetailOrderInfo = ({ orderKey }) => {
               </Button>
             </Tooltip>
 
-            <Tooltip placement="topRight" title="Khuyến mãi">
+            <Tooltip placement="topRight" title="Khuyến mãi (F8)">
               <Button
                 className="default_button"
                 onClick={() => {
@@ -1347,6 +1462,7 @@ const RetailOrderInfo = ({ orderKey }) => {
         onChangeCustomer={handleAddCustomerComplete}
         onResetForm={handleResetForm}
         cantSave={isCalculating}
+        isChangedData={isChangedData}
       />
       <RetailOrderListModal
         isOpen={isOpenOrderList}

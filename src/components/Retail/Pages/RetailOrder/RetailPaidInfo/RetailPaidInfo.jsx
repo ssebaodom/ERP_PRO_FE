@@ -1,11 +1,13 @@
 import {
   CheckCircleTwoTone,
   CloseCircleTwoTone,
+  DownOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
 
 import {
   Button,
+  Dropdown,
   Input,
   InputNumber,
   message as messageAPI,
@@ -22,6 +24,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { useDebouncedCallback } from "use-debounce";
@@ -44,13 +47,43 @@ import { getRetailOrderState } from "../../../Store/Selectors/RetailOrderSelecto
 import AddCustomerPopup from "../AddCustomerPopup/AddCustomerPopup";
 
 const { Search } = Input;
+
+const paymentTypeOptions = [
+  {
+    label: "Tiền mặt",
+    key: "tien_mat",
+  },
+  {
+    label: "Quẹt thẻ",
+    key: "tien_the",
+  },
+  {
+    label: "Chuyển khoản",
+    key: "chuyen_khoan",
+  },
+];
+
 const RetailPaidInfo = ({
   itemForm,
   paymentInfo,
   onChangeCustomer,
   onResetForm,
   cantSave,
+  isChangedData,
 }) => {
+  //Key map
+  useHotkeys("f1", (e) => {
+    e.preventDefault();
+    setIsShowConfirmDialog(true);
+    handleShowCustomerViewDialog();
+  });
+
+  useHotkeys("f7", (e) => {
+    e.preventDefault();
+    setIsOpenAdvancePayment(true);
+    handleShowCustomerViewDialog();
+  });
+
   const [message, contextHolder] = messageAPI.useMessage();
   const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");
   const [retailOrderData, setRetailOrderData] = useLocalStorage(
@@ -68,6 +101,8 @@ const RetailPaidInfo = ({
     documentTitle: "Print This Document",
     copyStyles: false,
   });
+
+  const [paymentType, setPaymentType] = useState("tien_mat");
 
   const [paymentData, setPaymentData] = useState({});
 
@@ -125,13 +160,23 @@ const RetailPaidInfo = ({
 
   // Lưu phiếu
   const handleSave = useCallback(
-    async (paymentMethods, paymentMethodInfo) => {
-      modifyIsFormLoading(true);
-
-      const [master, detailData] = await prepareOrderData(
+    async (paymentMethods, paymentMethodInfo, type = "SIMPLE") => {
+      const [masterData, detailData] = await prepareOrderData(
         paymentMethods,
         paymentMethodInfo
       );
+      var master = { ...masterData };
+      if (type === "SIMPLE") {
+        master = {
+          ...masterData,
+          tien_mat: paymentType === "tien_mat" ? masterData.tong_tt : 0,
+          tien_the: paymentType === "tien_the" ? masterData.tong_tt : 0,
+          chuyen_khoan: paymentType === "chuyen_khoan" ? masterData.tong_tt : 0,
+          httt: paymentType,
+        };
+      }
+
+      modifyIsFormLoading(true);
 
       if (change - paymentData?.tong_tt < 0 && !isOpenAdvancePayment) {
         message.warning("Tiền thanh toán không đủ !");
@@ -220,7 +265,7 @@ const RetailPaidInfo = ({
       }
       modifyIsFormLoading(false);
     },
-    [paymentData, voucher, change, isOpenAdvancePayment]
+    [paymentData, voucher, change, isOpenAdvancePayment, paymentType]
   );
 
   //Tính toán tiền trả
@@ -331,8 +376,11 @@ const RetailPaidInfo = ({
 
   const handleCloseAdvancePayment = useCallback(() => {
     setIsOpenAdvancePayment(false);
-    handleHideCustomerViewDialog();
   }, []);
+
+  const handlePaymentTypeClick = ({ key }) => {
+    setPaymentType(key);
+  };
 
   // Lắng nghe sự thay đổi tham số để tính toán
   useEffect(() => {
@@ -353,6 +401,13 @@ const RetailPaidInfo = ({
       setPrintDetail([]);
     };
   }, [JSON.stringify(printMaster)]);
+
+  useEffect(() => {
+    if (isChangedData) {
+      handleShowCustomerViewDialog();
+    }
+    return () => {};
+  }, [JSON.stringify(isChangedData)]);
 
   useEffect(() => {
     return () => {
@@ -536,6 +591,23 @@ const RetailPaidInfo = ({
           </div>
         </div>
 
+        <Dropdown
+          menu={{
+            items: paymentTypeOptions,
+            onClick: handlePaymentTypeClick,
+          }}
+        >
+          <div className="flex justify-content-between gap-2 align-items-center">
+            <span className="w-6 flex-shrink-0 line-height-4 primary_bold_text">
+              {
+                paymentTypeOptions.find((item) => item.key === paymentType)
+                  ?.label
+              }
+            </span>
+            <DownOutlined className="primary_text_color" />
+          </div>
+        </Dropdown>
+
         <div className="flex justify-content-between gap-2 align-items-center">
           <span className="w-6 flex-shrink-0 line-height-4">Trả lại:</span>
           <span className="primary_bold_text danger_text_color">
@@ -565,7 +637,7 @@ const RetailPaidInfo = ({
             handleShowCustomerViewDialog();
           }}
         >
-          Nâng cao
+          Nâng cao (F7)
         </Button>
 
         <Button
@@ -577,7 +649,7 @@ const RetailPaidInfo = ({
           }}
           disabled={isFormLoading || cantSave}
         >
-          Thanh toán
+          Thanh toán (F1)
         </Button>
       </div>
       <AdvanceRetailPayment
@@ -592,7 +664,6 @@ const RetailPaidInfo = ({
         isOpen={isShowConfirmDialog}
         onClose={() => {
           setIsShowConfirmDialog(false);
-          handleHideCustomerViewDialog();
         }}
       />
       <PrintComponent

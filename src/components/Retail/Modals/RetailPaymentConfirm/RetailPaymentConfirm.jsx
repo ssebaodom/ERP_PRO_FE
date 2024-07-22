@@ -1,7 +1,13 @@
 import { Modal } from "antd";
 import React, { memo } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 const RetailPaymentConfirm = ({ onOk, isOpen, onClose }) => {
+  useHotkeys("enter", (e) => {
+    e.preventDefault();
+    onOk();
+  });
+
   return (
     <Modal
       open={isOpen}

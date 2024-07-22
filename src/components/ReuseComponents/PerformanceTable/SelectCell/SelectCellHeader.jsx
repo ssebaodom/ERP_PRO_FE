@@ -10,7 +10,9 @@ const SelectCellHeader = ({ column }) => {
     onSelectAll({ selected: e.target.checked });
   };
 
-  return <Checkbox onChange={handleChange} checked={checked} />;
+  return (
+    <Checkbox className="ml-1" onChange={handleChange} checked={checked} />
+  );
 };
 
 export default memo(SelectCellHeader);

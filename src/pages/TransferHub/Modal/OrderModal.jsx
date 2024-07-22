@@ -140,7 +140,7 @@ const OrderModal = ({ children }) => {
       closable={false}
       footer
       centered
-      open={!_.isEmpty(data)}
+      open={!_.isEmpty(data) && !_.isEmpty(data[1])}
       okButtonProps={{ style: { display: "none" } }}
       cancelButtonProps={{ style: { display: "none" } }}
     >

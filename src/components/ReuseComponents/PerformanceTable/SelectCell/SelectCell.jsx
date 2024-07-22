@@ -14,7 +14,9 @@ const SelectCell = ({ rowData, rowIndex, column }) => {
       rowIndex,
     });
   };
-  return <Checkbox onChange={handleChange} checked={checked} />;
+  return (
+    <Checkbox className="ml-1" onChange={handleChange} checked={checked} />
+  );
 };
 
 export default memo(SelectCell);

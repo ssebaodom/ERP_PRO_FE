@@ -6,6 +6,9 @@ const claims = createSlice({
     claims: [],
     textTest: "",
     userInfo: {
+      fullName: "",
+      storeId: "",
+      storeName: "",
       userName: "",
       role: "",
       roleName: "",
@@ -27,6 +30,8 @@ const claims = createSlice({
         unitId: action?.payload?.MA_DVCS,
         unitName: action?.payload?.DVCS,
         storeId: action?.payload?.Store || "",
+        storeName: action?.payload?.StoreName || "",
+        fullName: action?.payload?.FullName || "",
         isPremium: false,
         id: parseInt(action?.payload?.Id),
       };
