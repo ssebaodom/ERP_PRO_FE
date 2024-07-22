@@ -3,10 +3,14 @@ import React, { memo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 const RetailPaymentConfirm = ({ onOk, isOpen, onClose }) => {
-  useHotkeys("enter", (e) => {
-    e.preventDefault();
-    onOk();
-  });
+  useHotkeys(
+    "enter",
+    (e) => {
+      e.preventDefault();
+      onOk();
+    },
+    { enableOnFormTags: ["input", "select", "textarea"] }
+  );
 
   return (
     <Modal

@@ -6,7 +6,13 @@ import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
-const RenderPerformanceTableCell = ({ rowKey, column, cellData, rowData }) => {
+const RenderPerformanceTableCell = ({
+  rowKey,
+  column,
+  cellData,
+  rowData,
+  numberCap,
+}) => {
   const { type, editable, title, key, required, width, controller, format } =
     column;
 
@@ -53,8 +59,10 @@ const RenderPerformanceTableCell = ({ rowKey, column, cellData, rowData }) => {
     case "Numeric":
       node = (
         <InputNumber
+          placeholder="0"
           controls={false}
           min="0"
+          max={numberCap || Number.MAX_SAFE_INTEGER}
           className="w-full"
           step={format || quantityFormat}
         />

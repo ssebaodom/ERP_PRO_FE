@@ -72,17 +72,25 @@ const RetailPaidInfo = ({
   isChangedData,
 }) => {
   //Key map
-  useHotkeys("f1", (e) => {
-    e.preventDefault();
-    setIsShowConfirmDialog(true);
-    handleShowCustomerViewDialog();
-  });
+  useHotkeys(
+    "f1",
+    (e) => {
+      e.preventDefault();
+      setIsShowConfirmDialog(true);
+      handleShowCustomerViewDialog();
+    },
+    { enableOnFormTags: ["input", "select", "textarea"] }
+  );
 
-  useHotkeys("f7", (e) => {
-    e.preventDefault();
-    setIsOpenAdvancePayment(true);
-    handleShowCustomerViewDialog();
-  });
+  useHotkeys(
+    "f7",
+    (e) => {
+      e.preventDefault();
+      setIsOpenAdvancePayment(true);
+      handleShowCustomerViewDialog();
+    },
+    { enableOnFormTags: ["input", "select", "textarea"] }
+  );
 
   const [message, contextHolder] = messageAPI.useMessage();
   const [paymentQR, setPaymentQR] = useLocalStorage("QRimg", "");

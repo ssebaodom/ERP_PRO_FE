@@ -29,6 +29,7 @@ import {
 import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import RenderPerformanceTableCell from "../../../../../app/hooks/RenderPerformanceTableCell";
 import { quantityFormat } from "../../../../../app/Options/DataFomater";
+import { phoneNumberRegex } from "../../../../../app/regex/regex";
 import SelectNotFound from "../../../../../Context/SelectNotFound";
 import { setIsHideNav } from "../../../../../store/reducers/claimsSlice";
 import {
@@ -973,6 +974,13 @@ const RetailOrderInfo = ({ orderKey }) => {
         diem,
       });
     }
+
+    if (params.data.type === "DTVL") {
+      setPaymentInfo({
+        ...paymentInfo,
+        dien_thoai: params?.data?.value,
+      });
+    }
   };
 
   const SegmentedRender = (item, index) => {
@@ -1086,11 +1094,15 @@ const RetailOrderInfo = ({ orderKey }) => {
   }, [JSON.stringify(searchOptions), JSON.stringify(searchColapse)]);
 
   //Key map
-  useHotkeys("f8", (e) => {
-    e.preventDefault();
-    handleResetPromotion();
-    modifyIsOpenPromotion(true);
-  });
+  useHotkeys(
+    "f8",
+    (e) => {
+      e.preventDefault();
+      handleResetPromotion();
+      modifyIsOpenPromotion(true);
+    },
+    { enableOnFormTags: ["input", "select", "textarea"] }
+  );
 
   useHotkeys(
     "f10",
@@ -1102,6 +1114,7 @@ const RetailOrderInfo = ({ orderKey }) => {
 
       e.preventDefault();
     },
+    { enableOnFormTags: ["input", "select", "textarea"] },
     [isScanning]
   );
 
@@ -1235,6 +1248,28 @@ const RetailOrderInfo = ({ orderKey }) => {
                           </div>
                         </Select.Option>
                       ))}
+
+                      {group?.key == "KH" &&
+                        phoneNumberRegex.test(searchValue) &&
+                        _.isEmpty(group?.options) && (
+                          <Select.Option
+                            key={`dien_thoai`}
+                            value={searchValue}
+                            label={""}
+                            className="px-2"
+                            data={{
+                              value: searchValue,
+                              label: searchValue,
+                              dien_thoai: searchValue,
+                              type: "DTVL",
+                            }}
+                          >
+                            <div className="flex align-items-center gap-2 primary_bold_text">
+                              <i className="pi pi-plus-circle primary_bold_text"></i>
+                              <span>Gắn số điện thoại vãng lai</span>
+                            </div>
+                          </Select.Option>
+                        )}
                     </Select.OptGroup>
                   ))}
               </Select>

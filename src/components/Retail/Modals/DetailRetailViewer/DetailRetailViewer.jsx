@@ -1,15 +1,36 @@
-import { Alert, Avatar, Drawer } from "antd";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Drawer,
+  Form,
+  message as messageAPI,
+  notification,
+} from "antd";
+import _ from "lodash";
 import React, { useEffect, useState } from "react";
+import {
+  getAllRowKeys,
+  getAllValueByRow,
+} from "../../../../app/Functions/getTableValue";
+import RenderPerformanceTableCell from "../../../../app/hooks/RenderPerformanceTableCell";
 import LoadingComponents from "../../../Loading/LoadingComponents";
 import PerformanceTable from "../../../ReuseComponents/PerformanceTable/PerformanceTable";
-import { fetchRetailOderDetail } from "../../Store/Actions/RetailOrderActions";
+import {
+  apiCreateRefundOrder,
+  fetchRetailOderDetail,
+} from "../../Store/Actions/RetailOrderActions";
 import "./DetailRetailViewer.css";
 
 const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
+  const [message, contextHolder] = messageAPI.useMessage();
   const { stt_rec } = itemKey;
+  const [itemForm] = Form.useForm();
 
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState({});
+  const [tableColumns, setTableColumns] = useState([]);
+  const [isRefundMode, setIsRefundMode] = useState(false);
 
   const getData = async () => {
     setIsLoading(true);
@@ -17,14 +38,105 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
       stt_rec,
     });
     setData(result);
-    console.log("result", result);
+    setTableColumns(result?.columns || []);
     setIsLoading(false);
+  };
+
+  const handleRefundModeModify = () => {
+    setIsRefundMode(!isRefundMode);
+  };
+
+  const handleSaveRefundOrder = async () => {
+    const data = { ...itemForm.getFieldsValue() };
+    const detailData = [];
+
+    getAllRowKeys(data).map((item) => {
+      return detailData.push(getAllValueByRow(item, data));
+    });
+
+    if (detailData.findIndex((item) => item.so_luong_tl) < 0) {
+      message.warning("Không có vật tư nào trả lại !");
+      return;
+    }
+    setIsLoading(true);
+
+    const result = await apiCreateRefundOrder(
+      { stt_rec_hd: stt_rec },
+      detailData
+    );
+
+    if (result?.responseModel?.isSucceded) {
+      notification.success({
+        message: `Tạo đơn hàng trả lại thành công`,
+      });
+      handleRefundModeModify();
+      setIsLoading(false);
+      onClose();
+    } else {
+      notification.warning({
+        message: result?.responseModel?.message,
+      });
+    }
+  };
+
+  const renderRefundColumns = (isRefund) => {
+    var columns = _.cloneDeep(tableColumns);
+    if (isRefund) {
+      columns.map((item) => {
+        if (item.key === "stt_rec0") {
+          item.hidden = false;
+          item.width = 0;
+          item.resizable = false;
+          item.sortable = false;
+          item.className = "p-0";
+          item.headerClassName = "p-0";
+        }
+        item.editable = false;
+        item.cellRenderer = ({ rowData, column, cellData }) => {
+          return (
+            <RenderPerformanceTableCell
+              rowKey={rowData?.key}
+              column={column}
+              cellData={cellData}
+            />
+          );
+        };
+      });
+
+      columns.push({
+        key: "so_luong_tl",
+        title: "Số lượng trả",
+        dataKey: "so_luong_tl",
+        width: 120,
+        editable: true,
+        resizable: false,
+        sortable: false,
+        required: true,
+        type: "Numeric",
+        cellRenderer: ({ rowData, column, cellData }) => {
+          return (
+            <RenderPerformanceTableCell
+              rowKey={rowData?.key}
+              column={column}
+              cellData={cellData}
+              numberCap={rowData?.so_luong}
+            />
+          );
+        },
+      });
+    }
+    return columns;
   };
 
   useEffect(() => {
     if (isOpen) {
       getData();
     }
+
+    if (!isOpen) {
+      setIsRefundMode(false);
+    }
+
     return () => {
       setIsLoading(true);
     };
@@ -32,12 +144,33 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
 
   return (
     <Drawer
-      title={`Thông tin đơn hàng`}
+      title={
+        <div className="flex justify-content-between align-items-center">
+          <span>Thông tin đơn hàng</span>
+
+          {isRefundMode ? (
+            <div>
+              <Button
+                type="primary"
+                className="mr-2"
+                onClick={handleSaveRefundOrder}
+              >
+                Lưu
+              </Button>
+              <Button onClick={handleRefundModeModify}>Huỷ</Button>
+            </div>
+          ) : (
+            <Button onClick={handleRefundModeModify}>Đề nghị trả hàng</Button>
+          )}
+        </div>
+      }
       placement="right"
       width={"80%"}
       open={isOpen}
-      bodyStyle={{
-        position: "relative",
+      styles={{
+        body: {
+          position: "relative",
+        },
       }}
       onClose={() => {
         onClose();
@@ -167,17 +300,33 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
               showIcon
             />
 
-            <div className="h-full min-h-0 shadow_3">
-              <PerformanceTable
-                selectable={false}
-                columns={data?.columns || []}
-                data={data?.detail || []}
-                isLoading={isLoading}
-              />
-            </div>
+            <Form form={itemForm} component={false} initialValues={{}}>
+              {!isRefundMode && (
+                <div className="h-full min-h-0 shadow_3 not_edit">
+                  <PerformanceTable
+                    selectable={false}
+                    columns={renderRefundColumns(isRefundMode)}
+                    data={data?.detail || []}
+                    isLoading={isLoading}
+                  />
+                </div>
+              )}
+
+              {isRefundMode && (
+                <div className="h-full min-h-0 shadow_3 edit">
+                  <PerformanceTable
+                    selectable={false}
+                    columns={renderRefundColumns(isRefundMode)}
+                    data={data?.detail || []}
+                    isLoading={isLoading}
+                  />
+                </div>
+              )}
+            </Form>
           </div>
         </div>
       )}
+      {contextHolder}
     </Drawer>
   );
 };

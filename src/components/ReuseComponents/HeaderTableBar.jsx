@@ -79,9 +79,13 @@ const HeaderTableBar = ({
     searchCallBack(e.target.value);
   };
 
-  useHotkeys("ctrl+i", () => {
-    addEvent();
-  });
+  useHotkeys(
+    "ctrl+i",
+    () => {
+      addEvent();
+    },
+    { enableOnFormTags: ["input", "select", "textarea"] }
+  );
 
   return (
     <div className="list__header__bar w-full">

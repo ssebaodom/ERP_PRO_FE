@@ -140,7 +140,7 @@ const RetailOrderListModal = ({ isOpen, onClose }) => {
   };
 
   const renderTitle = ({ title, type, key }) => {
-    return type !== "Numeric" ? (
+    return type !== "Numeric" && key !== "ten_bp" ? (
       <Popover
         destroyTooltipOnHide
         afterOpenChange={(e) => {

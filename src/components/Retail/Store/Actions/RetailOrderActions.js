@@ -174,6 +174,28 @@ export const fetchRetailOderPromotion = async (data = [], customer = "") => {
   }
 };
 
+export const apiCreateRefundOrder = async (master = {}, detail = []) => {
+  const { id, unitId, storeId } = store.getState().claimsReducer.userInfo;
+  const result = await multipleTablePutApi({
+    store: "Api_create_return_order",
+    param: {
+      UnitID: unitId,
+      StoreID: storeId,
+      userId: id,
+    },
+    data: {
+      master: [
+        {
+          ...master,
+        },
+      ],
+      detail,
+    },
+  });
+
+  return result;
+};
+
 export const modifyIsFormLoading = async (params) => {
   store.dispatch(retailOrderActions.setIsFormLoading(params));
 };
