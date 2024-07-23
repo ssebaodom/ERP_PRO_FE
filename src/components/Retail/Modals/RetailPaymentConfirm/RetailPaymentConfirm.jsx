@@ -7,9 +7,10 @@ const RetailPaymentConfirm = ({ onOk, isOpen, onClose }) => {
     "enter",
     (e) => {
       e.preventDefault();
-      onOk();
+      if (isOpen) onOk();
     },
-    { enableOnFormTags: ["input", "select", "textarea"] }
+    { enableOnFormTags: ["input", "select", "textarea"] },
+    [isOpen]
   );
 
   return (

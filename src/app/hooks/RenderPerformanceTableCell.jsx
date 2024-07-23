@@ -6,6 +6,21 @@ import SelectItemCode from "../../Context/SelectItemCode";
 import SelectNotFound from "../../Context/SelectNotFound";
 import { datetimeFormat, quantityFormat } from "../Options/DataFomater";
 
+// formatter and parser input number
+export const formatterNumber = (val) => {
+  if (!val) return 0;
+  return `${val}`
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    .replace(/\.(?=\d{0,2}$)/g, ",");
+};
+
+export const parserNumber = (val) => {
+  if (!val) return 0;
+  return Number.parseFloat(
+    val.replace(/\$\s?|(\.*)/g, "").replace(/(\,{1})/g, ".")
+  ).toFixed(2);
+};
+
 const RenderPerformanceTableCell = ({
   rowKey,
   column,
@@ -65,6 +80,8 @@ const RenderPerformanceTableCell = ({
           max={numberCap || Number.MAX_SAFE_INTEGER}
           className="w-full"
           step={format || quantityFormat}
+          formatter={(value) => formatterNumber(value)}
+          parser={(value) => parserNumber(value)}
         />
       );
       break;
