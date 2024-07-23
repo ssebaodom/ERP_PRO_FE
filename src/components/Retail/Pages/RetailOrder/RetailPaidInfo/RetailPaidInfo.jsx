@@ -35,6 +35,7 @@ import {
 } from "../../../../../app/Functions/getTableValue";
 import { formatCurrency } from "../../../../../app/hooks/dataFormatHelper";
 import { num2words } from "../../../../../app/Options/DataFomater";
+import { formatterNumber, parserNumber } from "../../../../../app/regex/regex";
 import { getUserInfo } from "../../../../../store/selectors/Selectors";
 import emitter from "../../../../../utils/emitter";
 import { multipleTablePutApi } from "../../../../SaleOrder/API";
@@ -595,6 +596,8 @@ const RetailPaidInfo = ({
               onChange={(e) => {
                 setChange(e);
               }}
+              formatter={(value) => formatterNumber(value)}
+              parser={(value) => parserNumber(value)}
             />
           </div>
         </div>

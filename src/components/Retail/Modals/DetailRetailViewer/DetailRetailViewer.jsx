@@ -51,7 +51,11 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
     const detailData = [];
 
     getAllRowKeys(data).map((item) => {
-      return detailData.push(getAllValueByRow(item, data));
+      const rowData = getAllValueByRow(item, data);
+      if (rowData.so_luong_tl) {
+        return detailData.push(rowData);
+      }
+      return;
     });
 
     if (detailData.findIndex((item) => item.so_luong_tl) < 0) {
