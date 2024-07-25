@@ -74,13 +74,13 @@ const DetailRetailViewer = ({ isOpen, onClose, itemKey }) => {
         message: `Tạo đơn hàng trả lại thành công`,
       });
       handleRefundModeModify();
-      setIsLoading(false);
       onClose();
     } else {
       notification.warning({
         message: result?.responseModel?.message,
       });
     }
+    setIsLoading(false);
   };
 
   const renderRefundColumns = (isRefund) => {
